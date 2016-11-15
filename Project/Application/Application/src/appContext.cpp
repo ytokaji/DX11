@@ -117,7 +117,6 @@ void CAppContext::disposeInstance()
 //---------------------------------------------------------------------
 void CAppContext::init(ID3D11Device* i_pDevice)
 {
-	HRESULT hr;
 	if (m_bIsInit == true) return;
 
 	m_pd3dDevice = i_pDevice;

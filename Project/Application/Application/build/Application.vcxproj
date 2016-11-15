@@ -60,7 +60,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(SolutionDir)/ExternalLibrary/;$(WindowsSDK_IncludePath);$(SolutionDir)/DXUT11/;./../include;$(DXSDK_DIR)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NOMINMAX;WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
@@ -166,14 +166,6 @@
     <ClInclude Include="..\include\water_surface.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\DXUT11\Core\DXUTCore.vcxproj">
-      <Project>{e0cf097b-f22d-465b-a884-d89e55bd7ecd}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\DXUT11\Optional\DXUTOptional.vcxproj">
-      <Project>{0bc14f6c-54ab-4576-84ea-323fd98a8f3e}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <FxCompile Include="..\shader\grid_ps.fx">
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
       <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename)</VariableName>
@@ -186,6 +178,14 @@
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)\../include\shader\CompileShader\%(Filename).h</HeaderFileOutput>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\DXUT11\Core\DXUTCore.vcxproj">
+      <Project>{e0cf097b-f22d-465b-a884-d89e55bd7ecd}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\DXUT11\Optional\DXUTOptional.vcxproj">
+      <Project>{0bc14f6c-54ab-4576-84ea-323fd98a8f3e}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

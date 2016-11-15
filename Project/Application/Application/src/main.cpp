@@ -122,8 +122,6 @@ bool CALLBACK IsDeviceAcceptable( const CD3D11EnumAdapterInfo *AdapterInfo, UINT
 // デバイス作成時処理
 HRESULT CALLBACK OnCreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc, void* pUserContext )
 {
-    HRESULT hr;
-
 	CAppContext* pApp = CAppContext::getInstance();
 	_ASSERT(pApp);
 	pApp->init(pd3dDevice);

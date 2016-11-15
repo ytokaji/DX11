@@ -460,7 +460,7 @@ HRESULT ObjMeshDX::LoadGeometryFromOBJ(const WCHAR* strFileName)
     {
 		auto idx = wcsrchr(strFileName, L'/') - strFileName + 1;
 		WCHAR strMtlPath[MAX_PATH] = {0};
-		wcsncpy(strMtlPath, strFileName, idx);
+		wcsncpy_s(strMtlPath, strFileName, idx);
 		wcscat_s(strMtlPath, MAX_PATH, strMaterialFilename);
         V_RETURN(LoadMaterialsFromMTL(strMtlPath));
     }
@@ -733,7 +733,7 @@ HRESULT ObjMeshDX::LoadMaterialsFromMTL(const WCHAR* strFileName)
 			InFile >> strTexName;
 
 			auto idx = wcsrchr(strFileName, L'/') - strFileName + 1;
-			wcsncpy(pMaterial->strTexture, strFileName, idx);
+			wcsncpy_s(pMaterial->strTexture, strFileName, idx);
 			wcscat_s(pMaterial->strTexture, MAX_PATH, strTexName);
         }
 

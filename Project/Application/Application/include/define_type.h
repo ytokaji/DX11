@@ -55,19 +55,23 @@
 
 /// デバッグ出力
 #if _DEBUG_PRINT
-	/// デバッガログ出力
-	static void message(const char* i_szFmt, ...){
-		char buff[2048];
-		memset( buff, 0, sizeof(buff) );
-		va_list args;
+	class message
+	{
+	public:
+		/// デバッガログ出力
+		static void output(const char* i_szFmt, ...){
+			char buff[2048];
+			memset(buff, 0, sizeof(buff));
+			va_list args;
 
-		va_start(args, i_szFmt);
-		vsnprintf_s(buff, sizeof(buff), _TRUNCATE, i_szFmt, args);
-		va_end(args);
+			va_start(args, i_szFmt);
+			vsnprintf_s(buff, sizeof(buff), _TRUNCATE, i_szFmt, args);
+			va_end(args);
 
-		::OutputDebugStringA(buff);
-	}
-	#define _PRINT(fomat, ...) { message(fomat, __VA_ARGS__); }
+			::OutputDebugStringA(buff);
+		}
+	};
+	#define _PRINT(fomat, ...) { message::output(fomat, __VA_ARGS__); }
 #else
 	#define _PRINT(fomat, ...) {}
 #endif

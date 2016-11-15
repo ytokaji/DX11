@@ -1,3 +1,8 @@
 éQè∆å≥
 
+NVIDIA
 http://developer.nvidia.com/
+
+CPP LINQ
+https://cpplinq.codeplex.com/
+

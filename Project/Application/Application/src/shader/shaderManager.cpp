@@ -43,8 +43,8 @@ namespace
 
 	static const ShaderData sc_pShaderData[] =
 	{
-		{ L"../source/Application/Application/shader/grid_vs.fx"	, "vs_5_0"	, "main"	, CShader::eTYPE::VS	, ShaderManager::eSHADER::GRID },
-		{ L"../source/Application/Application/shader/grid_ps.fx"	, "ps_5_0"	, "main"	, CShader::eTYPE::PS	, ShaderManager::eSHADER::GRID },
+		{ L"../Project/Application/Application/shader/grid_vs.fx"	, "vs_5_0"	, "main"	, CShader::eTYPE::VS	, ShaderManager::eSHADER::GRID },
+		{ L"../Project/Application/Application/shader/grid_ps.fx"	, "ps_5_0"	, "main"	, CShader::eTYPE::PS	, ShaderManager::eSHADER::GRID },
 	};
 #endif
 }
@@ -117,7 +117,7 @@ CShader* ShaderManager::getShader(eSHADER i_eShader)
 CShader* ShaderManager::createShader(eSHADER i_eShader)
 {
 	// èåèÇ…çáÇ§Ç‡ÇÃÇíTÇ∑
-	std::array<const ShaderData*, (int)CShader::eTYPE::MAX> apList;
+	std::array<const ShaderData*, (int)CShader::eTYPE::MAX> apList = {nullptr,};
 	for (int i = 0; i < NUM_OF(sc_pShaderData); ++i)
 	{
 		if (sc_pShaderData[i].eShader != i_eShader)

@@ -49,7 +49,7 @@ size_t ShaderValue::Create(CShader* shader, ID3D11ShaderReflectionVariable* vari
 	}
 
 	// ÉTÉCÉY
-	return static_cast<size_t>(sizeof(float) * typDesc.Columns * typDesc.Rows * max(typDesc.Elements, 1) );
+	return static_cast<size_t>(sizeof(float) * typDesc.Columns * typDesc.Rows * std::max(typDesc.Elements, (UINT)1));
 }
 
 //---------------------------------------------------------------------

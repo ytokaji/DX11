@@ -180,7 +180,7 @@ private:
 	~CAppContext();
 
 private:
-	static CAppContext*				m_pInstance;		//!< 自身へのインスタンスポインタ 
+	static CAppContext*					m_pInstance;			//!< 自身へのインスタンスポインタ 
 	
 	// システムからのコールバック関数配列
 	std::vector<ResizedSwapChainArg>	m_fResizedSwapChain;

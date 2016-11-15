@@ -29,11 +29,17 @@
 #include <map>
 #include <memory>
 
+// directx
 #include <d3dcompiler.h>
 
+// external libraty
+#pragma warning( push )
+#pragma warning(disable : 4100)
+#include <CppLinq/cpplinq.hpp>
+#pragma warning( pop )
+
+// other
 #include "property.h"
 #include "define_type.h"
 #include "util.h"
 #include "Core/DXUT.h"
-
-
