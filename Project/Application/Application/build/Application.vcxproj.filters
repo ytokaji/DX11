@@ -1,0 +1,155 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="ソース ファイル">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="ヘッダー ファイル">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="リソース ファイル">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="shaders">
+      <UniqueIdentifier>{a92ec4a0-5b9a-4324-8ecd-fce2dc3e97d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\framework">
+      <UniqueIdentifier>{770f0a9f-4412-407b-af1a-124063c5988d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\framework">
+      <UniqueIdentifier>{6b5dbe40-1a60-4f9c-ac8c-bcd8452c5e98}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\shader">
+      <UniqueIdentifier>{56db6f3d-b54c-4d68-a674-f568a291b563}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\shader">
+      <UniqueIdentifier>{253d3f45-b5b6-4987-9d1a-8074e1ebd8dc}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\main.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\object.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\post_effect_task.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\scene_task.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\stdafx.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\water_surface.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\hud.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\framework\processManager.cpp">
+      <Filter>ソース ファイル\framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\appContext.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\startJob.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\framework\thread.cpp">
+      <Filter>ソース ファイル\framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\grid.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\shader\shaderManager.cpp">
+      <Filter>ソース ファイル\shader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\shader\shader.cpp">
+      <Filter>ソース ファイル\shader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\shader\shaderValue.cpp">
+      <Filter>ソース ファイル\shader</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\define_type.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\object.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\post_effect_task.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\scene_task.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\shader_param.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\stdafx.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\util.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\water_surface.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\hud.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\property.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\framework\job.h">
+      <Filter>ヘッダー ファイル\framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\framework\process.h">
+      <Filter>ヘッダー ファイル\framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\framework\processManager.h">
+      <Filter>ヘッダー ファイル\framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\framework\render.h">
+      <Filter>ヘッダー ファイル\framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\appContext.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\startJob.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\framework\thread.h">
+      <Filter>ヘッダー ファイル\framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\grid.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\shader\shaderManager.h">
+      <Filter>ヘッダー ファイル\shader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\shader\shader.h">
+      <Filter>ヘッダー ファイル\shader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\shader\shaderValue.h">
+      <Filter>ヘッダー ファイル\shader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\shader\material.h">
+      <Filter>ヘッダー ファイル\shader</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\shader\grid_vs.fx">
+      <Filter>shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\shader\grid_ps.fx">
+      <Filter>shaders</Filter>
+    </FxCompile>
+  </ItemGroup>
+</Project>

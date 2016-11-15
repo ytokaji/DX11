@@ -2,9 +2,9 @@
 *.sdf
 *.suo
 *.user
-/ipch/
-/Debug/
-/Release/
+ipch/
+Debug/
+Release/
 
 # -------------[ OS generated ]------------------------ #
 .DS_Store
