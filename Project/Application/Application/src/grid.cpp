@@ -32,8 +32,8 @@ CGrid::~CGrid()
 //---------------------------------------------------------------------
 void CGrid::init()
 {
-	CAppContext* pApp = CAppContext::getInstance();
-	ID3D11Device* pDevice = pApp->getD3D11Device();
+	AppContext* pApp = AppContext::GetInstance();
+	ID3D11Device* pDevice = pApp->GetD3D11Device();
 	HRESULT hr = E_FAIL;
 
 	// ƒƒ‚ƒŠ‚ÌŠm•Û

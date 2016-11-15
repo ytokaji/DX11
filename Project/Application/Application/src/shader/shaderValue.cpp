@@ -102,16 +102,16 @@ void CShaderValue_Semantic::SetValue(D3DXMATRIX& i_rMat)
 		mWorld = *i_pParam->pMat;
 	}
 	D3DXMATRIX mWorldView;
-	D3DXMatrixMultiply( &mWorldView, &mWorld, CAppContext::getInstance()->getViewMatrix() );
+	D3DXMatrixMultiply( &mWorldView, &mWorld, AppContext::GetInstance()->getViewMatrix() );
 	
-	D3DXMATRIX mProj = *CAppContext::getInstance()->getProjMatrix();
+	D3DXMATRIX mProj = *AppContext::GetInstance()->getProjMatrix();
 	D3DXMATRIX mWorldViewPorj;
 	D3DXMatrixMultiply( &mWorldViewPorj, &mWorldView, &mProj );
 
 	HRESULT hr = S_OK;
 	if( m_hPorj )
 	{
-		_RET_CHECK( i_pParam->pEffect->SetMatrix( m_hPorj, CAppContext::getInstance()->getProjMatrix()) );
+		_RET_CHECK( i_pParam->pEffect->SetMatrix( m_hPorj, AppContext::GetInstance()->getProjMatrix()) );
 	}
 
 	if( m_hWorld )
@@ -131,13 +131,13 @@ void CShaderValue_Semantic::SetValue(D3DXMATRIX& i_rMat)
 	
 	if( m_hCameraPosition )
 	{
-		const D3DXVECTOR3* pPos = CAppContext::getInstance()->getCamera()->GetEyePt();
+		const D3DXVECTOR3* pPos = AppContext::GetInstance()->getCamera()->GetEyePt();
 		_RET_CHECK( i_pParam->pEffect->SetFloatArray( m_hCameraPosition, &pPos->x, 3) );
 	}
 	
 	if( m_hDirectionalLightDir )
 	{
-		const D3DXVECTOR3* pPos = CAppContext::getInstance()->getDirectionalLightDir();
+		const D3DXVECTOR3* pPos = AppContext::GetInstance()->getDirectionalLightDir();
 		D3DXVECTOR3 vDir;
 		D3DXVec3Normalize( &vDir, pPos );
 		_RET_CHECK( i_pParam->pEffect->SetFloatArray( m_hDirectionalLightDir, &vDir.x, 3) );
@@ -145,7 +145,7 @@ void CShaderValue_Semantic::SetValue(D3DXMATRIX& i_rMat)
 
 	if( m_hTime )
 	{
-		_RET_CHECK( i_pParam->pEffect->SetFloat( m_hTime, CAppContext::getInstance()->getElapsdTime() ) );
+		_RET_CHECK( i_pParam->pEffect->SetFloat( m_hTime, AppContext::GetInstance()->getElapsdTime() ) );
 	}
 }
 
@@ -229,10 +229,10 @@ void CShaderValue_FrameBufferTexture::SetValue(D3DXMATRIX& i_rMat)
 {
 	HRESULT hr = S_OK;
 	if( m_hFrameBufferTexture )
-		_RET_CHECK( i_pParam->pEffect->SetTexture( m_hFrameBufferTexture, CAppContext::getInstance()->getFrameBuffer()) );
+		_RET_CHECK( i_pParam->pEffect->SetTexture( m_hFrameBufferTexture, AppContext::GetInstance()->getFrameBuffer()) );
 	
 	if( m_hFrameBufferDepthTexture )
-		_RET_CHECK( i_pParam->pEffect->SetTexture( m_hFrameBufferDepthTexture, CAppContext::getInstance()->getDepthBuffer()) );
+		_RET_CHECK( i_pParam->pEffect->SetTexture( m_hFrameBufferDepthTexture, AppContext::GetInstance()->getDepthBuffer()) );
 }
 
 //---------------------------------------------------------------------
@@ -266,7 +266,7 @@ CShaderValue_WaterParam::~CShaderValue_WaterParam()
 //---------------------------------------------------------------------
 void CShaderValue_WaterParam::SetValue(D3DXMATRIX& i_rMat)
 {
-	const SWaterParam* pParam = &CAppContext::getInstance()->getShaderParam()->m_Water;
+	const SWaterParam* pParam = &AppContext::GetInstance()->getShaderParam()->m_Water;
 	HRESULT hr = S_OK;
 
 	if( m_h4Color )
@@ -307,21 +307,21 @@ void CShaderValue_WaterParam::SetValue(D3DXMATRIX& i_rMat)
 	if( m_h2WaveOffset )
 	{
 		static float m_pBumpOffsetUV[2] = {0.f,0.f};
-		m_pBumpOffsetUV[0] += 0.05f * CAppContext::getInstance()->getElapsdTime();
-		m_pBumpOffsetUV[1] += 0.05f * CAppContext::getInstance()->getElapsdTime();
+		m_pBumpOffsetUV[0] += 0.05f * AppContext::GetInstance()->getElapsdTime();
+		m_pBumpOffsetUV[1] += 0.05f * AppContext::GetInstance()->getElapsdTime();
 		_RET_CHECK( i_pParam->pEffect->SetFloatArray( m_h2WaveOffset, m_pBumpOffsetUV, 2) );
 	}
 
 	if( m_h2FrameBufferSize )
 	{
-		static const float fFrameBufferSize[2] = {1.f/(float)CAppContext::WINDOW_W, 1.f/(float)CAppContext::WINDOW_H};
+		static const float fFrameBufferSize[2] = {1.f/(float)AppContext::WINDOW_W, 1.f/(float)AppContext::WINDOW_H};
 		_RET_CHECK( i_pParam->pEffect->SetFloatArray( m_h2FrameBufferSize, fFrameBufferSize, 2) );
 	}
 
 	if( m_f3Light )
 	{
 		//接線計算代わり
-		const D3DXVECTOR3* pPos = CAppContext::getInstance()->getDirectionalLightDir();
+		const D3DXVECTOR3* pPos = AppContext::GetInstance()->getDirectionalLightDir();
 		D3DXMATRIX mRot;
 		D3DXMatrixRotationY( &mRot, 90 );
 		D3DXVECTOR4 vDir;
@@ -356,7 +356,7 @@ CShaderValue_Bump::CShaderValue_Bump()
 	,	m_pBumpTex			( nullptr )
 {
 	// テクスチャロード
-	IDirect3DDevice9* pDevice = CAppContext::getInstance()->getD3D9Device();
+	IDirect3DDevice9* pDevice = AppContext::GetInstance()->getD3D9Device();
 	HRESULT hr = S_OK;
 	_RET_CHECK( D3DXCreateTextureFromFileEx( pDevice, L"texture/default_bump_normal.dds", D3DX_DEFAULT, D3DX_DEFAULT, 1, 0, D3DFMT_A16B16G16R16F,
 											D3DPOOL_MANAGED, D3DX_FILTER_NONE, D3DX_FILTER_NONE, 0, nullptr,
@@ -372,7 +372,7 @@ CShaderValue_Bump::~CShaderValue_Bump()
 //---------------------------------------------------------------------
 void CShaderValue_Bump::SetValue(D3DXMATRIX& i_rMat)
 {
-	const SBumpParam* pParam = &CAppContext::getInstance()->getShaderParam()->m_Bump;
+	const SBumpParam* pParam = &AppContext::GetInstance()->getShaderParam()->m_Bump;
 	HRESULT hr = S_OK;
 
 	if( m_h2NormalMap )
@@ -404,7 +404,7 @@ CShaderValue_Fur::CShaderValue_Fur()
 	,	m_nCount			( 0 )
 {
 	// テクスチャロード
-	IDirect3DDevice9* pDevice = CAppContext::getInstance()->getD3D9Device();
+	IDirect3DDevice9* pDevice = AppContext::GetInstance()->getD3D9Device();
 	HRESULT hr = S_OK;
 	_RET_CHECK( D3DXCreateTextureFromFileEx( pDevice, L"texture/furmap.dds", D3DX_DEFAULT, D3DX_DEFAULT, 1, 0, D3DFMT_A16B16G16R16F,
 											D3DPOOL_MANAGED, D3DX_FILTER_NONE, D3DX_FILTER_NONE, 0, nullptr,
@@ -420,7 +420,7 @@ CShaderValue_Fur::~CShaderValue_Fur()
 //---------------------------------------------------------------------
 void CShaderValue_Fur::SetValue(D3DXMATRIX& i_rMat)
 {
-	const SFurParam* pParam = &CAppContext::getInstance()->getShaderParam()->m_Fur;
+	const SFurParam* pParam = &AppContext::GetInstance()->getShaderParam()->m_Fur;
 	HRESULT hr = S_OK;
 	if( m_h2FurMap )
 		_RET_CHECK( i_pParam->pEffect->SetTexture( m_h2FurMap, m_pFurTex) );
@@ -481,8 +481,8 @@ void CShaderValue_Gaussian::SetValue(D3DXMATRIX& i_rMat)
 {
 	const float c_fWindowRatio[2] = 
 	{
-		1.f/(float)CAppContext::WINDOW_W,
-		1.f/(float)CAppContext::WINDOW_H
+		1.f/(float)AppContext::WINDOW_W,
+		1.f/(float)AppContext::WINDOW_H
 	};
 	
 	HRESULT hr = S_OK;
@@ -536,12 +536,12 @@ CShaderValue_Brightness::~CShaderValue_Brightness()
 //---------------------------------------------------------------------
 void CShaderValue_Brightness::SetValue(D3DXMATRIX& i_rMat)
 {
-	const SPostParam* pParam = &CAppContext::getInstance()->getShaderParam()->m_Post;
+	const SPostParam* pParam = &AppContext::GetInstance()->getShaderParam()->m_Post;
 
 	const float c_fWindowRatio[2] = 
 	{
-		1.f/(float)CAppContext::WINDOW_W,
-		1.f/(float)CAppContext::WINDOW_H
+		1.f/(float)AppContext::WINDOW_W,
+		1.f/(float)AppContext::WINDOW_H
 	};
 
 	HRESULT hr = S_OK;
@@ -580,7 +580,7 @@ CShaderValue_Dof::~CShaderValue_Dof()
 //---------------------------------------------------------------------
 void CShaderValue_Dof::SetValue(D3DXMATRIX& i_rMat)
 {
-	const SPostParam* pParam = &CAppContext::getInstance()->getShaderParam()->m_Post;
+	const SPostParam* pParam = &AppContext::GetInstance()->getShaderParam()->m_Post;
 	HRESULT hr = S_OK;
 
 	if( m_hfFocusDistance )

@@ -64,7 +64,7 @@ void CObject::draw()
 	D3DXMatrixRotationYawPitchRoll( &mMatRot, m_vRot.x, m_vRot.y, m_vRot.z );
 	D3DXMatrixMultiply( &mMat, &mMatScl, &mMatRot );
 	
-	const D3DXMATRIX mTmpWorld = *CAppContext::getInstance()->getWorldMatrix();
+	const D3DXMATRIX mTmpWorld = *AppContext::GetInstance()->getWorldMatrix();
 	D3DXMatrixMultiply( &mMat, &mMat, &mTmpWorld );
 	mMat._41 += m_vTrn.x; mMat._42 += m_vTrn.y; mMat._43 += m_vTrn.z; mMat._44 = 1.f;
 
@@ -105,7 +105,7 @@ void CObject::deviceLost()
 //---------------------------------------------------------------------
 void CObject::createMesh(const wchar_t* i_pchFileName)
 {
-	IDirect3DDevice9* pDevice = CAppContext::getInstance()->getD3D9Device();
+	IDirect3DDevice9* pDevice = AppContext::GetInstance()->getD3D9Device();
 	HRESULT hr;
 	LPD3DXBUFFER pMateBuffer = nullptr;
     LPD3DXBUFFER pAdjacencyBuffer = nullptr;

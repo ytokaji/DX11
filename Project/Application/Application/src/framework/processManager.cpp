@@ -85,7 +85,7 @@ void CJobManager::proc(void)
 	
 	// スレッドへの登録
 	for (unsigned int i = 0; i < m_aThreadList.size(); ++i)
-		CAppContext::getInstance()->getThreadChannel()->pushRequest(&m_aThreadList[i]);
+		AppContext::GetInstance()->GetThreadChannel()->pushRequest(&m_aThreadList[i]);
 		
 	// 更新処理
 	m_Root.process([](CJob* p){ p->update(); });
@@ -115,7 +115,7 @@ CRenderManager::CProcThread::CProcThread(CRender* i_pProcess)
 	, m_pCommand(nullptr)
 	, m_pProcess(i_pProcess)
 {
-	ID3D11Device* pDevice = CAppContext::getInstance()->getD3D11Device();
+	ID3D11Device* pDevice = AppContext::GetInstance()->GetD3D11Device();
 	HRESULT hr = pDevice->CreateDeferredContext(0, &m_pContext);
 	_ASSERT(SUCCEEDED(hr));
 }
@@ -154,7 +154,7 @@ CRenderManager::CProcThread& CRenderManager::CProcThread::operator =(const CRend
 {
 	this->m_pProcess = src.m_pProcess;
 	this->m_pCommand = nullptr;
-	ID3D11Device* pDevice = CAppContext::getInstance()->getD3D11Device();
+	ID3D11Device* pDevice = AppContext::GetInstance()->GetD3D11Device();
 	HRESULT hr = pDevice->CreateDeferredContext(0, &this->m_pContext);
 	_ASSERT(SUCCEEDED(hr));
 
@@ -185,7 +185,7 @@ void CRenderManager::proc(void)
 	m_Root.process([this](CRender* p) { p->pre(); });
 
 	// スレッドへの登録と同期
-	CThreadChannel* pChannel = CAppContext::getInstance()->getThreadChannel();
+	CThreadChannel* pChannel = AppContext::GetInstance()->GetThreadChannel();
 	util::for_each(m_aThreadList, [&](CProcThread& r){ pChannel->pushRequest(&r); });
 	util::for_each(m_aThreadList, [](CProcThread& r){ r.wait(); });
 
@@ -193,7 +193,7 @@ void CRenderManager::proc(void)
 	m_Root.process([this](CRender* p) { p->post(); });
 
 	// デファードコンテキストを結合
-	ID3D11DeviceContext* pContext = CAppContext::getInstance()->getImmediateContext();
+	ID3D11DeviceContext* pContext = AppContext::GetInstance()->GetImmediateContext();
 	util::for_each(m_aThreadList, [&](CProcThread& r){ r.executeCommandList(pContext); });
 }
 

@@ -68,7 +68,7 @@ CWaterSurFace::~CWaterSurFace()
 void CWaterSurFace::init()
 {
 	HRESULT hr = S_OK;
-	IDirect3DDevice9* pDevice = CAppContext::getInstance()->getD3D9Device();
+	IDirect3DDevice9* pDevice = AppContext::GetInstance()->getD3D9Device();
 
 	// ’¸“_î•ñ‚ÌÝ’è
 	_RET_CHECK( pDevice->CreateVertexDeclaration( g_aSkyboxDecl, &m_pVertexDecl ) );
@@ -87,7 +87,7 @@ void CWaterSurFace::update(float i_fElapsd)
 //---------------------------------------------------------------------
 void CWaterSurFace::draw( D3DXMATRIX* i_pMat )
 {
-	IDirect3DDevice9* pDevice = CAppContext::getInstance()->getD3D9Device();
+	IDirect3DDevice9* pDevice = AppContext::GetInstance()->getD3D9Device();
 	const CShaderTask* pShaderTask = (CShaderTask*)CTaskMan::getInstance()->findTask("CShaderTask");
 	_ASSERT( pShaderTask );
 	CShaderSetValueDelegate* pDele = pShaderTask->getShaderDelegate(CShaderTask::S_I_WATER);
@@ -97,7 +97,7 @@ void CWaterSurFace::draw( D3DXMATRIX* i_pMat )
 	pDele->preRenderSetParam(i_pMat);
 	_RET_CHECK( pEffect->SetTexture( "reflectTex", m_pReflectBuffer ) );
 	_RET_CHECK( pEffect->SetTexture( "normalMap", m_pWave ) );
-	_RET_CHECK( pEffect->SetTexture( "frameBuffer", CAppContext::getInstance()->getFrameBuffer() ) );
+	_RET_CHECK( pEffect->SetTexture( "frameBuffer", AppContext::GetInstance()->getFrameBuffer() ) );
 
 	UINT uiPass, uiNumPasses;
 	_RET_CHECK( pEffect->SetTechnique( "render" ) );
@@ -122,7 +122,7 @@ void CWaterSurFace::deviceReset()
 {
 	HRESULT hr;
 
-	IDirect3DDevice9* pDevice = CAppContext::getInstance()->getD3D9Device();
+	IDirect3DDevice9* pDevice = AppContext::GetInstance()->getD3D9Device();
 	if( pDevice == nullptr )
 	 	 return;
 	

@@ -80,7 +80,7 @@ void CSceneTask::_runInit()
 //---------------------------------------------------------------------
 void CSceneTask::_runMain()
 {
-	float fElapsd = CAppContext::getInstance()->getElapsdTime();
+	float fElapsd = AppContext::GetInstance()->getElapsdTime();
 	util::for_each( m_pObject, std::bind2nd(std::mem_fun(&CObject::update), fElapsd ));
 	m_pFurObject->update(fElapsd);
 	m_pBG->update( fElapsd );
@@ -102,7 +102,7 @@ void CSceneTask::_runMain()
 //---------------------------------------------------------------------
 void CSceneTask::_drawMain()
 {
-	IDirect3DDevice9* pDevice = CAppContext::getInstance()->getD3D9Device();
+	IDirect3DDevice9* pDevice = AppContext::GetInstance()->getD3D9Device();
 	
 	IDirect3DSurface9*		pOldFrameBuffrerSurf( nullptr ), *pOldDepthBufferSurf(nullptr);
     pDevice->GetRenderTarget( 0, &pOldFrameBuffrerSurf );
@@ -115,8 +115,8 @@ void CSceneTask::_drawMain()
 	// 反射テクスチャ作成
 	{
 		CopyMemory( &NewViewport, &OldViewport, sizeof( D3DVIEWPORT9 ) );
-		NewViewport.Width  = CAppContext::WINDOW_W>>1;
-		NewViewport.Height = CAppContext::WINDOW_H>>1;
+		NewViewport.Width  = AppContext::WINDOW_W>>1;
+		NewViewport.Height = AppContext::WINDOW_H>>1;
 		pDevice->SetViewport( &NewViewport );
 
 		pDevice->SetRenderTarget( 0, m_pReflectSurf );
@@ -124,16 +124,16 @@ void CSceneTask::_drawMain()
 		pDevice->Clear( 0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0x00808080, 1.0f, 0 );
 		pDevice->SetRenderState( D3DRS_CULLMODE, D3DCULL_CW );
 		
-		const D3DXMATRIX mTmpWorld = *CAppContext::getInstance()->getWorldMatrix();
+		const D3DXMATRIX mTmpWorld = *AppContext::GetInstance()->getWorldMatrix();
 		D3DXMATRIX mSclMat;
 		D3DXMatrixScaling( &mSclMat, 1.f, -1.f, 1.f );
 		D3DXMatrixMultiply( &mSclMat, &mTmpWorld, &mSclMat );
-		CAppContext::getInstance()->setWorldMatrix(&mSclMat);
+		AppContext::GetInstance()->setWorldMatrix(&mSclMat);
 		
 		m_pBG->draw();
 		util::for_each( m_pObject, std::mem_fun(&CObject::draw));
 		
-		CAppContext::getInstance()->setWorldMatrix(&mTmpWorld );
+		AppContext::GetInstance()->setWorldMatrix(&mTmpWorld );
 		pDevice->SetRenderState( D3DRS_CULLMODE, D3DCULL_CCW );
 		pDevice->SetViewport( &OldViewport );
 	}
@@ -151,7 +151,7 @@ void CSceneTask::_drawMain()
 	m_pWater->draw();
 	
 	// ファー
-	const SFurParam* pParam = &CAppContext::getInstance()->getShaderParam()->m_Fur;
+	const SFurParam* pParam = &AppContext::GetInstance()->getShaderParam()->m_Fur;
 	m_pFurObject->setPassDrawCount((unsigned int)pParam->m_fNum);
 	m_pFurObject->draw();
 
@@ -163,10 +163,10 @@ void CSceneTask::_drawMain()
 void CSceneTask::deviceReset()
 {
 	HRESULT hr = S_OK;
-	IDirect3DDevice9* pDevice = CAppContext::getInstance()->getD3D9Device();
+	IDirect3DDevice9* pDevice = AppContext::GetInstance()->getD3D9Device();
 
 	// レンダーターゲット
-	_RET_CHECK(pDevice->CreateTexture( CAppContext::WINDOW_W>>1,	CAppContext::WINDOW_H>>1, 1,
+	_RET_CHECK(pDevice->CreateTexture( AppContext::WINDOW_W>>1,	AppContext::WINDOW_H>>1, 1,
 											D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8,
 											D3DPOOL_DEFAULT, &m_pReflectMap, nullptr ));
 	_RET_CHECK(m_pReflectMap->GetSurfaceLevel(0, &m_pReflectSurf));

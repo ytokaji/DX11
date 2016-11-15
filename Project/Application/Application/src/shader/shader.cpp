@@ -88,7 +88,7 @@ bool CShader::InitShader(const void* i_pBuff, size_t i_nSize, eTYPE i_eType)
 //---------------------------------------------------------------------
 bool CShader::InitShaderVertex(const void* i_pBuff, size_t i_nSize)
 {
-	ID3D11Device* pDevice = CAppContext::getInstance()->getD3D11Device();
+	ID3D11Device* pDevice = AppContext::GetInstance()->GetD3D11Device();
 	HRESULT hr;
 
 	// シェーダ作成
@@ -113,11 +113,11 @@ bool CShader::InitShaderVertex(const void* i_pBuff, size_t i_nSize)
 //---------------------------------------------------------------------
 bool CShader::InitShaderPixel(const void* i_pBuff, size_t i_nSize)
 {
-	CAppContext* pApp = CAppContext::getInstance();
+	AppContext* pApp = AppContext::GetInstance();
 	HRESULT hr;
 
 	// シェーダ作成
-	_RET_CHECK_ASSERT(pApp->getD3D11Device()->CreatePixelShader(i_pBuff, i_nSize, NULL, &_shadarData[(int)eTYPE::PS].shader.pixel));
+	_RET_CHECK_ASSERT(pApp->GetD3D11Device()->CreatePixelShader(i_pBuff, i_nSize, NULL, &_shadarData[(int)eTYPE::PS].shader.pixel));
 	if (FAILED(hr)) return false;
 
 	return true;
@@ -140,7 +140,7 @@ void CShader::renderSetParam(CMaterialData* i_pMate)
 //-------------------------------------------------------------------------
 void CShader::setupParameter(eTYPE i_eType)
 {
-	CAppContext* pApp = CAppContext::getInstance();
+	AppContext* pApp = AppContext::GetInstance();
 	SShaderData* pShaderData = &_shadarData[(int)i_eType];
 
 	HRESULT hr;
@@ -162,7 +162,7 @@ void CShader::setupParameter(eTYPE i_eType)
 		bd.ByteWidth = buffDesc.Size;
 		bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 		bd.CPUAccessFlags = 0;
-		_RET_CHECK_ASSERT(pApp->getD3D11Device()->CreateBuffer(&bd, NULL, &pShaderData->d3dBuffer));
+		_RET_CHECK_ASSERT(pApp->GetD3D11Device()->CreateBuffer(&bd, NULL, &pShaderData->d3dBuffer));
 
 		pShaderData->pBuffer = new char[buffDesc.Size];
 		pShaderData->nBufferSize = buffDesc.Size;

@@ -15,7 +15,7 @@
 namespace
 {
 	// 頂点情報の宣言
-	static const D3DVERTEXELEMENT9 g_aDecl[] =
+	static const D3DVERTEXELEMENT9 DECL[] =
 	{
 		 { 0, 0,	D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },	// ポジション
 		 { 0, 16,	D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },	// UV
@@ -26,119 +26,111 @@ namespace
 	struct VERTEX_2D
 	{
 		VERTEX_2D(D3DXVECTOR4 pos, D3DXVECTOR3 tex)
-			:	m_vPos	(pos)
-			,	m_vTex	(tex)
+			:	_pos	(pos)
+			,	_tex	(tex)
 		{
 		};
 
-		D3DXVECTOR4 m_vPos;
-		D3DXVECTOR3 m_vTex;
+		D3DXVECTOR4 _pos;
+		D3DXVECTOR3 _tex;
 	};
 
 	//２D板頂点
-	static const VERTEX_2D s_VertexList[] =
+	static const VERTEX_2D VERTEX_LIST[] =
 	{
 		VERTEX_2D( D3DXVECTOR4( 1.0f, 1.0f, 1.0f, 1.0f ),	D3DXVECTOR3( 1.0f, 0.0f, 1.0f ) ),
 		VERTEX_2D( D3DXVECTOR4( 1.0f, -1.0f, 1.0f, 1.0f ),	D3DXVECTOR3( 1.0f, 1.0f, 1.0f ) ),
 		VERTEX_2D( D3DXVECTOR4( -1.0f, 1.0f, 1.0f, 1.0f ),	D3DXVECTOR3( 0.0f, 0.0f, 1.0f ) ),
 		VERTEX_2D( D3DXVECTOR4( -1.0f, -1.0f, 1.0f, 1.0f ),	D3DXVECTOR3( 0.0f, 1.0f, 1.0f ) ),
 	};
-	static const int s_nVertexNum = NUM_OF(s_VertexList);
+	static const int VERTEX_LIST_NUM = NUM_OF(VERTEX_LIST);
 	
-	static const char* s_chShaderParamFileName = "param.sdpt";
+	static const char* SHADER_PARA_FILE_NAME = "param.sdpt";
 }
 
-CAppContext*	CAppContext::m_pInstance = nullptr;
+AppContext*	AppContext::_instance = nullptr;
 
 //---------------------------------------------------------------------
-CAppContext::CAppContext()
-	:	m_pJob					( nullptr )
-	,	m_pRender				( nullptr )
-	,	m_pd3dDevice			( nullptr )
-	,	m_pImmediateContext		( nullptr )
-	,	m_vDirectionalLightDir	(0.5f, 0.5f, 0.5f)
-    ,	m_pVB					( nullptr )
-    ,	m_pVertexDecl			( nullptr )
-	,	m_pFrameBuffrerTex		( nullptr )
-	,	m_pFrameBuffrerSurf		( nullptr )
-	,	m_pDepthBufferTex		( nullptr )
-	,	m_pDepthBufferSurf		( nullptr )
-	,	m_pThreadChannel		( nullptr )
-	,	m_pStartJob				( nullptr )
-	,	m_nCpuCoreNum			( 0 )
-	,	m_fElapsd				( 0.f )
-	,	m_bIsInit				( false )
+AppContext::AppContext()
+	:	_job					( nullptr )
+	,	_render					( nullptr )
+	,	_device					( nullptr )
+	,	_immediateContext		( nullptr )
+	,	_directionalLightDir	(0.5f, 0.5f, 0.5f)
+	,	_threadChannel			( nullptr )
+	,	_startJob				( nullptr )
+	,	_cpuCoreNum				( 0 )
+	,	_elapsd					( 0.f )
+	,	_isInit					( false )
 {
-	memset( &m_ShaderParam, 0, sizeof(m_ShaderParam) );
-	D3DXMatrixIdentity( &m_mWorld );
-	D3DXMatrixIdentity( &m_mView );
-	D3DXMatrixIdentity( &m_mProj );
-	D3DXVec3Normalize( &m_vDirectionalLightDir, &m_vDirectionalLightDir );
+	memset( &_shaderParam, 0, sizeof(_shaderParam) );
+	D3DXMatrixIdentity( &_worldMatrix );
+	D3DXMatrixIdentity( &_viewMatrix );
+	D3DXMatrixIdentity( &_projMatrix );
+	D3DXVec3Normalize( &_directionalLightDir, &_directionalLightDir );
 }
 
 //---------------------------------------------------------------------
-CAppContext::~CAppContext()
+AppContext::~AppContext()
 {
-	SAFE_TERMINATE(m_pStartJob);
+	SAFE_TERMINATE(_startJob);
 	
-	SAFE_DELETE(m_pThreadChannel);
-	SAFE_DELETE(m_pJob);
-	SAFE_DELETE(m_pRender);
+	SAFE_DELETE(_threadChannel);
+	SAFE_DELETE(_job);
+	SAFE_DELETE(_render);
 
-	SAFE_RELEASE(m_pVB);
-	SAFE_RELEASE(m_pVertexDecl);
-	SAFE_RELEASE(m_pImmediateContext);
+	SAFE_RELEASE(_immediateContext);
 
-	m_pd3dDevice = nullptr;
-	m_bIsInit = false;
+	_device = nullptr;
+	_isInit = false;
 }
 
 //---------------------------------------------------------------------
-CAppContext* CAppContext::createInstance()
+AppContext* AppContext::CreateInstance()
 {
-	_ASSERT( m_pInstance == nullptr );
+	_ASSERT( _instance == nullptr );
 
-	m_pInstance = new CAppContext();
-	return m_pInstance;
+	_instance = new AppContext();
+	return _instance;
 }
 
 //---------------------------------------------------------------------
-CAppContext* CAppContext::getInstance()
+AppContext* AppContext::GetInstance()
 {
-	return m_pInstance;
+	return _instance;
 }
 
 //---------------------------------------------------------------------
-void CAppContext::disposeInstance()
+void AppContext::DisposeInstance()
 {
-	SAFE_DELETE(m_pInstance);
+	SAFE_DELETE(_instance);
 }
 
 //---------------------------------------------------------------------
-void CAppContext::init(ID3D11Device* i_pDevice)
+void AppContext::Init(ID3D11Device* device)
 {
-	if (m_bIsInit == true) return;
+	if (_isInit == true) return;
 
-	m_pd3dDevice = i_pDevice;
-	m_pd3dDevice->GetImmediateContext(&m_pImmediateContext);
-	m_bIsInit = true;
+	_device = device;
+	_device->GetImmediateContext(&_immediateContext);
+	_isInit = true;
 	
 	// cpuのコア数取得
 	SYSTEM_INFO SysInfo;
 	GetSystemInfo(&SysInfo);
-	m_nCpuCoreNum = SysInfo.dwNumberOfProcessors;
+	_cpuCoreNum = SysInfo.dwNumberOfProcessors;
 
 	// カメラ
-	m_Camera.SetButtonMasks(0, MOUSE_WHEEL, MOUSE_LEFT_BUTTON);
+	_camera.SetButtonMasks(0, MOUSE_WHEEL, MOUSE_LEFT_BUTTON);
 	D3DXVECTOR3 vEye(-5.f,3.f,-5.f), vAt(0.f,0.f,0.f);
-	m_Camera.SetViewParams( &vEye, &vAt );
+	_camera.SetViewParams( &vEye, &vAt );
  
 	// 頂点情報の設定
 //	_RET_CHECK( m_pd3dDevice->CreateVertexDeclaration( g_aDecl, &m_pVertexDecl ) );
 	
 	// パラメータファイルのロード
 	FILE *fp;
-	fopen_s(&fp, s_chShaderParamFileName, "rb");
+	fopen_s(&fp, SHADER_PARA_FILE_NAME, "rb");
 	if( fp == nullptr )
 	{
 		_ASSERT( fp );
@@ -147,42 +139,42 @@ void CAppContext::init(ID3D11Device* i_pDevice)
 	}
 	if(fp != nullptr)
 	{
-		fread(&m_ShaderParam, sizeof(m_ShaderParam), 1, fp);
+		fread(&_shaderParam, sizeof(_shaderParam), 1, fp);
 		fclose(fp);
 	}
 
 	// リサイズ時のコールバック
-	addResizedSwapChainCB([this](ID3D11Device* i_pDeveice, IDXGISwapChain*, const DXGI_SURFACE_DESC*)
+	AddResizedSwapChainCB([this](ID3D11Device* i_pDeveice, IDXGISwapChain*, const DXGI_SURFACE_DESC*)
 	{
-		m_pd3dDevice = i_pDeveice;
+		_device = i_pDeveice;
 	});
 
 	// プロセス関連
-	m_pJob = new CJobManager();
-	m_pRender = new CRenderManager();
-	m_pJob->addJob( m_pStartJob = new CStartJob() );
-	m_pThreadChannel = new CThreadChannel(m_nCpuCoreNum);
+	_job = new CJobManager();
+	_render = new CRenderManager();
+	_job->addJob( _startJob = new CStartJob() );
+	_threadChannel = new CThreadChannel(_cpuCoreNum);
 
 	// シェーダー作成
-	m_ShaderManager.init();
+	_shaderManager.init();
 }
 
 //---------------------------------------------------------------------
-void CAppContext::update(float i_fElapsd)
+void AppContext::Update(float elapsd)
 {
-	m_fElapsd = i_fElapsd;
+	_elapsd = elapsd;
 
 	// カメラ
-	m_Camera.FrameMove( i_fElapsd );
-	setWorldMatrix( m_Camera.GetWorldMatrix() );
-	setViewMatrix( m_Camera.GetViewMatrix() );
-	setProjMatrix( m_Camera.GetProjMatrix() );
+	_camera.FrameMove( elapsd );
+	SetWorldMatrix( _camera.GetWorldMatrix() );
+	SetViewMatrix( _camera.GetViewMatrix() );
+	SetProjMatrix( _camera.GetProjMatrix() );
 
-	m_pJob->proc();
+	_job->proc();
 }
 
 //---------------------------------------------------------------------
-void CAppContext::render()
+void AppContext::Render()
 {
 #if 0
 	HRESULT hr = S_OK;
@@ -235,57 +227,57 @@ void CAppContext::render()
 #endif
     float ClearColor[4] = { 0.5f, 0.5f, 0.5f, 0.0f };
     ID3D11RenderTargetView* pRTV = DXUTGetD3D11RenderTargetView();
-	m_pImmediateContext->ClearRenderTargetView(pRTV, ClearColor);
+	_immediateContext->ClearRenderTargetView(pRTV, ClearColor);
 
     // Clear the depth stencil
     ID3D11DepthStencilView* pDSV = DXUTGetD3D11DepthStencilView();
-	m_pImmediateContext->ClearDepthStencilView(pDSV, D3D11_CLEAR_DEPTH, 1.0, 0);
+	_immediateContext->ClearDepthStencilView(pDSV, D3D11_CLEAR_DEPTH, 1.0, 0);
 
-	m_pRender->proc();
+	_render->proc();
 }
 
 //---------------------------------------------------------------------
-void CAppContext::getDirectionalLightDir(const D3DXVECTOR3* i_pDir)
+void AppContext::GetDirectionalLightDir(const D3DXVECTOR3* dir)
 {
-	_ASSERT( i_pDir );
-	m_vDirectionalLightDir = *i_pDir;
-	D3DXVec3Normalize( &m_vDirectionalLightDir, &m_vDirectionalLightDir );
+	_ASSERT( dir );
+	_directionalLightDir = *dir;
+	D3DXVec3Normalize( &_directionalLightDir, &_directionalLightDir );
 }
 
 //---------------------------------------------------------------------
-void CAppContext::setShaderParam( const SShaderParam* i_pParam )
+void AppContext::SetShaderParam( const SShaderParam* param )
 {
-	_ASSERT( i_pParam );
-	memcpy(&m_ShaderParam, i_pParam, sizeof(m_ShaderParam));
+	_ASSERT( param );
+	memcpy(&_shaderParam, param, sizeof(_shaderParam));
 
-	m_vDirectionalLightDir.x = m_ShaderParam.m_Others.m_f3LightDir[0];
-	m_vDirectionalLightDir.y = m_ShaderParam.m_Others.m_f3LightDir[1];
-	m_vDirectionalLightDir.z = m_ShaderParam.m_Others.m_f3LightDir[2];
-	D3DXVec3Normalize( &m_vDirectionalLightDir, &m_vDirectionalLightDir );
+	_directionalLightDir.x = _shaderParam.m_Others.m_f3LightDir[0];
+	_directionalLightDir.y = _shaderParam.m_Others.m_f3LightDir[1];
+	_directionalLightDir.z = _shaderParam.m_Others.m_f3LightDir[2];
+	D3DXVec3Normalize( &_directionalLightDir, &_directionalLightDir );
 }
 
 //---------------------------------------------------------------------
-void CAppContext::onResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapChain* pSwapChain, const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc )
+void AppContext::OnResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapChain* pSwapChain, const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc )
 {
-	util::for_each(m_fResizedSwapChain, [&](ResizedSwapChainArg& f)
+	util::for_each(_resizedSwapChain, [&](ResizedSwapChainArg& f)
 	{
 		f(pd3dDevice, pSwapChain, pBackBufferSurfaceDesc);
 	});
 }
 
 //---------------------------------------------------------------------
-void CAppContext::onReleasingSwapChain()
+void AppContext::OnReleasingSwapChain()
 {
-	util::for_each(m_fReleasingSwapChain, [](ReleasingSwapChainArg& f)
+	util::for_each(_releasingSwapChain, [](ReleasingSwapChainArg& f)
 	{
 		f();
 	});
 }
 
 //---------------------------------------------------------------------
-void CAppContext::onMsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bool* pbNoFurtherProcessing )
+void AppContext::OnMsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bool* pbNoFurtherProcessing )
 {
-	util::for_each(m_fMsgProc, [&](MsgProcChainArg& f)
+	util::for_each(_msgProc, [&](MsgProcChainArg& f)
 	{
 		if( *pbNoFurtherProcessing ) return;
 		f(hWnd, uMsg, wParam, lParam, pbNoFurtherProcessing);
@@ -293,54 +285,54 @@ void CAppContext::onMsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam,
 }
 
 //---------------------------------------------------------------------
-size_t CAppContext::addResizedSwapChainCB(ResizedSwapChainArg f)
+size_t AppContext::AddResizedSwapChainCB(ResizedSwapChainArg f)
 {
-	m_fResizedSwapChain.push_back( f );
-	return (size_t)(&m_fResizedSwapChain.back());
+	_resizedSwapChain.push_back( f );
+	return (size_t)(&_resizedSwapChain.back());
 }
 
 //---------------------------------------------------------------------
-void CAppContext::deleteResizedSwapChainCB(size_t i_nHandle)
+void AppContext::DeleteResizedSwapChainCB(size_t handle)
 {
-	auto val = std::find_if(m_fResizedSwapChain.begin(), m_fResizedSwapChain.end(), 
-		[&](ResizedSwapChainArg& f){ return ((size_t)&f == i_nHandle); } );
-	if( val == m_fResizedSwapChain.end() ) return;
+	auto val = std::find_if(_resizedSwapChain.begin(), _resizedSwapChain.end(), 
+		[&](ResizedSwapChainArg& f){ return ((size_t)&f == handle); } );
+	if( val == _resizedSwapChain.end() ) return;
 
-	m_fResizedSwapChain.erase(val);
+	_resizedSwapChain.erase(val);
 }
 	
 //---------------------------------------------------------------------
-size_t CAppContext::addReleasingSwapChainCB(ReleasingSwapChainArg f)
+size_t AppContext::AddReleasingSwapChainCB(ReleasingSwapChainArg f)
 {
-	m_fReleasingSwapChain.push_back( f );
-	return (size_t)(&m_fReleasingSwapChain.back());
+	_releasingSwapChain.push_back( f );
+	return (size_t)(&_releasingSwapChain.back());
 }
 
 //---------------------------------------------------------------------
-void CAppContext::deleteReleasingSwapChainCB(size_t i_nHandle)
+void AppContext::DeleteReleasingSwapChainCB(size_t handle)
 {
-	auto val = std::find_if(m_fReleasingSwapChain.begin(), m_fReleasingSwapChain.end(), 
-		[&](ReleasingSwapChainArg& f){ return  (size_t)(&f) == i_nHandle; } );
-	if( val == m_fReleasingSwapChain.end() ) return;
+	auto val = std::find_if(_releasingSwapChain.begin(), _releasingSwapChain.end(), 
+		[&](ReleasingSwapChainArg& f){ return  (size_t)(&f) == handle; } );
+	if( val == _releasingSwapChain.end() ) return;
 
-	m_fReleasingSwapChain.erase(val);
+	_releasingSwapChain.erase(val);
 }
 
 //---------------------------------------------------------------------
-size_t CAppContext::addMsgProcCB(MsgProcChainArg f)
+size_t AppContext::AddMsgProcCB(MsgProcChainArg f)
 {
-	m_fMsgProc.push_back( f );
-	return (size_t)(&m_fMsgProc.back());
+	_msgProc.push_back( f );
+	return (size_t)(&_msgProc.back());
 }
 
 //---------------------------------------------------------------------
-void CAppContext::deleteMsgProcCB(size_t i_nHandle)
+void AppContext::DeleteMsgProcCB(size_t handle)
 {
-	auto val = std::find_if(m_fMsgProc.begin(), m_fMsgProc.end(), 
-		[&](MsgProcChainArg& f){ return  (size_t)(&f) == i_nHandle; } );
-	if( val == m_fMsgProc.end() ) return;
+	auto val = std::find_if(_msgProc.begin(), _msgProc.end(), 
+		[&](MsgProcChainArg& f){ return  (size_t)(&f) == handle; } );
+	if( val == _msgProc.end() ) return;
 
-	m_fMsgProc.erase(val);
+	_msgProc.erase(val);
 }
 
 

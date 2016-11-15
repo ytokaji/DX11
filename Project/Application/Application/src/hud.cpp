@@ -33,44 +33,44 @@ CHud::~CHud()
 //---------------------------------------------------------------------
 void CHud::init()
 {
-	CAppContext* pApp = CAppContext::getInstance();
+	AppContext* pApp = AppContext::GetInstance();
 	m_pDialogResourceManager = new CDXUTDialogResourceManager;
 	
     HRESULT hr;
 
 	// デバイスの作成
-    ID3D11DeviceContext* pd3dImmediateContext = pApp->getImmediateContext();
-	_RET_CHECK_ASSERT( m_pDialogResourceManager->OnD3D11CreateDevice( CAppContext::getInstance()->getD3D11Device(), pd3dImmediateContext ) );
-	m_pDialogResourceManager->OnD3D11ResizedSwapChain(pApp->getD3D11Device(), DXUTGetDXGIBackBufferSurfaceDesc());
+    ID3D11DeviceContext* pd3dImmediateContext = pApp->GetImmediateContext();
+	_RET_CHECK_ASSERT( m_pDialogResourceManager->OnD3D11CreateDevice( AppContext::GetInstance()->GetD3D11Device(), pd3dImmediateContext ) );
+	m_pDialogResourceManager->OnD3D11ResizedSwapChain(pApp->GetD3D11Device(), DXUTGetDXGIBackBufferSurfaceDesc());
 	
 	// デバイス側コールバックの登録
-	m_nResizeHandle = pApp->addResizedSwapChainCB([this](ID3D11Device* pd3dDevice, IDXGISwapChain* pSwapChain,const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc)
+	m_nResizeHandle = pApp->AddResizedSwapChainCB([this](ID3D11Device* pd3dDevice, IDXGISwapChain* pSwapChain,const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc)
 	{
 		 HRESULT hr;
 		_RET_CHECK_ASSERT( m_pDialogResourceManager->OnD3D11ResizedSwapChain( pd3dDevice, pBackBufferSurfaceDesc ) );
 	});
 
-	m_nReleaseHandle = pApp->addReleasingSwapChainCB([this]()
+	m_nReleaseHandle = pApp->AddReleasingSwapChainCB([this]()
 	{
 	   m_pDialogResourceManager->OnD3D11ReleasingSwapChain();
 	});
 	
-	m_nMsgProcHandle = pApp->addMsgProcCB([this](HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bool* pbNoFurtherProcessing)
+	m_nMsgProcHandle = pApp->AddMsgProcCB([this](HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bool* pbNoFurtherProcessing)
 	{
 		*pbNoFurtherProcessing = m_pDialogResourceManager->MsgProc( hWnd, uMsg, wParam, lParam );
 	});
 
 	// テキスト
-	m_pTxtHelper = new CDXUTTextHelper( CAppContext::getInstance()->getD3D11Device(), pd3dImmediateContext, m_pDialogResourceManager, 15 );
+	m_pTxtHelper = new CDXUTTextHelper( AppContext::GetInstance()->GetD3D11Device(), pd3dImmediateContext, m_pDialogResourceManager, 15 );
 }
 
 //---------------------------------------------------------------------
 void CHud::destroy()
 {
-	CAppContext* pApp = CAppContext::getInstance();
-	pApp->deleteResizedSwapChainCB( m_nResizeHandle );
-	pApp->deleteResizedSwapChainCB( m_nReleaseHandle );
-	pApp->deleteResizedSwapChainCB( m_nMsgProcHandle );
+	AppContext* pApp = AppContext::GetInstance();
+	pApp->DeleteResizedSwapChainCB( m_nResizeHandle );
+	pApp->DeleteResizedSwapChainCB( m_nReleaseHandle );
+	pApp->DeleteResizedSwapChainCB( m_nMsgProcHandle );
 	
 	if (m_pDialogResourceManager) m_pDialogResourceManager->OnD3D11DestroyDevice();
 	SAFE_DELETE(m_pDialogResourceManager);

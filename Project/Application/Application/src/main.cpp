@@ -20,13 +20,13 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 {
     UNREFERENCED_PARAMETER( pbNoFurtherProcessing );
 	
-	CAppContext* pApp = CAppContext::getInstance();
+	AppContext* pApp = AppContext::GetInstance();
 	if (pApp == nullptr) return 0;
 
-	pApp->onMsgProc(hWnd, uMsg, wParam, lParam, pbNoFurtherProcessing);
+	pApp->OnMsgProc(hWnd, uMsg, wParam, lParam, pbNoFurtherProcessing);
 
     // カメラにも投げる
-	pApp->getCamera()->HandleMessages( hWnd, uMsg, wParam, lParam );
+	pApp->GetCamera()->HandleMessages( hWnd, uMsg, wParam, lParam );
 
 	switch(uMsg) {  
 		case WM_COPYDATA:
@@ -48,7 +48,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 					pShaderTask->shaderReLoadReq();
 					param.m_Others.m_bShaderReLoadReq = false;
 				}
-				CAppContext::getInstance()->setShaderParam( &param );
+				AppContext::GetInstance()->setShaderParam( &param );
 			}
 #endif
 		}  
@@ -85,9 +85,9 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 {
 	UNREFERENCED_PARAMETER( fTime );
 
-	CAppContext* pApp = CAppContext::getInstance();
+	AppContext* pApp = AppContext::GetInstance();
 	if (pApp == nullptr) return;
-	pApp->update(fElapsedTime);
+	pApp->Update(fElapsedTime);
 }
 
 //--------------------------------------------------------------------------------------
@@ -122,9 +122,9 @@ bool CALLBACK IsDeviceAcceptable( const CD3D11EnumAdapterInfo *AdapterInfo, UINT
 // デバイス作成時処理
 HRESULT CALLBACK OnCreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc, void* pUserContext )
 {
-	CAppContext* pApp = CAppContext::getInstance();
+	AppContext* pApp = AppContext::GetInstance();
 	_ASSERT(pApp);
-	pApp->init(pd3dDevice);
+	pApp->Init(pd3dDevice);
 
     return S_OK;
 }
@@ -134,9 +134,9 @@ HRESULT CALLBACK OnCreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFACE_DE
 HRESULT CALLBACK OnD3D11ResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapChain* pSwapChain,
                                          const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc, void* pUserContext )
 {
-	CAppContext* pApp = CAppContext::getInstance();
+	AppContext* pApp = AppContext::GetInstance();
 	if (pApp == nullptr) return S_OK;
-	pApp->onResizedSwapChain(pd3dDevice, pSwapChain, pBackBufferSurfaceDesc);
+	pApp->OnResizedSwapChain(pd3dDevice, pSwapChain, pBackBufferSurfaceDesc);
 
     return S_OK;
 }
@@ -145,9 +145,9 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapCha
 // 開放されたときの処理
 void CALLBACK OnD3D11ReleasingSwapChain( void* pUserContext )
 {
-	CAppContext* pApp = CAppContext::getInstance();
+	AppContext* pApp = AppContext::GetInstance();
 	if (pApp == nullptr) return;
-	pApp->onReleasingSwapChain();
+	pApp->OnReleasingSwapChain();
 }
 
 //--------------------------------------------------------------------------------------
@@ -162,9 +162,9 @@ void CALLBACK OnFrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext* pd3d
                                  float fElapsedTime, void* pUserContext )
 {
 	UNREFERENCED_PARAMETER(fElapsedTime);
-	CAppContext* pApp = CAppContext::getInstance();
+	AppContext* pApp = AppContext::GetInstance();
 	if (pApp == nullptr) return;
-	pApp->render();
+	pApp->Render();
 }
 
 //---------------------------------------------------------------------
@@ -176,7 +176,7 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 #endif
 
 	// コンテキストの作成
-	CAppContext::createInstance();
+	AppContext::CreateInstance();
 
 	// DXUTコールバックの設定
 	DXUTSetCallbackMsgProc(MsgProc);
@@ -202,7 +202,7 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	DXUTMainLoop();
 
 	// コンテキストの破棄
-	CAppContext::disposeInstance();
+	AppContext::DisposeInstance();
 
     return DXUTGetExitCode();
 }

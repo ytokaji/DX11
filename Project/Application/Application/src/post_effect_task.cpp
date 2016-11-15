@@ -60,7 +60,7 @@ const unsigned int CPostEffectTask::m_nBufferSize[BufferIndex_Max][2] =
 	{ 64, 64 },
 	{ 96, 96 },
 	{ 256, 256 },
-	{ CAppContext::WINDOW_W, CAppContext::WINDOW_H },
+	{ AppContext::WINDOW_W, AppContext::WINDOW_H },
 };
 
 //---------------------------------------------------------------------
@@ -76,7 +76,7 @@ CPostEffectTask::CPostEffectTask()
 	memset( m_pFilterSurf, nullptr, sizeof( m_pFilterSurf ) );
 	
 	// 頂点情報の設定
-	CAppContext::getInstance()->getD3D9Device()->CreateVertexDeclaration( g_aDecl, &m_pVertexDecl );
+	AppContext::GetInstance()->getD3D9Device()->CreateVertexDeclaration( g_aDecl, &m_pVertexDecl );
 
 	setSubTask(STATE_INIT);
 }
@@ -106,10 +106,10 @@ void CPostEffectTask::_runMain()
 //---------------------------------------------------------------------
 void CPostEffectTask::_drawMain()
 {
-	IDirect3DDevice9* pDevice = CAppContext::getInstance()->getD3D9Device();
+	IDirect3DDevice9* pDevice = AppContext::GetInstance()->getD3D9Device();
 	HRESULT hr = S_OK;
 	
-	const SPostParam* pParam = &CAppContext::getInstance()->getShaderParam()->m_Post;
+	const SPostParam* pParam = &AppContext::GetInstance()->getShaderParam()->m_Post;
 	const CShaderTask* pShaderTask = (CShaderTask*)CTaskMan::getInstance()->findTask("CShaderTask");
 	_ASSERT( pShaderTask );
 	CShaderSetValueDelegate* pDele = nullptr;
@@ -170,7 +170,7 @@ void CPostEffectTask::_drawMain()
 		{
 			pDele = pShaderTask->getShaderDelegate( CShaderTask::S_I_GAUSSIAN );
 			pEffect = pDele->getEffect();
-			_RET_CHECK( pEffect->SetTexture( "tex", CAppContext::getInstance()->getFrameBuffer() ) );
+			_RET_CHECK( pEffect->SetTexture( "tex", AppContext::GetInstance()->getFrameBuffer() ) );
 			CPostEffectTask::drawSurface(m_pFilterSurf[BufferIndex_256x256],
 						m_nBufferSize[BufferIndex_256x256][0], m_nBufferSize[BufferIndex_256x256][1], CShaderTask::S_I_GAUSSIAN, true, "render" );
 		}
@@ -206,7 +206,7 @@ void CPostEffectTask::_drawMain()
 void CPostEffectTask::deviceReset()
 {
 	HRESULT hr = S_OK;
-	IDirect3DDevice9* pDevice = CAppContext::getInstance()->getD3D9Device();
+	IDirect3DDevice9* pDevice = AppContext::GetInstance()->getD3D9Device();
 
 	// レンダーターゲット
 	for( unsigned int i=0; i<BufferIndex_Max; ++i )
@@ -245,7 +245,7 @@ void CPostEffectTask::deviceLost()
 void CPostEffectTask::drawSurface(IDirect3DSurface9* i_pRenderSurf, unsigned int i_nWindwW, unsigned int i_nWindwH, 
 									CShaderTask::SHADER_INDEX i_eS_I, bool i_bClear, const char* i_pchTechnique )
 {
-	IDirect3DDevice9* pDevice = CAppContext::getInstance()->getD3D9Device();
+	IDirect3DDevice9* pDevice = AppContext::GetInstance()->getD3D9Device();
 	HRESULT hr = S_OK;
 
 	IDirect3DSurface9*		pOldFrameBuffrerSurf( nullptr );

@@ -21,7 +21,7 @@ class CThreadChannel;
 	@brief アプリケーション管理クラス
 	@note シングルトンにて管理
 */
-class CAppContext
+class AppContext
 {
 public:
 	typedef std::function<void(ID3D11Device*, IDXGISwapChain*, const DXGI_SURFACE_DESC*)>	ResizedSwapChainArg;
@@ -30,191 +30,178 @@ public:
 
 public:
 	/**
-		@brief CAppContextの作成
+		@brief AppContextの作成
 	*/
-	static CAppContext* createInstance();
+	static AppContext* CreateInstance();
 
 	/**
-		@brief CAppContextの取得
+		@brief AppContextの取得
 	*/
-	static CAppContext* getInstance();
+	static AppContext* GetInstance();
 
 	/**
-		@brief CAppContextの破棄
+		@brief AppContextの破棄
 	*/
-	static void disposeInstance();
+	static void DisposeInstance();
 	
 	/**
 		@brief 初期化処理
 	*/
-	void init(ID3D11Device* i_pDevice);
+	void Init(ID3D11Device* device);
 
 	/**
 		@brief 更新処理
 	*/
-	void update(float i_fElapsd);
+	void Update(float elapsd);
 
 	/**
 		@brief 描画処理
 	*/
-	void render();
+	void Render();
 		
 	/**
 		@brief DirectXデバイスの取得
 	*/
-	ID3D11Device* getD3D11Device() const { return m_pd3dDevice; }
+	ID3D11Device* GetD3D11Device() const { return _device; }
 
 	/**
 		@briefイミディエートコンテキストの取得
 	*/
-	ID3D11DeviceContext* getImmediateContext() { return m_pImmediateContext; }
+	ID3D11DeviceContext* GetImmediateContext() { return _immediateContext; }
 
-#if 0
-	/**
-		@brief フレームバッファの取得
-		@note draw()間のみ有効な値が帰る
-	*/
-	IDirect3DTexture9* getFrameBuffer() { return m_pFrameBuffrerTex; }
-	IDirect3DTexture9* getDepthBuffer() { return m_pDepthBufferTex; }
-#endif
 	/**
 		@brief カメラのマトリックス操作
 	*/
-    const D3DXMATRIX*  getWorldMatrix() const { return &m_mWorld; }
-    const D3DXMATRIX*  getViewMatrix() const { return &m_mView; }
-    const D3DXMATRIX*  getProjMatrix() const { return &m_mProj; }
-	void setWorldMatrix(const D3DXMATRIX* i_pMat) { m_mWorld = *i_pMat; }
-	void setViewMatrix(const D3DXMATRIX* i_pMat) { m_mView = *i_pMat; }
-    void setProjMatrix(const D3DXMATRIX* i_pMat) { m_mProj = *i_pMat; }
+    const D3DXMATRIX*  GetWorldMatrix() const { return &_worldMatrix; }
+    const D3DXMATRIX*  GetViewMatrix() const { return &_viewMatrix; }
+    const D3DXMATRIX*  GetProjMatrix() const { return &_projMatrix; }
+	void SetWorldMatrix(const D3DXMATRIX* mat) { _worldMatrix = *mat; }
+	void SetViewMatrix(const D3DXMATRIX* mat) { _viewMatrix = *mat; }
+	void SetProjMatrix(const D3DXMATRIX* mat) { _projMatrix = *mat; }
 	
 	/**
 		@brief ディレクショナルライトの方向の操作
 	*/
-	const D3DXVECTOR3* getDirectionalLightDir() const { return &m_vDirectionalLightDir; }
-	void getDirectionalLightDir(const D3DXVECTOR3* i_pDir);
+	const D3DXVECTOR3* GetDirectionalLightDir() const { return &_directionalLightDir; }
+	void GetDirectionalLightDir(const D3DXVECTOR3* dir);
 
 	/**
 		@brief カメラの取得
 	*/
-	const CModelViewerCamera* getCamera() const { return &m_Camera; }
-	CModelViewerCamera* getCamera() { return &m_Camera; }
+	const CModelViewerCamera* GetCamera() const { return &_camera; }
+	CModelViewerCamera* GetCamera() { return &_camera; }
 
 	/**
 		@brief 更新タイムの取得
 	*/
-	inline float getElapsdTime() const { return m_fElapsd; }
+	inline float GetElapsdTime() const { return _elapsd; }
 	
 	/**
 		@brief シェーダパラメータの取得
 	*/
-	const SShaderParam* getShaderParam() const { return &m_ShaderParam; }
-	SShaderParam* getShaderParam() { return &m_ShaderParam; }
+	const SShaderParam* GetShaderParam() const { return &_shaderParam; }
+	SShaderParam* GetShaderParam() { return &_shaderParam; }
 	
 	/**
 		@brief シェーダパラメータの設定
 	*/
-	void setShaderParam( const SShaderParam* i_pParam );
+	void SetShaderParam( const SShaderParam* param );
 	
 	/**
 		@brief ジョブ管理クラスの取得
 	*/
-	CJobManager* getJobManager() { return m_pJob; }
+	CJobManager* GetJobManager() { return _job; }
 	
 	/**
 		@brief 描画管理クラスの取得
 	*/
-	CRenderManager* getRenderManager() { return m_pRender; }
+	CRenderManager* GetRenderManager() { return _render; }
 	
 	/**
 		@brief スレッドの中継管理クラスの取得
 	*/
-	CThreadChannel* getThreadChannel() { return m_pThreadChannel; }
+	CThreadChannel* GetThreadChannel() { return _threadChannel; }
 
 	/**
 		@brief リサイズ時に呼ぶ
 	*/
-	void onResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapChain* pSwapChain, const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc );
+	void OnResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapChain* pSwapChain, const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc );
 
 	/**
 		@brief リリース時に呼ぶ
 	*/
-	void onReleasingSwapChain();
+	void OnReleasingSwapChain();
 	
 	/**
 		@brief メッセージ処理時時に呼ぶ
 	*/
-	void onMsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bool* pbNoFurtherProcessing );
+	void OnMsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bool* pbNoFurtherProcessing );
 
 	/**
 		@brief リサイズ時に呼ばれるCB登録
 	*/
-	size_t addResizedSwapChainCB(ResizedSwapChainArg);
-	void deleteResizedSwapChainCB(size_t i_nHandle);
+	size_t AddResizedSwapChainCB(ResizedSwapChainArg);
+	void DeleteResizedSwapChainCB(size_t handle);
 	
 	/**
 		@brief リリース時に呼ばれるCB登録
 	*/
-	size_t addReleasingSwapChainCB(ReleasingSwapChainArg);
-	void deleteReleasingSwapChainCB(size_t i_nHandle);
+	size_t AddReleasingSwapChainCB(ReleasingSwapChainArg);
+	void DeleteReleasingSwapChainCB(size_t handle);
 	
 	/**
 		@brief メッセージ処理時に呼ばれるCB登録
 	*/
-	size_t addMsgProcCB(MsgProcChainArg);
-	void deleteMsgProcCB(size_t i_nHandle);
+	size_t AddMsgProcCB(MsgProcChainArg);
+	void DeleteMsgProcCB(size_t handle);
 	
 	/**
-		@brief メッセージ処理時に呼ばれるCB登録
+		@brief cpu数の取得
 	*/
-	unsigned int getCpuCoreNum() const { return m_nCpuCoreNum; }
+	unsigned int GetCpuCoreNum() const { return _cpuCoreNum; }
 
 private:
 	/**
 		@brief コンストラクタ
 	*/
-	CAppContext();
+	AppContext();
 		
 	/**
 		@brief デストラクタ
 	*/
-	~CAppContext();
+	~AppContext();
 
 private:
-	static CAppContext*					m_pInstance;			//!< 自身へのインスタンスポインタ 
+	static AppContext*					_instance;			//!< 自身へのインスタンスポインタ 
 	
 	// システムからのコールバック関数配列
-	std::vector<ResizedSwapChainArg>	m_fResizedSwapChain;
-	std::vector<ReleasingSwapChainArg>	m_fReleasingSwapChain;
-	std::vector<MsgProcChainArg>		m_fMsgProc;
+	std::vector<ResizedSwapChainArg>	_resizedSwapChain;
+	std::vector<ReleasingSwapChainArg>	_releasingSwapChain;
+	std::vector<MsgProcChainArg>		_msgProc;
 
-	CJobManager*						m_pJob;					//!< ジョブ管理
-	CRenderManager*						m_pRender;				//!< 描画管理
+	CJobManager*						_job;					//!< ジョブ管理
+	CRenderManager*						_render;				//!< 描画管理
 	
-	ID3D11Device*						m_pd3dDevice;			//!< DirectXデバイス
-	ID3D11DeviceContext*				m_pImmediateContext;	//!< イミディエートのコンテキスト
+	ID3D11Device*						_device;				//!< DirectXデバイス
+	ID3D11DeviceContext*				_immediateContext;		//!< イミディエートのコンテキスト
 
-	ShaderManager						m_ShaderManager;
-	SShaderParam						m_ShaderParam;
-	CModelViewerCamera					m_Camera;
-	D3DXMATRIX							m_mWorld;
-	D3DXMATRIX							m_mView;
-	D3DXMATRIX							m_mProj;
-	D3DXVECTOR3							m_vDirectionalLightDir;
+	ShaderManager						_shaderManager;			//!< シェーダーマネージャ
+	SShaderParam						_shaderParam;			//!< シェーダーパラメータ
+	CModelViewerCamera					_camera;				//!< カメラ
+	D3DXMATRIX							_worldMatrix;			//!< ワールドマトリックス
+	D3DXMATRIX							_viewMatrix;			//!< ビューマトリックス
+	D3DXMATRIX							_projMatrix;			//!< プロジェクションマトリックス
+	D3DXVECTOR3							_directionalLightDir;	//!< ディレクショナルライト方向
 	
-    IDirect3DVertexBuffer9*				m_pVB;					//!< 頂点情報
-    IDirect3DVertexDeclaration9*		m_pVertexDecl;			//!< 頂点データ要素
-	
-	IDirect3DTexture9*					m_pFrameBuffrerTex;		//!< フレームバッファテクスチャ
-	IDirect3DSurface9*					m_pFrameBuffrerSurf;	//!< フレームバッファサーフェース
-	IDirect3DTexture9*					m_pDepthBufferTex;		//!< 深度バッファテクスチャ
-	IDirect3DSurface9*					m_pDepthBufferSurf;		//!< 深度バッファサーフェース
+    IDirect3DVertexBuffer9*				_vb;					//!< 頂点情報
+    IDirect3DVertexDeclaration9*		_vertexDecl;			//!< 頂点データ要素
 
-	CThreadChannel*						m_pThreadChannel;		//!< スレッドの中継管理
-	CStartJob*							m_pStartJob;			//!< 開始ジョブ
+	CThreadChannel*						_threadChannel;			//!< スレッドの中継管理
+	CStartJob*							_startJob;				//!< 開始ジョブ
 
-	unsigned int						m_nCpuCoreNum;			//!< cpuのコア数
-	float								m_fElapsd;				//!< １F間の時間
-	bool								m_bIsInit;				//!< 初期化フラグ
+	unsigned int						_cpuCoreNum;			//!< cpuのコア数
+	float								_elapsd;				//!< １F間の時間
+	bool								_isInit;				//!< 初期化フラグ
 };
 
 #endif // _APPLICATION_H_

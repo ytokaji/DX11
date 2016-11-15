@@ -31,7 +31,7 @@ void CStartJob::update()
 	switch( m_nState )
 	{
 	case STATE_INIT:
-		CAppContext::getInstance()->getRenderManager()->addRender(m_pHub = new CHud());
+		AppContext::GetInstance()->GetRenderManager()->addRender(m_pHub = new CHud());
 		m_nState = STATE_RUN;
 		break;
 
