@@ -29,8 +29,8 @@ public:
 private:
 	enum class STATE : uint8_t
 	{
-		STATE_INIT		= 0
-	,	STATE_RUN
+		INIT		= 0
+	,	RUN
 	};
 
 private:

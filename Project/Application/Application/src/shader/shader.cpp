@@ -68,17 +68,17 @@ bool Shader::InitShader(const void* buff, size_t size, eTYPE type)
 		&Shader::InitShaderGeometry,
 		&Shader::InitShaderCompute,
 	};
-	STATIC_ASSERT(NUM_OF(sc_aInitFunc) == (int)eTYPE::MAX);
+	STATIC_ASSERT(NUM_OF(sc_aInitFunc) == (uint8_t)eTYPE::MAX);
 
-	_shadarData[(int)type] = ShaderData();
+	_shadarData[(uint8_t)type] = ShaderData();
 
 	// シェーダー作成
-	bool ret = (this->*sc_aInitFunc[(int)type])(buff, size);
+	bool ret = (this->*sc_aInitFunc[(uint8_t)type])(buff, size);
 	if (ret == false) { return false; }
 
 	// シェーダーリフレクションインターフェース取得
 	HRESULT hr;
-	_RET_CHECK_ASSERT(D3DReflect(buff, size, IID_ID3D11ShaderReflection, (void**)&_shadarData[(int)type]._reflection));
+	_RET_CHECK_ASSERT(D3DReflect(buff, size, IID_ID3D11ShaderReflection, (void**)&_shadarData[(uint8_t)type]._reflection));
 
 	setupParameter(type);
 
@@ -92,7 +92,7 @@ bool Shader::InitShaderVertex(const void* buff, size_t size)
 	HRESULT hr;
 
 	// シェーダ作成
-	_RET_CHECK_ASSERT(pDevice->CreateVertexShader(buff, size, NULL, &_shadarData[(int)eTYPE::VS].shader._vertex));
+	_RET_CHECK_ASSERT(pDevice->CreateVertexShader(buff, size, NULL, &_shadarData[(uint8_t)eTYPE::VS].shader._vertex));
 	if (FAILED(hr)) return false;
 	/*
 	// InputLayoutの作成
@@ -117,7 +117,7 @@ bool Shader::InitShaderPixel(const void* buff, size_t size)
 	HRESULT hr;
 
 	// シェーダ作成
-	_RET_CHECK_ASSERT(pApp->GetD3D11Device()->CreatePixelShader(buff, size, NULL, &_shadarData[(int)eTYPE::PS].shader._pixel));
+	_RET_CHECK_ASSERT(pApp->GetD3D11Device()->CreatePixelShader(buff, size, NULL, &_shadarData[(uint8_t)eTYPE::PS].shader._pixel));
 	if (FAILED(hr)) return false;
 
 	return true;
@@ -141,7 +141,7 @@ void Shader::renderSetParam(CMaterialData* mate)
 void Shader::setupParameter(eTYPE type)
 {
 	AppContext* pApp = AppContext::GetInstance();
-	ShaderData* pShaderData = &_shadarData[(int)type];
+	ShaderData* pShaderData = &_shadarData[(uint8_t)type];
 
 	HRESULT hr;
 

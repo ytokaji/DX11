@@ -15,7 +15,7 @@
 StartJob::StartJob()
 	:	Job				("StartJob")
 	,	_hub			( nullptr )
-	,	_state			(STATE::STATE_INIT)
+	,	_state			(STATE::INIT)
 {
 }
 
@@ -30,9 +30,9 @@ void StartJob::Update()
 {
 	switch( _state )
 	{
-	case STATE::STATE_INIT:
+	case STATE::INIT:
 		AppContext::GetInstance()->GetRenderManager()->AddRender(_hub = new CHud());
-		_state = STATE::STATE_RUN;
+		_state = STATE::RUN;
 		break;
 
 	default:
