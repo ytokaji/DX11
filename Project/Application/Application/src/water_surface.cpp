@@ -24,14 +24,14 @@ namespace
 	// ’¸“_Ý’è
 	struct SKYBOX_VERTEX
 	{
-		SKYBOX_VERTEX(D3DXVECTOR4 pos, D3DXVECTOR3 tex)
+		SKYBOX_VERTEX(DirectX::SimpleMath::Vector4 pos, DirectX::SimpleMath::Vector3 tex)
 			:	m_vPos	(pos)
 			,	m_vTex	(tex)
 		{
 		};
 
-		D3DXVECTOR4 m_vPos;
-		D3DXVECTOR3 m_vTex;
+		DirectX::SimpleMath::Vector4 m_vPos;
+		DirectX::SimpleMath::Vector3 m_vTex;
 	};
 
 	static const unsigned int s_nSubdivisionX = 2;
@@ -85,7 +85,7 @@ void CWaterSurFace::update(float i_fElapsd)
 }
 
 //---------------------------------------------------------------------
-void CWaterSurFace::draw( D3DXMATRIX* mat )
+void CWaterSurFace::draw( Matrix* mat )
 {
 	IDirect3DDevice9* pDevice = AppContext::GetInstance()->getD3D9Device();
 	const CShaderTask* pShaderTask = (CShaderTask*)CTaskMan::getInstance()->findTask("CShaderTask");
@@ -147,8 +147,8 @@ void CWaterSurFace::deviceReset()
 			{
 				const int nOffX = x+anPosOffX[i];
 				const int nOffY = y+anPosOffY[i];
-				pVertex[nIndex+i].m_vPos = D3DXVECTOR4( fStartX+s_fEdgeLen*nOffX, 0.f, fStartY+s_fEdgeLen*nOffY, 1.f );
-				pVertex[nIndex+i].m_vTex = D3DXVECTOR3( fUvRatioX*nOffX, fUvRatioY*nOffY, 1.f );
+				pVertex[nIndex+i].m_vPos = DirectX::SimpleMath::Vector4( fStartX+s_fEdgeLen*nOffX, 0.f, fStartY+s_fEdgeLen*nOffY, 1.f );
+				pVertex[nIndex+i].m_vTex = DirectX::SimpleMath::Vector3( fUvRatioX*nOffX, fUvRatioY*nOffY, 1.f );
 			}
 		}
 	}

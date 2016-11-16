@@ -7,41 +7,32 @@
 #include "appContext.h"
 //#include "shader_task.h"
 //#include "shader_set_value.h"
-#include "Core/DXUT.h"
 #include "framework/processManager.h"
 #include "framework/thread.h"
 #include "startJob.h"
 
 namespace
 {
-	// 頂点情報の宣言
-	static const D3DVERTEXELEMENT9 DECL[] =
-	{
-		 { 0, 0,	D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },	// ポジション
-		 { 0, 16,	D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },	// UV
-		 D3DDECL_END()
-	};
-
 	// 頂点設定
 	struct VERTEX_2D
 	{
-		VERTEX_2D(D3DXVECTOR4 pos, D3DXVECTOR3 tex)
+		VERTEX_2D(DirectX::SimpleMath::Vector4 pos, DirectX::SimpleMath::Vector3 tex)
 			:	_pos	(pos)
 			,	_tex	(tex)
 		{
 		};
 
-		D3DXVECTOR4 _pos;
-		D3DXVECTOR3 _tex;
+		DirectX::SimpleMath::Vector4 _pos;
+		DirectX::SimpleMath::Vector3 _tex;
 	};
 
 	//２D板頂点
 	static const VERTEX_2D VERTEX_LIST[] =
 	{
-		VERTEX_2D( D3DXVECTOR4( 1.0f, 1.0f, 1.0f, 1.0f ),	D3DXVECTOR3( 1.0f, 0.0f, 1.0f ) ),
-		VERTEX_2D( D3DXVECTOR4( 1.0f, -1.0f, 1.0f, 1.0f ),	D3DXVECTOR3( 1.0f, 1.0f, 1.0f ) ),
-		VERTEX_2D( D3DXVECTOR4( -1.0f, 1.0f, 1.0f, 1.0f ),	D3DXVECTOR3( 0.0f, 0.0f, 1.0f ) ),
-		VERTEX_2D( D3DXVECTOR4( -1.0f, -1.0f, 1.0f, 1.0f ),	D3DXVECTOR3( 0.0f, 1.0f, 1.0f ) ),
+		VERTEX_2D( DirectX::SimpleMath::Vector4( 1.0f, 1.0f, 1.0f, 1.0f ),	DirectX::SimpleMath::Vector3( 1.0f, 0.0f, 1.0f ) ),
+		VERTEX_2D( DirectX::SimpleMath::Vector4( 1.0f, -1.0f, 1.0f, 1.0f ),	DirectX::SimpleMath::Vector3( 1.0f, 1.0f, 1.0f ) ),
+		VERTEX_2D( DirectX::SimpleMath::Vector4( -1.0f, 1.0f, 1.0f, 1.0f ),	DirectX::SimpleMath::Vector3( 0.0f, 0.0f, 1.0f ) ),
+		VERTEX_2D( DirectX::SimpleMath::Vector4( -1.0f, -1.0f, 1.0f, 1.0f ),	DirectX::SimpleMath::Vector3( 0.0f, 1.0f, 1.0f ) ),
 	};
 	static const int VERTEX_LIST_NUM = NUM_OF(VERTEX_LIST);
 	
@@ -56,6 +47,9 @@ AppContext::AppContext()
 	,	_render					( nullptr )
 	,	_device					( nullptr )
 	,	_immediateContext		( nullptr )
+	,	_worldMatrix			( DirectX::SimpleMath::Matrix::Identity )
+	,	_viewMatrix				( DirectX::SimpleMath::Matrix::Identity )
+	,	_projMatrix				( DirectX::SimpleMath::Matrix::Identity )
 	,	_directionalLightDir	(0.5f, 0.5f, 0.5f)
 	,	_threadChannel			( nullptr )
 	,	_startJob				( nullptr )
@@ -64,10 +58,7 @@ AppContext::AppContext()
 	,	_isInit					( false )
 {
 	memset( &_shaderParam, 0, sizeof(_shaderParam) );
-	D3DXMatrixIdentity( &_worldMatrix );
-	D3DXMatrixIdentity( &_viewMatrix );
-	D3DXMatrixIdentity( &_projMatrix );
-	D3DXVec3Normalize( &_directionalLightDir, &_directionalLightDir );
+	_directionalLightDir.Normalize();
 }
 
 //---------------------------------------------------------------------
@@ -122,8 +113,8 @@ void AppContext::Init(ID3D11Device* device)
 
 	// カメラ
 	_camera.SetButtonMasks(0, MOUSE_WHEEL, MOUSE_LEFT_BUTTON);
-	D3DXVECTOR3 vEye(-5.f,3.f,-5.f), vAt(0.f,0.f,0.f);
-	_camera.SetViewParams( &vEye, &vAt );
+	DirectX::SimpleMath::Vector3 vEye(-5.f,3.f,-5.f), vAt(0.f,0.f,0.f);
+	_camera.SetViewParams( vEye, vAt );
  
 	// 頂点情報の設定
 //	_RET_CHECK( m_pd3dDevice->CreateVertexDeclaration( g_aDecl, &m_pVertexDecl ) );
@@ -237,11 +228,10 @@ void AppContext::Render()
 }
 
 //---------------------------------------------------------------------
-void AppContext::GetDirectionalLightDir(const D3DXVECTOR3* dir)
+void AppContext::SetDirectionalLightDir(const DirectX::SimpleMath::Vector3& dir)
 {
-	_ASSERT( dir );
-	_directionalLightDir = *dir;
-	D3DXVec3Normalize( &_directionalLightDir, &_directionalLightDir );
+	_directionalLightDir = dir;
+	_directionalLightDir.Normalize();
 }
 
 //---------------------------------------------------------------------
@@ -250,10 +240,10 @@ void AppContext::SetShaderParam( const SShaderParam* param )
 	_ASSERT( param );
 	memcpy(&_shaderParam, param, sizeof(_shaderParam));
 
-	_directionalLightDir.x = _shaderParam.m_Others.m_f3LightDir[0];
-	_directionalLightDir.y = _shaderParam.m_Others.m_f3LightDir[1];
-	_directionalLightDir.z = _shaderParam.m_Others.m_f3LightDir[2];
-	D3DXVec3Normalize( &_directionalLightDir, &_directionalLightDir );
+	_directionalLightDir.x = _shaderParam.m_Others._lightDir[0];
+	_directionalLightDir.y = _shaderParam.m_Others._lightDir[1];
+	_directionalLightDir.z = _shaderParam.m_Others._lightDir[2];
+	_directionalLightDir.Normalize();
 }
 
 //---------------------------------------------------------------------

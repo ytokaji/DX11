@@ -37,9 +37,14 @@
 #pragma warning(disable : 4100)
 #include <CppLinq/cpplinq.hpp>
 #pragma warning( pop )
+#include "DXUT11/Core/DXUT.h"
+#include "DXUT11/Optional/DXUTgui.h"
+#include "DXUT11/Optional/DXUTcamera.h"
+#include "DXUT11/Optional/DXUTsettingsdlg.h"
+#include "DXUT11/Optional/SDKmisc.h"
+#include "DirectXTK/Inc/SimpleMath.h"
 
 // other
 #include "property.h"
 #include "define_type.h"
 #include "util.h"
-#include "Core/DXUT.h"

@@ -14,8 +14,8 @@ static const char SHADER_PARAM_ID[4] = { 's','d','p','t'};
 */
 struct SOtherParam
 {
-	float		m_f3LightDir[3];		//!< ライト方向
-	bool		m_bShaderReLoadReq;		//!< シェーダリロード要求
+	float		_lightDir[3];			//!< ライト方向
+	bool		_shaderReLoadReq;		//!< シェーダリロード要求
 };
 
 /**

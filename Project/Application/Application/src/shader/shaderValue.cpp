@@ -91,21 +91,21 @@ CShaderValue_Semantic::~CShaderValue_Semantic()
 }
 
 //---------------------------------------------------------------------
-void CShaderValue_Semantic::SetValue(D3DXMATRIX& i_rMat)
+void CShaderValue_Semantic::SetValue(DirectX::SimpleMath::Matrix& i_rMat)
 {
 //	D3DXMatrixIdentity( &m_mWorld );
 
-	D3DXMATRIX mWorld;
+	DirectX::SimpleMath::Matrix mWorld;
 	D3DXMatrixIdentity( &mWorld );
 	if( i_pParam->pMat )
 	{
 		mWorld = *i_pParam->pMat;
 	}
-	D3DXMATRIX mWorldView;
+	DirectX::SimpleMath::Matrix mWorldView;
 	D3DXMatrixMultiply( &mWorldView, &mWorld, AppContext::GetInstance()->getViewMatrix() );
 	
-	D3DXMATRIX mProj = *AppContext::GetInstance()->getProjMatrix();
-	D3DXMATRIX mWorldViewPorj;
+	DirectX::SimpleMath::Matrix mProj = *AppContext::GetInstance()->getProjMatrix();
+	DirectX::SimpleMath::Matrix mWorldViewPorj;
 	D3DXMatrixMultiply( &mWorldViewPorj, &mWorldView, &mProj );
 
 	HRESULT hr = S_OK;
@@ -131,14 +131,14 @@ void CShaderValue_Semantic::SetValue(D3DXMATRIX& i_rMat)
 	
 	if( m_hCameraPosition )
 	{
-		const D3DXVECTOR3* pPos = AppContext::GetInstance()->getCamera()->GetEyePt();
+		const DirectX::SimpleMath::Vector3* pPos = AppContext::GetInstance()->getCamera()->GetEyePt();
 		_RET_CHECK( i_pParam->pEffect->SetFloatArray( m_hCameraPosition, &pPos->x, 3) );
 	}
 	
 	if( m_hDirectionalLightDir )
 	{
-		const D3DXVECTOR3* pPos = AppContext::GetInstance()->getDirectionalLightDir();
-		D3DXVECTOR3 vDir;
+		const DirectX::SimpleMath::Vector3* pPos = AppContext::GetInstance()->getDirectionalLightDir();
+		DirectX::SimpleMath::Vector3 vDir;
 		D3DXVec3Normalize( &vDir, pPos );
 		_RET_CHECK( i_pParam->pEffect->SetFloatArray( m_hDirectionalLightDir, &vDir.x, 3) );
 	}
@@ -225,7 +225,7 @@ CShaderValue_FrameBufferTexture::~CShaderValue_FrameBufferTexture()
 }
 
 //---------------------------------------------------------------------
-void CShaderValue_FrameBufferTexture::SetValue(D3DXMATRIX& i_rMat)
+void CShaderValue_FrameBufferTexture::SetValue(DirectX::SimpleMath::Matrix& i_rMat)
 {
 	HRESULT hr = S_OK;
 	if( m_hFrameBufferTexture )
@@ -264,7 +264,7 @@ CShaderValue_WaterParam::~CShaderValue_WaterParam()
 }
 
 //---------------------------------------------------------------------
-void CShaderValue_WaterParam::SetValue(D3DXMATRIX& i_rMat)
+void CShaderValue_WaterParam::SetValue(DirectX::SimpleMath::Matrix& i_rMat)
 {
 	const SWaterParam* pParam = &AppContext::GetInstance()->getShaderParam()->m_Water;
 	HRESULT hr = S_OK;
@@ -321,10 +321,10 @@ void CShaderValue_WaterParam::SetValue(D3DXMATRIX& i_rMat)
 	if( m_f3Light )
 	{
 		//ÚüŒvŽZ‘ã‚í‚è
-		const D3DXVECTOR3* pPos = AppContext::GetInstance()->getDirectionalLightDir();
-		D3DXMATRIX mRot;
+		const DirectX::SimpleMath::Vector3* pPos = AppContext::GetInstance()->getDirectionalLightDir();
+		DirectX::SimpleMath::Matrix mRot;
 		D3DXMatrixRotationY( &mRot, 90 );
-		D3DXVECTOR4 vDir;
+		DirectX::SimpleMath::Vector4 vDir;
 		D3DXVec3Transform( &vDir, pPos, &mRot );
 		D3DXVec4Normalize( &vDir, &vDir );
 		vDir *= -1;
@@ -370,7 +370,7 @@ CShaderValue_Bump::~CShaderValue_Bump()
 }
 
 //---------------------------------------------------------------------
-void CShaderValue_Bump::SetValue(D3DXMATRIX& i_rMat)
+void CShaderValue_Bump::SetValue(DirectX::SimpleMath::Matrix& i_rMat)
 {
 	const SBumpParam* pParam = &AppContext::GetInstance()->getShaderParam()->m_Bump;
 	HRESULT hr = S_OK;
@@ -418,7 +418,7 @@ CShaderValue_Fur::~CShaderValue_Fur()
 }
 
 //---------------------------------------------------------------------
-void CShaderValue_Fur::SetValue(D3DXMATRIX& i_rMat)
+void CShaderValue_Fur::SetValue(DirectX::SimpleMath::Matrix& i_rMat)
 {
 	const SFurParam* pParam = &AppContext::GetInstance()->getShaderParam()->m_Fur;
 	HRESULT hr = S_OK;
@@ -477,7 +477,7 @@ CShaderValue_Gaussian::~CShaderValue_Gaussian()
 }
 
 //---------------------------------------------------------------------
-void CShaderValue_Gaussian::SetValue(D3DXMATRIX& i_rMat)
+void CShaderValue_Gaussian::SetValue(DirectX::SimpleMath::Matrix& i_rMat)
 {
 	const float c_fWindowRatio[2] = 
 	{
@@ -534,7 +534,7 @@ CShaderValue_Brightness::~CShaderValue_Brightness()
 }
 
 //---------------------------------------------------------------------
-void CShaderValue_Brightness::SetValue(D3DXMATRIX& i_rMat)
+void CShaderValue_Brightness::SetValue(DirectX::SimpleMath::Matrix& i_rMat)
 {
 	const SPostParam* pParam = &AppContext::GetInstance()->getShaderParam()->m_Post;
 
@@ -578,7 +578,7 @@ CShaderValue_Dof::~CShaderValue_Dof()
 }
 
 //---------------------------------------------------------------------
-void CShaderValue_Dof::SetValue(D3DXMATRIX& i_rMat)
+void CShaderValue_Dof::SetValue(DirectX::SimpleMath::Matrix& i_rMat)
 {
 	const SPostParam* pParam = &AppContext::GetInstance()->getShaderParam()->m_Post;
 	HRESULT hr = S_OK;

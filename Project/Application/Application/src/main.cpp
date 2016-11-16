@@ -5,10 +5,6 @@
 
 #include "stdafx.h"
 
-#include "Core/DXUT.h"
-#include "Optional/DXUTcamera.h"
-#include "Optional/DXUTsettingsdlg.h"
-#include "Optional/SDKmisc.h"
 //#include "shader_task.h"
 #include "appContext.h"
 #include "hud.h"
@@ -95,7 +91,8 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 bool CALLBACK ModifyDeviceSettings( DXUTDeviceSettings* pDeviceSettings, void* pUserContext )
 {
 	// DX11ˆÈŠO‚Í–¢‘Î‰ž
-    assert( DXUT_D3D11_DEVICE == pDeviceSettings->ver );
+	assert(D3D_FEATURE_LEVEL_11_0 == pDeviceSettings->MinimumFeatureLevel ||
+		D3D_FEATURE_LEVEL_11_1 == pDeviceSettings->MinimumFeatureLevel );
 	
     static bool s_bFirstTime = true;
     if( s_bFirstTime )
@@ -103,7 +100,7 @@ bool CALLBACK ModifyDeviceSettings( DXUTDeviceSettings* pDeviceSettings, void* p
         s_bFirstTime = false;
         if( pDeviceSettings->d3d11.DriverType == D3D_DRIVER_TYPE_REFERENCE )
         {
-            DXUTDisplaySwitchingToREFWarning( pDeviceSettings->ver );
+			DXUTDisplaySwitchingToREFWarning();
         }
     }
 

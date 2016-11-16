@@ -63,7 +63,7 @@ public:
 	/**
 		@brief シェーダ全体で共通のパラメータセット
 	*/
-	void PreRenderSetParam(D3DXMATRIX* mat);
+	void PreRenderSetParam(DirectX::SimpleMath::Matrix* mat);
 	
 	/**
 		@brief マテリアルごとに設定するパラメータ
@@ -76,10 +76,10 @@ protected:
 	*/
 	bool InitShaderVertex(const void* buff, size_t size);
 	bool InitShaderPixel(const void* buff, size_t size);
-	bool InitShaderHull(const void* buff, size_t size){ return false; };
-	bool InitShaderDomain(const void* buff, size_t size){ return false; };
-	bool InitShaderGeometry(const void* buff, size_t size){ return false; };
-	bool InitShaderCompute(const void* buff, size_t size){ return false; };
+	bool InitShaderHull(const void*, size_t){ return false; };
+	bool InitShaderDomain(const void*, size_t){ return false; };
+	bool InitShaderGeometry(const void*, size_t){ return false; };
+	bool InitShaderCompute(const void*, size_t){ return false; };
 
 	/**
 		@brief シェーダーパラメータの設定

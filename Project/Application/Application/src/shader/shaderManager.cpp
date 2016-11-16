@@ -13,6 +13,8 @@
 #include "shader/CompileShader/grid_vs.h"
 #endif
 
+using namespace cpplinq;
+
 namespace
 {
 
@@ -25,7 +27,7 @@ namespace
 		CShaderManager::SHADER_TYPE	eShader;
 	};
 
-	static const ShaderData sc_pShaderData[] =
+	static const ShaderData SHADER_DATA[] =
 	{
 		{ grid	, NUM_OF(grid)	, eSHATER_TYPE::VS	, CShaderManager::SHADER::GRID },
 		{ grid	, NUM_OF(grid)	, eSHATER_TYPE::PS	, CShaderManager::SHADER::GRID },
@@ -41,7 +43,7 @@ namespace
 		ShaderManager::SHADER_TYPE	eShader;
 	};
 
-	static const ShaderData sc_pShaderData[] =
+	static const ShaderData SHADER_DATA[] =
 	{
 		{ L"../Project/Application/Application/shader/grid_vs.fx"	, "vs_5_0"	, "main"	, Shader::eTYPE::VS	, ShaderManager::SHADER_TYPE::GRID },
 		{ L"../Project/Application/Application/shader/grid_ps.fx"	, "ps_5_0"	, "main"	, Shader::eTYPE::PS	, ShaderManager::SHADER_TYPE::GRID },
@@ -98,11 +100,7 @@ void ShaderManager::ShaderReLoadReq()
 	for (size_t i = 0; i<_shader.size(); ++i)
 	{
 		_PRINT("create shader : [%d]\n", i);
-		
-		auto shader = CreateShader((SHADER_TYPE)i);
-		if (shader == nullptr) continue;
-
-		_shader[i] = shader;
+		_shader[i] = CreateShader((SHADER_TYPE)i);
 	}
 }
 
@@ -116,27 +114,19 @@ Shader* ShaderManager::GetShader(SHADER_TYPE shader)
 //---------------------------------------------------------------------
 Shader* ShaderManager::CreateShader(SHADER_TYPE shader)
 {
-	// ðŒ‚É‡‚¤‚à‚Ì‚ð’T‚·
-	std::array<const ShaderData*, (int)Shader::eTYPE::MAX> list = {nullptr,};
-	for (int i = 0; i < NUM_OF(sc_pShaderData); ++i)
-	{
-		if (sc_pShaderData[i].eShader != shader)
-			continue;
-
-		list[(int)sc_pShaderData[i].eType] = &sc_pShaderData[i];
-	}
-	
 	// ðŒ‚ÌShader‚ðì‚Á‚Ä‰Šú‰»
 	Shader* pShader = new Shader();
-	for (size_t i = 0; i<list.size(); ++i)
+	from_array(SHADER_DATA)
+		>> where([&](ShaderData x){return x.eShader == shader; })
+		>> for_each([&](ShaderData x)
 	{
 #if _PRECOMPILE_SHADER_USE
-		bool b = pShader->InitShader(list[i]->pShader, list[i]->nSize, list[i]->eType);
+		bool b = pShader->InitShader(x.pShader, x.nSize, x.eType);
 #else
-		bool b = pShader->CompileInitShader(list[i]->pFileName, list[i]->pShaderProfile, list[i]->pFunctionName, list[i]->eType);
+		bool b = pShader->CompileInitShader(x.pFileName, x.pShaderProfile, x.pFunctionName, x.eType);
 #endif
 		_ASSERT(b);
-	}
+	});
 
 	return pShader;
 }

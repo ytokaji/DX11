@@ -89,12 +89,12 @@ void CSceneTask::_runMain()
 	const unsigned int nMax = m_pObject.size();
 	for ( unsigned int i=0; i<nMax; ++i )
 	{
-		D3DXVECTOR3* vVec = m_pObject[i]->getRot();
+		DirectX::SimpleMath::Vector3* vVec = m_pObject[i]->getRot();
 		vVec->x += 1.f*fElapsd;
 	}
 
 	{
-		D3DXVECTOR3* vVec = m_pFurObject->getRot();
+		DirectX::SimpleMath::Vector3* vVec = m_pFurObject->getRot();
 		vVec->x += 1.f*fElapsd;
 	}
 }
@@ -124,8 +124,8 @@ void CSceneTask::_drawMain()
 		pDevice->Clear( 0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0x00808080, 1.0f, 0 );
 		pDevice->SetRenderState( D3DRS_CULLMODE, D3DCULL_CW );
 		
-		const D3DXMATRIX mTmpWorld = *AppContext::GetInstance()->getWorldMatrix();
-		D3DXMATRIX mSclMat;
+		const Matrix mTmpWorld = *AppContext::GetInstance()->getWorldMatrix();
+		Matrix mSclMat;
 		D3DXMatrixScaling( &mSclMat, 1.f, -1.f, 1.f );
 		D3DXMatrixMultiply( &mSclMat, &mTmpWorld, &mSclMat );
 		AppContext::GetInstance()->setWorldMatrix(&mSclMat);

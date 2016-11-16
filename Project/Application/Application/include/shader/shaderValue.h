@@ -55,7 +55,7 @@ public:
 	/**
 		@brief シェーダ全体で共通のパラメータセット
 	*/
-	virtual void SetValue(D3DXMATRIX& i_rMat);
+	virtual void SetValue(DirectX::SimpleMath::Matrix& i_rMat);
 
 	/**
 		@brief パラメータの設定
@@ -88,7 +88,7 @@ public:
 	/**
 		@brief シェーダ全体で共通のパラメータセット
 	*/
-	virtual void SetValue(D3DXMATRIX& i_rMat){};
+	virtual void SetValue(DirectX::SimpleMath::Matrix& i_rMat){};
 
 	/**
 		@brief パラメータの設定
@@ -112,7 +112,7 @@ public:
 	/**
 		@brief シェーダ全体で共通のパラメータセット
 	*/
-	virtual void SetValue(D3DXMATRIX& i_rMat);
+	virtual void SetValue(DirectX::SimpleMath::Matrix& i_rMat);
 
 	/**
 		@brief パラメータの設定
@@ -137,7 +137,7 @@ public:
 	/**
 		@brief シェーダ全体で共通のパラメータセット
 	*/
-	virtual void SetValue(D3DXMATRIX& i_rMat);
+	virtual void SetValue(DirectX::SimpleMath::Matrix& i_rMat);
 
 	/**
 		@brief パラメータの設定
@@ -172,7 +172,7 @@ public:
 	/**
 		@brief シェーダ全体で共通のパラメータセット
 	*/
-	virtual void SetValue(D3DXMATRIX& i_rMat);
+	virtual void SetValue(DirectX::SimpleMath::Matrix& i_rMat);
 
 	/**
 		@brief パラメータの設定
@@ -199,7 +199,7 @@ public:
 	/**
 		@brief シェーダ全体で共通のパラメータセット
 	*/
-	virtual void SetValue(D3DXMATRIX& i_rMat);
+	virtual void SetValue(DirectX::SimpleMath::Matrix& i_rMat);
 
 	/**
 		@brief パラメータの設定
@@ -228,7 +228,7 @@ public:
 	/**
 		@brief シェーダ全体で共通のパラメータセット
 	*/
-	virtual void SetValue(D3DXMATRIX& i_rMat);
+	virtual void SetValue(DirectX::SimpleMath::Matrix& i_rMat);
 
 	/**
 		@brief パラメータの設定
@@ -257,7 +257,7 @@ public:
 	/**
 		@brief シェーダ全体で共通のパラメータセット
 	*/
-	virtual void SetValue(D3DXMATRIX& i_rMat);
+	virtual void SetValue(DirectX::SimpleMath::Matrix& i_rMat);
 
 	/**
 		@brief パラメータの設定
@@ -282,7 +282,7 @@ public:
 	/**
 		@brief シェーダ全体で共通のパラメータセット
 	*/
-	virtual void SetValue(D3DXMATRIX& i_rMat, CMaterial* mate);
+	virtual void SetValue(DirectX::SimpleMath::Matrix& i_rMat, CMaterial* mate);
 
 	/**
 		@brief パラメータの設定

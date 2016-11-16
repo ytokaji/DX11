@@ -6,8 +6,6 @@
 #ifndef _APPLICATION_H_
 #define _APPLICATION_H_
 
-#include "Core/DXUT.h"
-#include "Optional/DXUTcamera.h"
 #include "shader_param.h"
 #include "shader/shaderManager.h"
 
@@ -72,18 +70,18 @@ public:
 	/**
 		@brief カメラのマトリックス操作
 	*/
-    const D3DXMATRIX*  GetWorldMatrix() const { return &_worldMatrix; }
-    const D3DXMATRIX*  GetViewMatrix() const { return &_viewMatrix; }
-    const D3DXMATRIX*  GetProjMatrix() const { return &_projMatrix; }
-	void SetWorldMatrix(const D3DXMATRIX* mat) { _worldMatrix = *mat; }
-	void SetViewMatrix(const D3DXMATRIX* mat) { _viewMatrix = *mat; }
-	void SetProjMatrix(const D3DXMATRIX* mat) { _projMatrix = *mat; }
+	const DirectX::SimpleMath::Matrix*  GetWorldMatrix() const { return &_worldMatrix; }
+    const DirectX::SimpleMath::Matrix*  GetViewMatrix() const { return &_viewMatrix; }
+    const DirectX::SimpleMath::Matrix*  GetProjMatrix() const { return &_projMatrix; }
+	void SetWorldMatrix(const DirectX::SimpleMath::Matrix& mat) { _worldMatrix = mat; }
+	void SetViewMatrix(const DirectX::SimpleMath::Matrix& mat) { _viewMatrix = mat; }
+	void SetProjMatrix(const DirectX::SimpleMath::Matrix& mat) { _projMatrix = mat; }
 	
 	/**
 		@brief ディレクショナルライトの方向の操作
 	*/
-	const D3DXVECTOR3* GetDirectionalLightDir() const { return &_directionalLightDir; }
-	void GetDirectionalLightDir(const D3DXVECTOR3* dir);
+	const DirectX::SimpleMath::Vector3* GetDirectionalLightDir() const { return &_directionalLightDir; }
+	void SetDirectionalLightDir(const DirectX::SimpleMath::Vector3& dir);
 
 	/**
 		@brief カメラの取得
@@ -179,7 +177,7 @@ private:
 	std::vector<ReleasingSwapChainArg>	_releasingSwapChain;
 	std::vector<MsgProcChainArg>		_msgProc;
 
-	JobManager*						_job;					//!< ジョブ管理
+	JobManager*							_job;					//!< ジョブ管理
 	RenderManager*						_render;				//!< 描画管理
 	
 	ID3D11Device*						_device;				//!< DirectXデバイス
@@ -188,13 +186,10 @@ private:
 	ShaderManager						_shaderManager;			//!< シェーダーマネージャ
 	SShaderParam						_shaderParam;			//!< シェーダーパラメータ
 	CModelViewerCamera					_camera;				//!< カメラ
-	D3DXMATRIX							_worldMatrix;			//!< ワールドマトリックス
-	D3DXMATRIX							_viewMatrix;			//!< ビューマトリックス
-	D3DXMATRIX							_projMatrix;			//!< プロジェクションマトリックス
-	D3DXVECTOR3							_directionalLightDir;	//!< ディレクショナルライト方向
-	
-    IDirect3DVertexBuffer9*				_vb;					//!< 頂点情報
-    IDirect3DVertexDeclaration9*		_vertexDecl;			//!< 頂点データ要素
+	DirectX::SimpleMath::Matrix			_worldMatrix;			//!< ワールドマトリックス
+	DirectX::SimpleMath::Matrix			_viewMatrix;			//!< ビューマトリックス
+	DirectX::SimpleMath::Matrix			_projMatrix;			//!< プロジェクションマトリックス
+	DirectX::SimpleMath::Vector3		_directionalLightDir;	//!< ディレクショナルライト方向
 
 	ThreadChannel*						_threadChannel;			//!< スレッドの中継管理
 	StartJob*							_startJob;				//!< 開始ジョブ

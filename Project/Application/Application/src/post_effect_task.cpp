@@ -21,23 +21,23 @@ namespace
 	// í∏ì_ê›íË
 	struct VERTEX_2D
 	{
-		VERTEX_2D(D3DXVECTOR4 pos, D3DXVECTOR3 tex)
+		VERTEX_2D(DirectX::SimpleMath::Vector4 pos, DirectX::SimpleMath::Vector3 tex)
 			:	m_vPos	(pos)
 			,	m_vTex	(tex)
 		{
 		};
 
-		D3DXVECTOR4 m_vPos;
-		D3DXVECTOR3 m_vTex;
+		DirectX::SimpleMath::Vector4 m_vPos;
+		DirectX::SimpleMath::Vector3 m_vTex;
 	};
 
 	//ÇQDî¬í∏ì_
 	static const VERTEX_2D s_VertexList[] =
 	{
-		VERTEX_2D( D3DXVECTOR4( 1.0f, 1.0f, 1.0f, 1.0f ),	D3DXVECTOR3( 1.0f, 0.0f, 1.0f ) ),
-		VERTEX_2D( D3DXVECTOR4( 1.0f, -1.0f, 1.0f, 1.0f ),	D3DXVECTOR3( 1.0f, 1.0f, 1.0f ) ),
-		VERTEX_2D( D3DXVECTOR4( -1.0f, 1.0f, 1.0f, 1.0f ),	D3DXVECTOR3( 0.0f, 0.0f, 1.0f ) ),
-		VERTEX_2D( D3DXVECTOR4( -1.0f, -1.0f, 1.0f, 1.0f ),	D3DXVECTOR3( 0.0f, 1.0f, 1.0f ) ),
+		VERTEX_2D( DirectX::SimpleMath::Vector4( 1.0f, 1.0f, 1.0f, 1.0f ),	DirectX::SimpleMath::Vector3( 1.0f, 0.0f, 1.0f ) ),
+		VERTEX_2D( DirectX::SimpleMath::Vector4( 1.0f, -1.0f, 1.0f, 1.0f ),	DirectX::SimpleMath::Vector3( 1.0f, 1.0f, 1.0f ) ),
+		VERTEX_2D( DirectX::SimpleMath::Vector4( -1.0f, 1.0f, 1.0f, 1.0f ),	DirectX::SimpleMath::Vector3( 0.0f, 0.0f, 1.0f ) ),
+		VERTEX_2D( DirectX::SimpleMath::Vector4( -1.0f, -1.0f, 1.0f, 1.0f ),	DirectX::SimpleMath::Vector3( 0.0f, 1.0f, 1.0f ) ),
 	};
 	static const int s_nVertexNum = NUM_OF(s_VertexList);
 }

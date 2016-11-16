@@ -33,7 +33,7 @@ public:
 	/**
 		@brief 描画
 	*/
-	void draw( D3DXMATRIX* mat=nullptr );
+	void draw( DirectX::SimpleMath::Matrix* mat=nullptr );
 
 	/**
 		@brief デバイスリセット時に実行

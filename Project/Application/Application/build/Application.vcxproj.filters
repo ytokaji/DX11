@@ -28,9 +28,6 @@
     <Filter Include="ソース ファイル\shader">
       <UniqueIdentifier>{253d3f45-b5b6-4987-9d1a-8074e1ebd8dc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ObjMeshDX">
-      <UniqueIdentifier>{f8d5ea1d-2b48-4212-9b0a-737ccf8367fc}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\main.cpp">
@@ -77,9 +74,6 @@
     </ClCompile>
     <ClCompile Include="..\src\shader\shaderValue.cpp">
       <Filter>ソース ファイル\shader</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ExternalLibrary\ObjMeshDX\ObjMeshDX.cpp">
-      <Filter>ObjMeshDX</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -148,9 +142,6 @@
     </ClInclude>
     <ClInclude Include="..\include\shader\material.h">
       <Filter>ヘッダー ファイル\shader</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\ExternalLibrary\ObjMeshDX\ObjMeshDX.h">
-      <Filter>ObjMeshDX</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

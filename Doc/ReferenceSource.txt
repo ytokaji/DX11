@@ -6,3 +6,8 @@ http://developer.nvidia.com/
 CPP LINQ
 https://cpplinq.codeplex.com/
 
+DXUT
+https://dxut.codeplex.com/
+
+DirectX Tool Kit
+http://directxtk.codeplex.com/

@@ -28,8 +28,8 @@ private:
 	*/
 	struct SVertexData
 	{
-		D3DXVECTOR4		pos;
-		D3DXCOLOR		color;
+		DirectX::SimpleMath::Vector4	pos;
+		DirectX::SimpleMath::Color		color;
 	};
 private:
 	/// ‰Šú‰»

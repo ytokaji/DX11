@@ -43,9 +43,9 @@ public:
 	/**
 		@brief 各種取得
 	*/
-	D3DXVECTOR3* getScl() { return &m_vScl; }
-	D3DXVECTOR3* getRot() { return &m_vRot; }
-	D3DXVECTOR3* getTrn() { return &m_vTrn; }
+	DirectX::SimpleMath::Vector3* getScl() { return &m_vScl; }
+	DirectX::SimpleMath::Vector3* getRot() { return &m_vRot; }
+	DirectX::SimpleMath::Vector3* getTrn() { return &m_vTrn; }
 
 	/*
 		@brief 同パスを複数回びょうが
@@ -60,9 +60,9 @@ private:
 
 	ID3DXMesh*					m_pMesh;			//!< モデルデータ
 
-	D3DXVECTOR3					m_vScl;				//!< スケール
-	D3DXVECTOR3					m_vRot;				//!< ローテーション
-	D3DXVECTOR3					m_vTrn;				//!< トランス
+	DirectX::SimpleMath::Vector3					m_vScl;				//!< スケール
+	DirectX::SimpleMath::Vector3					m_vRot;				//!< ローテーション
+	DirectX::SimpleMath::Vector3					m_vTrn;				//!< トランス
 	unsigned int				m_nPassDrawCount;	//!< 同パスを複数回びょうが
 	CShaderTask::SHADER_INDEX	m_eShader;			//!< 使用シェーダー
 };

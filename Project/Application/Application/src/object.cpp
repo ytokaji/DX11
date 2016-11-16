@@ -59,12 +59,12 @@ void CObject::draw()
 	HRESULT hr = S_OK;
 
 	// マトリクス更新
-	D3DXMATRIX mMat, mMatScl, mMatRot;
+	Matrix mMat, mMatScl, mMatRot;
 	D3DXMatrixScaling( &mMatScl, m_vScl.x, m_vScl.y, m_vScl.z );
 	D3DXMatrixRotationYawPitchRoll( &mMatRot, m_vRot.x, m_vRot.y, m_vRot.z );
 	D3DXMatrixMultiply( &mMat, &mMatScl, &mMatRot );
 	
-	const D3DXMATRIX mTmpWorld = *AppContext::GetInstance()->getWorldMatrix();
+	const Matrix mTmpWorld = *AppContext::GetInstance()->getWorldMatrix();
 	D3DXMatrixMultiply( &mMat, &mMat, &mTmpWorld );
 	mMat._41 += m_vTrn.x; mMat._42 += m_vTrn.y; mMat._43 += m_vTrn.z; mMat._44 = 1.f;
 

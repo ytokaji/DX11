@@ -9,8 +9,6 @@
 #include "appContext.h"
 #include "framework/job.h"
 #include "framework/render.h"
-#include "Optional/DXUTgui.h"
-#include "Optional/SDKmisc.h"
 
 //---------------------------------------------------------------------
 CHud::CHud()
@@ -82,7 +80,7 @@ void CHud::RenderAsync()
 {
 	m_pTxtHelper->Begin();
 	m_pTxtHelper->SetInsertionPos( 5, 5 );
-	m_pTxtHelper->SetForegroundColor( D3DXCOLOR( 1.0f, 1.0f, 0.0f, 1.0f ) );
+	m_pTxtHelper->SetForegroundColor( DirectX::SimpleMath::Color( 1.0f, 1.0f, 0.0f, 1.0f ) );
 	m_pTxtHelper->DrawTextLine( DXUTGetFrameStats( DXUTIsVsyncEnabled() ) );
 	m_pTxtHelper->DrawTextLine( DXUTGetDeviceStats() );
 	m_pTxtHelper->End();

@@ -59,8 +59,8 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)/ExternalLibrary/;$(WindowsSDK_IncludePath);$(SolutionDir)/DXUT11/;./../include;$(DXSDK_DIR)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NOMINMAX;WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>./../include;$(SolutionDir)/ExternalLibrary/;$(WindowsSDK_IncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NOMINMAX;WIN32;_WIN32_WINNT=0x0601;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
@@ -69,8 +69,8 @@
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>d3dcompiler.lib;d3dx11d.lib;d3dx10d.lib;d3dx9d.lib;dxerr.lib;dxguid.lib;winmm.lib;comctl32.lib;User32.lib;shell32.lib;Gdi32.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(DXSDK_DIR)Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>d3dcompiler.lib;usp10.lib;dxguid.lib;winmm.lib;comctl32.lib;User32.lib;shell32.lib;Gdi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AssemblyDebug>true</AssemblyDebug>
       <SubSystem>Windows</SubSystem>
@@ -109,7 +109,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\ExternalLibrary\ObjMeshDX\ObjMeshDX.cpp" />
     <ClCompile Include="..\src\appContext.cpp" />
     <ClCompile Include="..\src\framework\processManager.cpp" />
     <ClCompile Include="..\src\framework\thread.cpp" />
@@ -141,7 +140,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\ExternalLibrary\ObjMeshDX\ObjMeshDX.h" />
     <ClInclude Include="..\include\appContext.h" />
     <ClInclude Include="..\include\define_type.h" />
     <ClInclude Include="..\include\framework\job.h" />
@@ -180,11 +178,14 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\DXUT11\Core\DXUTCore.vcxproj">
-      <Project>{e0cf097b-f22d-465b-a884-d89e55bd7ecd}</Project>
+    <ProjectReference Include="..\..\ExternalLibrary\DirectXTK\DirectXTK_Desktop_2013.vcxproj">
+      <Project>{e0b52ae7-e160-4d32-bf3f-910b785e5a8e}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\DXUT11\Optional\DXUTOptional.vcxproj">
-      <Project>{0bc14f6c-54ab-4576-84ea-323fd98a8f3e}</Project>
+    <ProjectReference Include="..\..\ExternalLibrary\DXUT11\Core\DXUT_DirectXTK_2013.vcxproj">
+      <Project>{85344b7f-5aa0-4e12-a065-d1333d11f6ca}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ExternalLibrary\DXUT11\Optional\DXUTOpt_DirectXTK_2013.vcxproj">
+      <Project>{61b333c2-c4f7-4cc1-a9bf-83f6d95588eb}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

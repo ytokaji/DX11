@@ -27,12 +27,18 @@ Shader::~Shader()
 //---------------------------------------------------------------------
 bool Shader::CompileInitShader(wchar_t* fileName, char* shaderProfile, char* functionName, eTYPE type)
 {
-	DWORD dwShaderFlags = D3D10_SHADER_ENABLE_STRICTNESS | D3D10_SHADER_DEBUG;
+	DWORD dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
+#if defined(DEBUG) || defined(_DEBUG)
+	dwShaderFlags |= D3DCOMPILE_DEBUG;
+#else
+	dwShaderFlags |= D3DCOMPILE_OPTIMIZATION_LEVEL3;
+#endif
+
 	HRESULT hr;
 
 	// コンパイル
 	ID3DBlob *pEffectBlob = 0, *pErrorBlob = 0;
-	hr = D3DX11CompileFromFile(fileName, 0, 0, functionName, shaderProfile, dwShaderFlags, 0, 0, &pEffectBlob, &pErrorBlob, 0);
+	hr = D3DCompileFromFile(fileName, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, functionName, shaderProfile, dwShaderFlags, 0, &pEffectBlob, &pErrorBlob);
 
 	// エラー時処理
 	if (FAILED(hr))
@@ -124,7 +130,7 @@ bool Shader::InitShaderPixel(const void* buff, size_t size)
 }
 /*
 //---------------------------------------------------------------------
-void Shader::preRenderSetParam(D3DXMATRIX* mat)
+void Shader::preRenderSetParam(DirectX::SimpleMath::Matrix* mat)
 {
 	IShaderValue::SArgParam param(nullptr, m_pEffect, mat);
 	util::for_each(m_apDelegate, std::bind2nd(std::mem_fun(&IShaderValue::preRenderSetParam), &param));
