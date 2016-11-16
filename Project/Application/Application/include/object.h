@@ -17,13 +17,13 @@
 class CObject
 {
 public:
-	CObject(const wchar_t* i_pchFileName, CShaderTask::SHADER_INDEX i_eShader);
+	CObject(const wchar_t* i_pchFileName, CShaderTask::SHADER_INDEX shader);
 	virtual ~CObject();
 
 	/**
 		@brief çXêV
 	*/
-	void update( float i_fElapsd );
+	void Update( float i_fElapsd );
 
 	/**
 		@brief ï`âÊ

@@ -17,10 +17,10 @@ D3D11_INPUT_ELEMENT_DESC layout[] = {
 
 //---------------------------------------------------------------------
 CGrid::CGrid()
-	: CRender("CGrid", RENDER_PRIORITY::GRID)
+	: Render("CGrid", RENDER_PRIORITY::GRID)
 	, m_pD3DBuffer(nullptr)
 {
-	init();
+	Init();
 }
 
 //---------------------------------------------------------------------
@@ -30,7 +30,7 @@ CGrid::~CGrid()
 }
 
 //---------------------------------------------------------------------
-void CGrid::init()
+void CGrid::Init()
 {
 	AppContext* pApp = AppContext::GetInstance();
 	ID3D11Device* pDevice = pApp->GetD3D11Device();
@@ -78,7 +78,7 @@ void CGrid::destroy()
 }
 
 //---------------------------------------------------------------------
-void CGrid::render()
+void CGrid::RenderAsync()
 {
 }
 

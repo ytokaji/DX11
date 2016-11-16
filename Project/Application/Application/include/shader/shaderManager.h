@@ -6,7 +6,7 @@
 #ifndef _SHADER_MANAGER_H_
 #define _SHADER_MANAGER_H_
 
-class CShader;
+class Shader;
 
 /**
 	@brief シェーダファイルの管理タスク
@@ -18,7 +18,7 @@ public:
 	/**
 		@brief 管理されているシェーダーのインデックス
 	*/
-	enum class eSHADER
+	enum class SHADER_TYPE : uint8_t
 	{
 		GRID = 0,		// グリッド表示
 
@@ -39,45 +39,43 @@ public:
 	/**
 		@brief 初期化処理
 	*/
-	void init();
+	void Init();
 
 	/**
 		@brief シェーダの取得
 	*/
-	CShader* getShader(eSHADER i_eShader);
+	Shader* GetShader(SHADER_TYPE shader);
 
 	/**
 		@brief シェーダーリロード要求
 	*/
-	void shaderReLoadReq();
+	void ShaderReLoadReq();
 
 private:
 	/// シェーダーロード
-	void shaderLoad();
+	void ShaderLoad();
 
 	/// 削除処理
-	void destroy();
+	void Destroy();
 
 	/// シェーダーバッファの取得
-	CShader* createShader(eSHADER i_eShader);
+	Shader* CreateShader(SHADER_TYPE shader);
 
 private:
 	/// デリゲート登録関数
-	void _registDelegate_Grid(CShader* i_pShader);
+	static void RegistDelegate_Grid(Shader* shader);
 	/*
-	void _registDelegate_Bump();
-	void _registDelegate_Fur();
-	void _registDelegate_2D();
-	void _registDelegate_WATER();
-	void _registDelegate_GAUSSIAN();
-	void _registDelegate_BRIGHTNESS();
-	void _registDelegate_DOF();
+	void RegistDelegate_Bump();
+	void RegistDelegate_Fur();
+	void RegistDelegate_2D();
+	void RegistDelegate_WATER();
+	void RegistDelegate_GAUSSIAN();
+	void RegistDelegate_BRIGHTNESS();
+	void RegistDelegate_DOF();
 	*/
 private:
-	typedef void (ShaderManager::*RegistDelegateFunc)(CShader*);
-	static const RegistDelegateFunc	m_pRegistDelegate[];			//!< デリゲート登録関数ポインタ配列
-
-	std::array<CShader*, (int)eSHADER::MAX>	m_apShader;
+	static const std::function<void(Shader*)>		_registDelegate[];			//!< デリゲート登録関数ポインタ配列
+	std::array<Shader*, (uint8_t)SHADER_TYPE::MAX>	_shader;
 };
 
 

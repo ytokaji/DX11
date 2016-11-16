@@ -13,14 +13,14 @@
 /**
 	@brief grid‚ÌŠÇ—A•\¦
 */
-class CGrid	: public CRender
+class CGrid	: public Render
 {
 public:
 	CGrid();
 	~CGrid();
 	
 	/// ˆ—ŠÖ”
-	virtual void render(void);
+	virtual void RenderAsync(void);
 
 private:
 	/*
@@ -33,7 +33,7 @@ private:
 	};
 private:
 	/// ‰Šú‰»
-	void init();
+	void Init();
 	
 	/// I—¹ˆ—
 	void destroy();

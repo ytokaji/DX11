@@ -14,14 +14,14 @@
 
 //---------------------------------------------------------------------
 CHud::CHud()
-	:	CRender						("CHud", RENDER_PRIORITY::HUD)
+	:	Render						("CHud", RENDER_PRIORITY::HUD)
 	,	m_pDialogResourceManager	( nullptr )
 	,	m_pTxtHelper				( nullptr )
 	,	m_nResizeHandle				( 0 )
 	,	m_nReleaseHandle			( 0 )
 	,	m_nMsgProcHandle			( 0 )
 {
-	init();
+	Init();
 }
 
 //---------------------------------------------------------------------
@@ -31,7 +31,7 @@ CHud::~CHud()
 }
 
 //---------------------------------------------------------------------
-void CHud::init()
+void CHud::Init()
 {
 	AppContext* pApp = AppContext::GetInstance();
 	m_pDialogResourceManager = new CDXUTDialogResourceManager;
@@ -78,7 +78,7 @@ void CHud::destroy()
 }
 
 //---------------------------------------------------------------------
-void CHud::render()
+void CHud::RenderAsync()
 {
 	m_pTxtHelper->Begin();
 	m_pTxtHelper->SetInsertionPos( 5, 5 );

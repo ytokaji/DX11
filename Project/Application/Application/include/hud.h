@@ -16,18 +16,18 @@ class CDXUTTextHelper;
 	@brief hudの管理、表示
 	@note パフォーマンス表示等
 */
-class CHud	: public CRender
+class CHud	: public Render
 {
 public:
 	CHud();
 	~CHud();
 	
 	/// 処理関数
-	virtual void render(void);
+	virtual void RenderAsync(void);
 
 private:
 	/// 初期化
-	void init();
+	void Init();
 	
 	/// 終了処理
 	void destroy();

@@ -7,7 +7,7 @@
 #define _SHADER_VALUE_H_
 
 class CMaterial;
-class CShader;
+class Shader;
 
 /**
 	@brief シェーダパラメータの設定の規定クラス
@@ -22,7 +22,7 @@ public:
 	/**
 		@brief パラメータの作成
 	*/
-	size_t Create(CShader* shader, ID3D11ShaderReflectionVariable* variable);
+	size_t Create(Shader* shader, ID3D11ShaderReflectionVariable* variable);
 
 	/**
 		@brief シェーダパラメータの適用
@@ -36,7 +36,7 @@ public:
 
 protected:
 	std::function<void(ShaderValue*)>	_applyFunc;		//!< 適用関数
-	CShader*							_shader;		//!< シェーダ
+	Shader*								_shader;		//!< シェーダ
 	uint32_t							_offset;		//!< オフセット値
 	uint32_t							_textureSlot;	//!< テクスチャ用スロット
 };
@@ -60,7 +60,7 @@ public:
 	/**
 		@brief パラメータの設定
 	*/
-	virtual void attach(CShader* i_pParam);
+	virtual void attach(Shader* i_pParam);
 
 private:
 	D3DXHANDLE				m_hPorj;
@@ -93,7 +93,7 @@ public:
 	/**
 		@brief パラメータの設定
 	*/
-	virtual void attach(CShader* i_pParam);
+	virtual void attach(Shader* i_pParam);
 
 private:
 	D3DXHANDLE				m_hDiffuseTexture;
@@ -117,7 +117,7 @@ public:
 	/**
 		@brief パラメータの設定
 	*/
-	virtual void attach(CShader* i_pParam);
+	virtual void attach(Shader* i_pParam);
 
 private:
 	D3DXHANDLE				m_hFrameBufferTexture;
@@ -142,7 +142,7 @@ public:
 	/**
 		@brief パラメータの設定
 	*/
-	virtual void attach(CShader* i_pParam);
+	virtual void attach(Shader* i_pParam);
 
 private:
 	D3DXHANDLE				m_h4Color;
@@ -177,7 +177,7 @@ public:
 	/**
 		@brief パラメータの設定
 	*/
-	virtual void attach(CShader* i_pParam);
+	virtual void attach(Shader* i_pParam);
 
 private:
 	D3DXHANDLE				m_h2NormalMap;	
@@ -204,7 +204,7 @@ public:
 	/**
 		@brief パラメータの設定
 	*/
-	virtual void attach(CShader* i_pParam);
+	virtual void attach(Shader* i_pParam);
 
 private:
 	D3DXHANDLE				m_h3furColor;
@@ -233,7 +233,7 @@ public:
 	/**
 		@brief パラメータの設定
 	*/
-	virtual void attach(CShader* i_pParam);
+	virtual void attach(Shader* i_pParam);
 
 private:
 	D3DXHANDLE				m_hfUvOffset;
@@ -262,7 +262,7 @@ public:
 	/**
 		@brief パラメータの設定
 	*/
-	virtual void attach(CShader* i_pParam);
+	virtual void attach(Shader* i_pParam);
 
 private:
 	D3DXHANDLE				m_hfBrighness;
@@ -282,12 +282,12 @@ public:
 	/**
 		@brief シェーダ全体で共通のパラメータセット
 	*/
-	virtual void SetValue(D3DXMATRIX& i_rMat, CMaterial* i_pMate);
+	virtual void SetValue(D3DXMATRIX& i_rMat, CMaterial* mate);
 
 	/**
 		@brief パラメータの設定
 	*/
-	virtual void attach(CShader* i_pParam);
+	virtual void attach(Shader* i_pParam);
 
 private:
 	D3DXHANDLE				m_hfFocusDistance;

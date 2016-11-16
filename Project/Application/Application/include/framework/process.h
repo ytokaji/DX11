@@ -1,5 +1,5 @@
 /**
-	@file process.h
+	@file Process.h
 	@brief 処理規定クラス
 */
 #pragma once
@@ -7,11 +7,11 @@
 #define __PROSESS_H__
 
 /**
-	@class CProcess
+	@class Process
 	@brief 処理実行
 */
 template< class TClass, class PRIORITY_TYPE >
-class CProcess
+class Process
 {
 public:
 	/**
@@ -19,162 +19,162 @@ public:
 		@param pszid [in] 識別子
 		@param nPriority [in] プライオリティー
 	*/
-	CProcess(const char* i_pszid, PRIORITY_TYPE i_ePriority);
+	Process(const char* id, PRIORITY_TYPE priority);
 
 	/**
 		@brief デストラクター
 	*/
-	virtual ~CProcess();
+	virtual ~Process();
 
 	/**
 		@brief 終了
 	*/
-	void terminate();
+	void Terminate();
 	
 	/**
 		@brief 自身と子に処理を行う
 	*/
-	void process(std::function<void(TClass*)> i_func);
+	void ProcessImpl(std::function<void(TClass*)> func);
 
 	/**
 		@brief 有効化
 	*/
-	void setEnable();
+	void SetEnable();
 	
 	/**
 		@brief 無効化
 	*/
-	void setDisable();
+	void SetDisable();
 
 	/*
 		@brief 子の検索
 		@param i_pName [in] 識別子
 	*/
-	TClass* findChild(const char* i_pIdentifier);
+	TClass* FindChild(const char* identifier);
 
 protected:
 	/**
 		@brief 有効化時のコールバック
 	*/
-	virtual void    onEnable(){};
+	virtual void    OnEnable(){};
 
 	/**
 		@brief無効化時のコールバック
 	*/
-	virtual void    onDisable(){};
+	virtual void    OnDisable(){};
 	
 	/**
 		@brief 終了フラグ
 	*/
-	bool isErase() { return m_bFlgList[FLG_ERASE]; }
+	bool IsErase() { return _flgList[(uint8_t)FLG::ERASE]; }
 	
 	/**
 		@brief 有効
 	*/
-	bool isEnable() { return m_bFlgList[FLG_ENABLE]; }
+	bool IsEnable() { return _flgList[(uint8_t)FLG::ENABLE]; }
 
 private:
 	/**
 		@brief operator =
 	*/
-	CProcess& operator = ( const CProcess& ){};
+	Process& operator = ( const Process& ){};
 
 	/*
 		@brief 子の検索
 		@param i_pName [in] 識別子
 		@param i_pName [in] ハッシュ値
 	*/
-	TClass* findChild(const char* i_pIdentifier, std::size_t i_nHash);
+	TClass* FindChild(const char* identifier, std::size_t hash);
 
 private:
-	enum
+	enum class FLG : uint8_t
 	{
-		FLG_ENABLE,			//!< 有効無効フラグ
-		FLG_ERASE,			//!< 終了フラグ 
+		ENABLE,			//!< 有効無効フラグ
+		ERASE,			//!< 終了フラグ 
 
-		FLG_MAX
+		MAX
 	};
 
-	std::vector<TClass*>		m_apChild;			//!< 子
-	std::bitset<FLG_MAX>		m_bFlgList;			//!< フラグ
-	std::string					m_strIdentifier;	//!< 識別子
+	std::vector<TClass*>				_child;				//!< 子
+	std::bitset<(uint8_t)FLG::MAX>		_flgList;			//!< フラグ
+	std::string							_identifierString;	//!< 識別子
 
-	TClass*						m_pParent;			//!< 親
-	const PRIORITY_TYPE			m_ePriority;		//!< プライオリティー 
-	std::size_t			 		m_nIdentifierHash;	//!< 識別子から生成されたID
+	TClass*								_parent;			//!< 親
+	const PRIORITY_TYPE					_priority;			//!< プライオリティー 
+	std::size_t			 				_identifierHash;	//!< 識別子から生成されたID
 
-	friend class IProcessManager;
+	friend class ProcessManagerBase;
 };
 
 
 //---------------------------------------------------------------------
 template<class TClass, class PRIORITY_TYPE>
-CProcess<TClass, PRIORITY_TYPE>::CProcess(const char* i_pszid, PRIORITY_TYPE i_ePriority)
-	:	m_apChild			()
-	,	m_bFlgList			(0)
-	,	m_strIdentifier		(i_pszid)
-	,	m_pParent			(nullptr)
-	,	m_ePriority			(i_ePriority)
-	,	m_nIdentifierHash	(std::hash<std::string>()(i_pszid))
+Process<TClass, PRIORITY_TYPE>::Process(const char* id, PRIORITY_TYPE priority)
+	:	_child			()
+	,	_flgList			(0)
+	,	_identifierString		(id)
+	,	_parent			(nullptr)
+	,	_priority			(priority)
+	,	_identifierHash	(std::hash<std::string>()(id))
 {
-	_PRINT("ctor process[%s]\n", m_strIdentifier.c_str());
-	m_apChild.reserve(PROCESS_CHILD_MAX);
+	_PRINT("ctor Process[%s]\n", _identifierString.c_str());
+	_child.reserve(PROCESS_CHILD_MAX);
 }
 
 //---------------------------------------------------------------------
 template<class TClass, class PRIORITY_TYPE>
-CProcess<TClass, PRIORITY_TYPE>::~CProcess()
+Process<TClass, PRIORITY_TYPE>::~Process()
 {
-	_PRINT("dtor process[%s]\n", m_strIdentifier.c_str());
-	util::for_each( m_apChild, [](CProcess* p){ SAFE_DELETE( p ); } );
-	m_apChild.clear();
+	_PRINT("dtor Process[%s]\n", _identifierString.c_str());
+	util::for_each( _child, [](Process* p){ SAFE_DELETE( p ); } );
+	_child.clear();
 }
 
 //---------------------------------------------------------------------
 template<class TClass, class PRIORITY_TYPE>
-void CProcess<TClass, PRIORITY_TYPE>::process(std::function<void(TClass*)> i_func)
+void Process<TClass, PRIORITY_TYPE>::ProcessImpl(std::function<void(TClass*)> func)
 {
-	i_func(reinterpret_cast<TClass*>(this));
+	func(reinterpret_cast<TClass*>(this));
 
-	util::for_each( m_apChild, [&](CProcess* p){ p->process(i_func); } );
+	util::for_each( _child, [&](Process* p){ p->ProcessImpl(func); } );
 }
 
 //---------------------------------------------------------------------
 template<class TClass, class PRIORITY_TYPE>
-void CProcess<TClass, PRIORITY_TYPE>::setEnable()
+void Process<TClass, PRIORITY_TYPE>::SetEnable()
 {
-	m_bFlgList[FLG_ENABLE] = true;
-	onEnable();
+	_flgList[(uint8_t)FLG::ENABLE] = true;
+	OnEnable();
 }
 
 //---------------------------------------------------------------------
 template<class TClass, class PRIORITY_TYPE>
-void CProcess<TClass, PRIORITY_TYPE>::setDisable()
+void Process<TClass, PRIORITY_TYPE>::SetDisable()
 {
-	m_bFlgList[FLG_ENABLE] = false;
-	onDisable();
+	_flgList[(uint8_t)FLG::ENABLE] = false;
+	OnDisable();
 }
 
 //---------------------------------------------------------------------
 template<class TClass, class PRIORITY_TYPE>
-TClass* CProcess<TClass, PRIORITY_TYPE>::findChild(const char* i_pIdentifier)
+TClass* Process<TClass, PRIORITY_TYPE>::FindChild(const char* identifier)
 {
-	return findChild(i_pIdentifier, std::hash<std::string>()(i_pIdentifier));
+	return FindChild(identifier, std::hash<std::string>()(identifier));
 }
 
 //---------------------------------------------------------------------
 template<class TClass, class PRIORITY_TYPE>
-TClass* CProcess<TClass, PRIORITY_TYPE>::findChild(const char* i_pIdentifier, std::size_t i_nHash)
+TClass* Process<TClass, PRIORITY_TYPE>::FindChild(const char* identifier, std::size_t hash)
 {
-	if( m_nIdentifierHash == i_nHash &&
-		m_strIdentifier.compare(i_pIdentifier) == 0 )
+	if( _identifierHash == hash &&
+		_identifierString.compare(identifier) == 0 )
 	{
 		return reinterpret_cast<TClass*>(this);
 	}
 
-	for each (auto var in m_apChild)
+	for each (auto var in _child)
 	{
-		CProcess* p = var->findChild(i_pIdentifier, i_nHash);
+		Process* p = var->FindChild(identifier, hash);
 		if( p ) return reinterpret_cast<TClass*>(p);
 	}
 
@@ -183,9 +183,9 @@ TClass* CProcess<TClass, PRIORITY_TYPE>::findChild(const char* i_pIdentifier, st
 
 //---------------------------------------------------------------------
 template<class TClass, class PRIORITY_TYPE>
-void CProcess<TClass, PRIORITY_TYPE>::terminate()
+void Process<TClass, PRIORITY_TYPE>::Terminate()
 {
-	m_bFlgList[FLG_ERASE] = true;
+	_flgList[(uint8_t)FLG::ERASE] = true;
 }
 
 #endif		//__PROSESS_H__

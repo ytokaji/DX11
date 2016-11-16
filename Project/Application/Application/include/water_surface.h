@@ -23,17 +23,17 @@ public:
 	/**
 		@brief 初期化
 	*/
-	void init();
+	void Init();
 
 	/**
 		@brief 更新
 	*/
-	void update( float i_fElapsd );
+	void Update( float i_fElapsd );
 
 	/**
 		@brief 描画
 	*/
-	void draw( D3DXMATRIX* i_pMat=nullptr );
+	void draw( D3DXMATRIX* mat=nullptr );
 
 	/**
 		@brief デバイスリセット時に実行

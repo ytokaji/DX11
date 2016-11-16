@@ -9,39 +9,40 @@
 #include "framework/process.h"
 
 /**
-	@class CRender
+	@class Render
 	@brief 処理実行
 */
-class CRender : public CProcess<CRender, RENDER_PRIORITY>
+class Render : public Process<Render, RENDER_PRIORITY>
 {
 public:
 	/**
 		@brief 汎用的に使うようコンストラクター
 		@param pszid [in] 識別子
 		@param i_fPre [in] 事前処理ファンクタ
-		@param i_fRender [in] 描画処理ファンクタ
-		@param i_fPost [in] 事後処理ファンクタ
+		@param render [in] 描画処理ファンクタ
+		@param post [in] 事後処理ファンクタ
 		@param nPriority [in] プライオリティー
 	*/
-	CRender(const char* i_pszid, RENDER_PRIORITY i_ePriority = RENDER_PRIORITY::DEFAULT)
-		:	CRender(i_pszid, []{}, []{}, []{}, i_ePriority)
+	Render(const char* id, RENDER_PRIORITY priority = RENDER_PRIORITY::DEFAULT)
+		:	Render(id, []{}, []{}, []{}, priority)
 	{
 	}
-	CRender(const char* i_pszid,
-		std::function<void()> i_fPre, std::function<void()> i_fRender, std::function<void()> i_fPost
-			, RENDER_PRIORITY i_ePriority = RENDER_PRIORITY::DEFAULT)
-		:	CProcess<CRender,RENDER_PRIORITY>	( i_pszid, i_ePriority )
-		,	m_fPre				( i_fPre )
-		,	m_fRender			( i_fRender )
-		,	m_fPost				( i_fPost )
-		,	m_pActiveContext	( nullptr )
+	Render(const char* id,
+		std::function<void()> i_fPre, std::function<void()> render
+			, std::function<void()> post
+			, RENDER_PRIORITY priority = RENDER_PRIORITY::DEFAULT)
+		:	Process<Render,RENDER_PRIORITY>	( id, priority )
+		,	_pre			( i_fPre )
+		,	_render			( render )
+		,	_post			( post )
+		,	_activeContext	( nullptr )
 	{
 	}
 
 	/**
 		@brief デストラクター
 	*/
-	virtual ~CRender()
+	virtual ~Render()
 	{
 	}
 	
@@ -49,36 +50,36 @@ public:
 		@brief	事前処理
 		@note	親子階層とプライオリティを考慮した同期で実行
 	*/
-	virtual void pre(void)	{m_fPre();}
+	virtual void Pre()	{_pre();}
 
 	/**
 		@brief	描画処理
 		@note	順不同、非同期で実行
 	*/
-	virtual void render(void)	{ m_fRender(); }
+	virtual void RenderAsync()	{ _render(); }
 	
 	/**
 		@brief	事後処理
 		@note	親子階層とプライオリティを考慮した同期で実行
 	*/
-	virtual void post(void)	{m_fPost();}
+	virtual void Post()	{_post();}
 	
 	/**
 		@brief	アクティブなコンテキストの設定
 	*/
-	void setActiveDeviceContext(ID3D11DeviceContext* i_pContext) { m_pActiveContext = i_pContext; }
+	void SetActiveDeviceContext(ID3D11DeviceContext* context) { _activeContext = context; }
 	
 	/**
 		@brief	アクティブなコンテキストの取得
 	*/
-	ID3D11DeviceContext* getActiveDeviceContext() { return m_pActiveContext; }
+	ID3D11DeviceContext* GetActiveDeviceContext() { return _activeContext; }
 
 private:
-	const std::function<void()>		m_fPre;				//!< 事前処理
-	const std::function<void()>		m_fRender;			//!< 描画処理
-	const std::function<void()>		m_fPost;			//!< 事後処理
+	const std::function<void()>		_pre;			//!< 事前処理
+	const std::function<void()>		_render;		//!< 描画処理
+	const std::function<void()>		_post;			//!< 事後処理
 
-	ID3D11DeviceContext*			m_pActiveContext;	//!< アクティブなコンテキスト
+	ID3D11DeviceContext*			_activeContext;	//!< アクティブなコンテキスト
 };
 
 

@@ -13,7 +13,7 @@ class CMaterial;
 /**
 	@brief シェーダ
 */
-class CShader
+class Shader
 {
 public:
 	/**
@@ -34,122 +34,122 @@ public:
 	/**
 		@brief コンストラクタ
 	*/
-	CShader();
+	Shader();
 	
 	/**
 		@brief デストラクタ
 	*/
-	virtual ~CShader();
+	virtual ~Shader();
 
 #if !_PRECOMPILE_SHADER_USE
 	/**
 	@brief	シェーダーのコンパイルと初期化
 	@note	コンパイル前のものをロードして初期化
-	@param i_pFileName [in] ファイル名
-	@param i_pShaderProfile [in] プロファイル
-	@param i_pFunctionName [in] エントリポイント
+	@param fileName [in] ファイル名
+	@param shaderProfile [in] プロファイル
+	@param functionName [in] エントリポイント
 	*/
-	bool CompileInitShader(wchar_t* i_pFileName, char*	i_pShaderProfile, char*	i_pFunctionName, eTYPE i_eType);
+	bool CompileInitShader(wchar_t* fileName, char*	shaderProfile, char* functionName, eTYPE type);
 #endif
 
 	/**
 		@brief	シェーダーの初期化
 		@note	コンパイル済みバッファからの初期化
-		@param i_pBuff [in] コンパイル済みシェーダーバッファ
-		@param i_nSize [in] バッファのサイズ
+		@param buff [in] コンパイル済みシェーダーバッファ
+		@param size [in] バッファのサイズ
 	*/
-	bool InitShader(const void* i_pBuff, size_t i_nSize, eTYPE i_eType);
+	bool InitShader(const void* buff, size_t size, eTYPE type);
 
 	/**
 		@brief シェーダ全体で共通のパラメータセット
 	*/
-	void PreRenderSetParam(D3DXMATRIX* i_pMat);
+	void PreRenderSetParam(D3DXMATRIX* mat);
 	
 	/**
 		@brief マテリアルごとに設定するパラメータ
 	*/
-	void RenderSetParam(CMaterial* i_pMate);
+	void RenderSetParam(CMaterial* mate);
 
 protected:	
 	/**
 		@brief シェーダの作成
 	*/
-	bool InitShaderVertex(const void* i_pBuff, size_t i_nSize);
-	bool InitShaderPixel(const void* i_pBuff, size_t i_nSize);
-	bool InitShaderHull(const void* i_pBuff, size_t i_nSize){ return false; };
-	bool InitShaderDomain(const void* i_pBuff, size_t i_nSize){ return false; };
-	bool InitShaderGeometry(const void* i_pBuff, size_t i_nSize){ return false; };
-	bool InitShaderCompute(const void* i_pBuff, size_t i_nSize){ return false; };
+	bool InitShaderVertex(const void* buff, size_t size);
+	bool InitShaderPixel(const void* buff, size_t size);
+	bool InitShaderHull(const void* buff, size_t size){ return false; };
+	bool InitShaderDomain(const void* buff, size_t size){ return false; };
+	bool InitShaderGeometry(const void* buff, size_t size){ return false; };
+	bool InitShaderCompute(const void* buff, size_t size){ return false; };
 
 	/**
 		@brief シェーダーパラメータの設定
 	*/
-	void setupParameter(eTYPE i_eType);
+	void setupParameter(eTYPE type);
 
 protected:
 	/**
 		@brief シェーダのデータ
 	*/
-	struct SShaderData
+	struct ShaderData
 	{
 		/// シェーダー
 		union D3DShader {
-			D3DShader() : vertex(nullptr){}
-			ID3D11VertexShader*		vertex;
-			ID3D11PixelShader*		pixel;
-			ID3D11HullShader*		hull;
-			ID3D11DomainShader*		domain;
-			ID3D11GeometryShader*	geometry;
-			ID3D11ComputeShader*	compute;
+			D3DShader() : _vertex(nullptr){}
+			ID3D11VertexShader*		_vertex;
+			ID3D11PixelShader*		_pixel;
+			ID3D11HullShader*		_hull;
+			ID3D11DomainShader*		_domain;
+			ID3D11GeometryShader*	_geometry;
+			ID3D11ComputeShader*	_compute;
 		}	shader;
 		
 		/**
 			@brief 変数パラメータ
 		*/
-		struct SVariableParam
+		struct VariableParam
 		{
-			std::string				str;				//!< 名前
-			std::function<void()>	func;				//!< 適用関数
-			char*					pBuff;				//!< 書き換え先
+			std::string				_str;				//!< 名前
+			std::function<void()>	_func;				//!< 適用関数
+			char*					_buff;				//!< 書き換え先
 		};
 
 		/**
 			@brief リソースパラメータ
 		*/
-		struct SResourceParam
+		struct ResourceParam
 		{
-			std::string				str;				//!< 名前
-			std::function<void()>	func;				//!< 適用関数
-			unsigned int			bindPoint;			//!< バインドポイント
+			std::string				_str;				//!< 名前
+			std::function<void()>	_func;				//!< 適用関数
+			unsigned int			_bindPoint;			//!< バインドポイント
 		};
 
-		std::vector<SVariableParam>	aVariableParam;		//!< 変数パラメータ配列
-		std::vector<SResourceParam>	aResourceParam;		//!< リソースパラメータ配列
-		ID3D11ShaderReflection*		reflection;			//!< リフレクション
-		ID3D11Buffer*				d3dBuffer;			//!< 定数バッファ
-		char*						pBuffer;			//!< バッファ
-		unsigned int				nBufferSize;		//!< バッファサイズ
+		std::vector<VariableParam>	_variableParam;		//!< 変数パラメータ配列
+		std::vector<ResourceParam>	_resourceParam;		//!< リソースパラメータ配列
+		ID3D11ShaderReflection*		_reflection;		//!< リフレクション
+		ID3D11Buffer*				_d3dBuffer;			//!< 定数バッファ
+		char*						_buffer;			//!< バッファ
+		unsigned int				_bufferSize;		//!< バッファサイズ
 
-		SShaderData()
+		ShaderData()
 			: shader()
-			, reflection(nullptr)
-			, d3dBuffer(nullptr)
-			, pBuffer(nullptr)
-			, nBufferSize(0)
+			, _reflection(nullptr)
+			, _d3dBuffer(nullptr)
+			, _buffer(nullptr)
+			, _bufferSize(0)
 		{
 		}
-		~SShaderData()
+		~ShaderData()
 		{
-			SAFE_RELEASE(shader.vertex);
-			SAFE_RELEASE(reflection);
-			SAFE_RELEASE(d3dBuffer);
-			SAFE_DELETE_ARRAY(pBuffer);
+			SAFE_RELEASE(shader._vertex);
+			SAFE_RELEASE(_reflection);
+			SAFE_RELEASE(_d3dBuffer);
+			SAFE_DELETE_ARRAY(_buffer);
 		}
 	};
 
 private:
 	std::vector<std::unique_ptr<ShaderValue>>	_shaderValue;		//!< シェーダーパラメータ適用郡
-	SShaderData					_shadarData[(int)eTYPE::MAX];		//!< シェーダーデータ
+	ShaderData					_shadarData[(int)eTYPE::MAX];		//!< シェーダーデータ
 	ID3D11InputLayout*          _layout;							//!< インプットレイアウト
 
 };

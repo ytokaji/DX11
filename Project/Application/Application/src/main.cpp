@@ -45,7 +45,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				_ASSERT( pShaderTask );
 				if( param.m_Others.m_bShaderReLoadReq == true )
 				{
-					pShaderTask->shaderReLoadReq();
+					pShaderTask->ShaderReLoadReq();
 					param.m_Others.m_bShaderReLoadReq = false;
 				}
 				AppContext::GetInstance()->setShaderParam( &param );

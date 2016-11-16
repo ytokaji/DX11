@@ -12,10 +12,10 @@
 #include "shader/shaderManager.h"
 
 
-class CJobManager;
-class CRenderManager;
-class CStartJob;
-class CThreadChannel;
+class JobManager;
+class RenderManager;
+class StartJob;
+class ThreadChannel;
 
 /**
 	@brief アプリケーション管理クラス
@@ -110,17 +110,17 @@ public:
 	/**
 		@brief ジョブ管理クラスの取得
 	*/
-	CJobManager* GetJobManager() { return _job; }
+	JobManager* GetJobManager() { return _job; }
 	
 	/**
 		@brief 描画管理クラスの取得
 	*/
-	CRenderManager* GetRenderManager() { return _render; }
+	RenderManager* GetRenderManager() { return _render; }
 	
 	/**
 		@brief スレッドの中継管理クラスの取得
 	*/
-	CThreadChannel* GetThreadChannel() { return _threadChannel; }
+	ThreadChannel* GetThreadChannel() { return _threadChannel; }
 
 	/**
 		@brief リサイズ時に呼ぶ
@@ -179,8 +179,8 @@ private:
 	std::vector<ReleasingSwapChainArg>	_releasingSwapChain;
 	std::vector<MsgProcChainArg>		_msgProc;
 
-	CJobManager*						_job;					//!< ジョブ管理
-	CRenderManager*						_render;				//!< 描画管理
+	JobManager*						_job;					//!< ジョブ管理
+	RenderManager*						_render;				//!< 描画管理
 	
 	ID3D11Device*						_device;				//!< DirectXデバイス
 	ID3D11DeviceContext*				_immediateContext;		//!< イミディエートのコンテキスト
@@ -196,8 +196,8 @@ private:
     IDirect3DVertexBuffer9*				_vb;					//!< 頂点情報
     IDirect3DVertexDeclaration9*		_vertexDecl;			//!< 頂点データ要素
 
-	CThreadChannel*						_threadChannel;			//!< スレッドの中継管理
-	CStartJob*							_startJob;				//!< 開始ジョブ
+	ThreadChannel*						_threadChannel;			//!< スレッドの中継管理
+	StartJob*							_startJob;				//!< 開始ジョブ
 
 	unsigned int						_cpuCoreNum;			//!< cpuのコア数
 	float								_elapsd;				//!< １F間の時間

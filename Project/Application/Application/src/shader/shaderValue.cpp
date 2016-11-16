@@ -32,7 +32,7 @@ ShaderValue::ShaderValue()
 }
 
 //---------------------------------------------------------------------
-size_t ShaderValue::Create(CShader* shader, ID3D11ShaderReflectionVariable* variable)
+size_t ShaderValue::Create(Shader* shader, ID3D11ShaderReflectionVariable* variable)
 {
 	D3D11_SHADER_VARIABLE_DESC varDesc;
 	D3D11_SHADER_TYPE_DESC typDesc;
@@ -150,7 +150,7 @@ void CShaderValue_Semantic::SetValue(D3DXMATRIX& i_rMat)
 }
 
 //---------------------------------------------------------------------
-void CShaderValue_Semantic::renderSetParam(CMaterial* i_pMate)
+void CShaderValue_Semantic::renderSetParam(CMaterial* mate)
 {
 	HRESULT hr = S_OK;
 	if( m_hAmbient )
@@ -170,7 +170,7 @@ void CShaderValue_Semantic::renderSetParam(CMaterial* i_pMate)
 }
 
 //---------------------------------------------------------------------
-void CShaderValue_Semantic::attach(CShader* i_pParam)
+void CShaderValue_Semantic::attach(Shader* i_pParam)
 {
 	m_pShader = i_pParam;
 	m_hPorj = i_pParam->pEffect->GetParameterBySemantic( 0, "Projection" );
@@ -198,7 +198,7 @@ CShaderValue_DiffuseTexture::~CShaderValue_DiffuseTexture()
 }
 
 //---------------------------------------------------------------------
-void CShaderValue_DiffuseTexture::renderSetParam(CMaterial* i_pMate)
+void CShaderValue_DiffuseTexture::renderSetParam(CMaterial* mate)
 {
 	HRESULT hr = S_OK;
 	if( m_hDiffuseTexture )
@@ -206,7 +206,7 @@ void CShaderValue_DiffuseTexture::renderSetParam(CMaterial* i_pMate)
 }
 
 //---------------------------------------------------------------------
-void CShaderValue_DiffuseTexture::attach(CShader* i_pParam)
+void CShaderValue_DiffuseTexture::attach(Shader* i_pParam)
 {
 	m_hDiffuseTexture = i_pParam->pEffect->GetParameterBySemantic( 0, "DiffuseTexture" );
 }
@@ -236,7 +236,7 @@ void CShaderValue_FrameBufferTexture::SetValue(D3DXMATRIX& i_rMat)
 }
 
 //---------------------------------------------------------------------
-void CShaderValue_FrameBufferTexture::attach(CShader* i_pParam)
+void CShaderValue_FrameBufferTexture::attach(Shader* i_pParam)
 {
 	m_hFrameBufferTexture = i_pParam->pEffect->GetParameterBySemantic( 0, "FrameBuffer" );
 	m_hFrameBufferDepthTexture = i_pParam->pEffect->GetParameterBySemantic( 0, "FrameBufferDepth" );
@@ -333,7 +333,7 @@ void CShaderValue_WaterParam::SetValue(D3DXMATRIX& i_rMat)
 }
 
 //---------------------------------------------------------------------
-void CShaderValue_WaterParam::attach(CShader* i_pParam)
+void CShaderValue_WaterParam::attach(Shader* i_pParam)
 {	
 	m_h4Color = i_pParam->pEffect->GetParameterByName( 0, "g_f4Color" );
 	m_h3SpecularColor = i_pParam->pEffect->GetParameterByName( 0, "g_f3SpecularColor" );
@@ -386,7 +386,7 @@ void CShaderValue_Bump::SetValue(D3DXMATRIX& i_rMat)
 }
 
 //---------------------------------------------------------------------
-void CShaderValue_Bump::attach(CShader* i_pParam)
+void CShaderValue_Bump::attach(Shader* i_pParam)
 {
 	m_h2NormalMap = i_pParam->pEffect->GetParameterByName( 0, "g_NormalMap" );
 	m_hSpecularRange = i_pParam->pEffect->GetParameterByName( 0, "g_Specular" );
@@ -439,7 +439,7 @@ void CShaderValue_Fur::SetValue(D3DXMATRIX& i_rMat)
 }
 
 //---------------------------------------------------------------------
-void CShaderValue_Fur::attach(CShader* i_pParam)
+void CShaderValue_Fur::attach(Shader* i_pParam)
 {
 	m_h3furColor = i_pParam->pEffect->GetParameterByName( 0, "g_f3furColor" );
 	m_hFurDistance = i_pParam->pEffect->GetParameterByName( 0, "g_fFurDistance" );
@@ -511,7 +511,7 @@ void CShaderValue_Gaussian::SetValue(D3DXMATRIX& i_rMat)
 }
 
 //---------------------------------------------------------------------
-void CShaderValue_Gaussian::attach(CShader* i_pParam)
+void CShaderValue_Gaussian::attach(Shader* i_pParam)
 {
 	m_hfUvOffset = i_pParam->pEffect->GetParameterByName( 0, "g_f4UVOffset" );
 	m_hfWindowRatio = i_pParam->pEffect->GetParameterByName( 0, "g_2fWindowRatio" );
@@ -558,7 +558,7 @@ void CShaderValue_Brightness::SetValue(D3DXMATRIX& i_rMat)
 }
 
 //---------------------------------------------------------------------
-void CShaderValue_Brightness::attach(CShader* i_pParam)
+void CShaderValue_Brightness::attach(Shader* i_pParam)
 {
 	m_hfBrighness = i_pParam->pEffect->GetParameterByName( 0, "g_fBrightnessBias" );
 	m_hfWindowRatio = i_pParam->pEffect->GetParameterByName( 0, "g_2fWindowRatio" );
@@ -595,7 +595,7 @@ void CShaderValue_Dof::SetValue(D3DXMATRIX& i_rMat)
 }
 
 //---------------------------------------------------------------------
-void CShaderValue_Dof::attach(CShader* i_pParam)
+void CShaderValue_Dof::attach(Shader* i_pParam)
 {
 	m_hfFocusDistance = i_pParam->pEffect->GetParameterByName( 0, "g_fFocusDistance" );
 	m_hfFocusRange = i_pParam->pEffect->GetParameterByName( 0, "g_fFocusRange" );

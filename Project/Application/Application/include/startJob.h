@@ -14,28 +14,28 @@ class CHud;
 /**
 	@brief 開始時の初期ジョブ
 */
-class CStartJob	: public CJob
+class StartJob	: public Job
 {
 public:
-	CStartJob();
-	~CStartJob();
+	StartJob();
+	~StartJob();
 	
 	/**
 		@brief	更新処理
 		@note	親子階層とプライオリティを考慮した同期で実行
 	*/
-	virtual void update(void);
+	virtual void Update(void);
 
 private:
-	enum
+	enum class STATE : uint8_t
 	{
 		STATE_INIT		= 0
 	,	STATE_RUN
 	};
 
 private:
-	CHud*			m_pHub;
-	unsigned int	m_nState;
+	CHud*		_hub;
+	STATE		_state;
 };
 
 

@@ -150,13 +150,13 @@ void AppContext::Init(ID3D11Device* device)
 	});
 
 	// プロセス関連
-	_job = new CJobManager();
-	_render = new CRenderManager();
-	_job->addJob( _startJob = new CStartJob() );
-	_threadChannel = new CThreadChannel(_cpuCoreNum);
+	_job = new JobManager();
+	_render = new RenderManager();
+	_job->AddJob( _startJob = new StartJob() );
+	_threadChannel = new ThreadChannel(_cpuCoreNum);
 
 	// シェーダー作成
-	_shaderManager.init();
+	_shaderManager.Init();
 }
 
 //---------------------------------------------------------------------
@@ -170,7 +170,7 @@ void AppContext::Update(float elapsd)
 	SetViewMatrix( _camera.GetViewMatrix() );
 	SetProjMatrix( _camera.GetProjMatrix() );
 
-	_job->proc();
+	_job->Proc();
 }
 
 //---------------------------------------------------------------------
@@ -233,7 +233,7 @@ void AppContext::Render()
     ID3D11DepthStencilView* pDSV = DXUTGetD3D11DepthStencilView();
 	_immediateContext->ClearDepthStencilView(pDSV, D3D11_CLEAR_DEPTH, 1.0, 0);
 
-	_render->proc();
+	_render->Proc();
 }
 
 //---------------------------------------------------------------------

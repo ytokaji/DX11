@@ -7,95 +7,95 @@
 #define __THREAD_H__
 
 
-class IThreadRequest;
+class ThreadRequestBase;
 
 /**
 	@brief	プロセス管理
 */
-class CThreadChannel
+class ThreadChannel
 {
 public:
 	/**
 		@brief コンストラクタ
 	*/
-	CThreadChannel(unsigned int i_nThreadNum);
+	ThreadChannel(unsigned int threadNum);
 
 	/**
 		@brief デストラクタ
 	*/
-	~CThreadChannel();
+	~ThreadChannel();
 
 	/**
 		@brief リクエストのプッシュ
 	*/
-	void pushRequest(IThreadRequest* i_pThread);
+	void PushRequest(ThreadRequestBase* thread);
 	
 	/**
 		@brief リクエストのポップ
 	*/
-	IThreadRequest* popRequest();
+	ThreadRequestBase* PopRequest();
 
 private:
 	/**
 		@brief	仕事を実行するクラス
 	*/
-	class CWorkerThread
+	class WorkerThread
 	{
 	public:
-		CWorkerThread(CThreadChannel* i_pChannel);
-		~CWorkerThread();
+		WorkerThread(ThreadChannel* channel);
+		~WorkerThread();
 
 	private:
-		void run();
+		void Run();
 
 	private:
-		CThreadChannel*	m_pChannel;			//!< CThreadChannelポインタ
-		std::thread		m_Thread;			//!< スレッド
-		bool			m_bEndFlg;			//!< 終了フラグ
+		ThreadChannel*	_channel;			//!< ThreadChannelポインタ
+		std::thread		_thread;			//!< スレッド
+		bool			_endFlg;			//!< 終了フラグ
 	};
 
-	std::vector<CWorkerThread*>			m_apWorkerThread;	//!< CWorkerThread配列
-	std::queue<IThreadRequest*>			m_Queue;			//!< キュー
-	std::mutex							m_Mutex;			//!< ミューテックス
+	std::vector<WorkerThread*>			_workerThread;	//!< WorkerThread配列
+	std::queue<ThreadRequestBase*>		_queue;			//!< キュー
+	std::mutex							_mutex;			//!< ミューテックス
 };
 
 /**
 	@brief	ジョブ管理
 */
-class IThreadRequest
+class ThreadRequestBase
 {
 public:
 	/**
 		@brief コンストラクタ
 	*/
-	IThreadRequest() : m_bIsEnd(true){}
+	ThreadRequestBase() : _isEnd(true){}
 	
 	/**
 		@brief デストラクタ
 	*/
-	virtual ~IThreadRequest(){}
+	virtual ~ThreadRequestBase(){}
 	
 	/**
 		@brief 処理
 	*/
-	virtual void execute(void) = 0;
+	virtual void Execute() = 0;
 		
 	/**
 		@brief 終了するまで待機
 	*/
-	void wait(void);
+	void Wait();
 
 	/**
 		@brief 終了したか
 	*/
-	bool isEnd(void) { return m_bIsEnd; }
+	bool IsEnd() { return _isEnd; }
 
-	virtual IThreadRequest& operator =(const IThreadRequest& r) { this->m_bIsEnd = r.m_bIsEnd; return *this; }
+	virtual ThreadRequestBase& operator =(const ThreadRequestBase& r) { this->_isEnd = r._isEnd; return *this; }
 
 private:
-	bool	m_bIsEnd;		//!< 処理終了したかフラグ
+	bool	_isEnd;		//!< 処理終了したかフラグ
 
-	friend class CThreadChannel;
+	friend class ThreadChannel;
 };
 
 #endif		//__THREAD_H__

@@ -12,27 +12,27 @@
 
 
 //---------------------------------------------------------------------
-CStartJob::CStartJob()
-	:	CJob				("CStartJob")
-	,	m_pHub				( nullptr )
-	,	m_nState			( STATE_INIT )
+StartJob::StartJob()
+	:	Job				("StartJob")
+	,	_hub			( nullptr )
+	,	_state			(STATE::STATE_INIT)
 {
 }
 
 //---------------------------------------------------------------------
-CStartJob::~CStartJob()
+StartJob::~StartJob()
 {
-	SAFE_TERMINATE(m_pHub);
+	SAFE_TERMINATE(_hub);
 }
 
 //---------------------------------------------------------------------
-void CStartJob::update()
+void StartJob::Update()
 {
-	switch( m_nState )
+	switch( _state )
 	{
-	case STATE_INIT:
-		AppContext::GetInstance()->GetRenderManager()->addRender(m_pHub = new CHud());
-		m_nState = STATE_RUN;
+	case STATE::STATE_INIT:
+		AppContext::GetInstance()->GetRenderManager()->AddRender(_hub = new CHud());
+		_state = STATE::STATE_RUN;
 		break;
 
 	default:

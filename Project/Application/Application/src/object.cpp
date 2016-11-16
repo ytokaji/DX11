@@ -24,13 +24,13 @@ namespace
 }
 
 //---------------------------------------------------------------------
-CObject::CObject(const wchar_t* i_pchFileName, CShaderTask::SHADER_INDEX i_eShader)
+CObject::CObject(const wchar_t* i_pchFileName, CShaderTask::SHADER_INDEX shader)
 	:	m_pMesh				( nullptr )
 	,	m_vScl				( 1.f, 1.f, 1.f )
 	,	m_vRot				( 0.f, 0.f, 0.f )
 	,	m_vTrn				( 0.f, 0.f, 0.f )
 	,	m_nPassDrawCount	( 1 )
-	,	m_eShader			( i_eShader )
+	,	m_eShader			( shader )
 {
 	_ASSERT( m_eShader < CShaderTask::S_I_MAX );
 	createMesh( i_pchFileName );

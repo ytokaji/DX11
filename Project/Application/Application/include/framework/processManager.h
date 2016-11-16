@@ -13,176 +13,171 @@
 /**
 	@brief	プロセス管理
 */
-class IProcessManager
+class ProcessManagerBase
 {
 public:
 	/**
 	@brief コンストラクタ
 	*/
-	IProcessManager()
-	{
-	}
+	ProcessManagerBase(){}
 
 	/**
 		@brief デストラクタ
 	*/
-	virtual ~IProcessManager()
-	{
-	}
+	virtual ~ProcessManagerBase(){}
 	
 	/**
 		@brief 実行
 	*/
-	virtual void proc(void) = 0;
+	virtual void Proc(void) = 0;
 	
 protected:
 	/**
 		@brief ルートに追加
-		@param i_pChild [in] 追加するプロセス
-		@param i_pParent [in] 親。nullptrならルートの下
+		@param child [in] 追加するプロセス
+		@param parent [in] 親。nullptrならルートの下
 	*/
-	template<class TClass> void addProcess(TClass* i_pChild, TClass* i_pParent) const;
+	template<class TClass> void AddProcess(TClass* child, TClass* parent) const;
 
 	/**
 		@brief 検索
-		@param i_pIdentifier [in] 識別子
+		@param identifier [in] 識別子
 	*/
-	template<class TClass> TClass* findProcess(TClass* i_pProcess, const char* i_pIdentifier) const;
+	template<class TClass> TClass* FindProcess(TClass* process, const char* identifier) const;
 
 	/**
 		@brief 消去フラグのたっているプロセスの削除
 		@param i_pProcess [in] 基準プロセス
 		@return 削除されたものがあったか
 	*/
-	template<class TClass> bool erase(TClass* i_pProcess) const;
+	template<class TClass> bool Erase(TClass* process) const;
 
 	/**
 		@brief プロセスリストの更新
 		@param i_pProcess [in] 基準プロセス
 	*/
-	template<class TArrayClass, class TClass> void updateProcessList(std::vector<TArrayClass>& i_apList, TClass* i_pRoot) const;
+	template<class TArrayClass, class TClass> void UpdateProcessList(std::vector<TArrayClass>& list, TClass* root) const;
 };
 
 /**
 	@brief	ジョブ管理
 */
-class CJobManager	:	public IProcessManager
+class JobManager	:	public ProcessManagerBase
 {
 public:
 	/**
 		@brief コンストラクタ
 	*/
-	CJobManager();
+	JobManager();
 	
 	/**
 		@brief デストラクタ
 	*/
-	virtual ~CJobManager();
+	virtual ~JobManager();
 	
 	/**
 		@brief 実行
 	*/
-	virtual void proc(void);
+	virtual void Proc(void);
 
 	/**
 		@brief 追加
-		@param i_pChild [in] 追加するプロセス
-		@param i_pParent [in] 親。nullptrならルートの下
+		@param child [in] 追加するプロセス
+		@param parent [in] 親。nullptrならルートの下
 	*/
-	void addJob(CJob* i_pChild, CJob* i_pParent = nullptr);
+	void AddJob(Job* child, Job* parent = nullptr);
 
 	/**
 		@brief 検索
-		@param i_pIdentifier [in] 識別子
+		@param identifier [in] 識別子
 	*/
-	CJob* findJob(const char* i_pIdentifier);
+	Job* FindJob(const char* identifier);
 	
 private:
 	/**
 		@brief 更新用スレッド
 	*/
-	class CProcThread : public IThreadRequest
+	class ProcThread : public ThreadRequestBase
 	{
 	public:
-		CProcThread(CJob* i_pProcess) : IThreadRequest(), m_pProcess(i_pProcess) {}
-		virtual ~CProcThread(){};
-		virtual void execute(void) { m_pProcess->updateASync(); }
+		ProcThread(Job* process) : ThreadRequestBase(), _process(process) {}
+		virtual ~ProcThread(){};
+		virtual void Execute(void) { _process->UpdateASync(); }
 
 	private:
-		CJob*		m_pProcess;		//!< プロセスポインタ
+		Job*		_process;		//!< プロセスポインタ
 	};
 
 private:
-	std::vector<CProcThread>	m_aThreadList;	//!< 更新用スレッド配列
-	CJob						m_Root;			//!< ルートプロセス
+	std::vector<ProcThread>		_threadList;	//!< 更新用スレッド配列
+	Job						_root;			//!< ルートプロセス
 };
 
 /**
 	@brief	レンダー管理
 */
-class CRenderManager	:	public IProcessManager
+class RenderManager	:	public ProcessManagerBase
 {
 public:
 	/**
 		@brief コンストラクタ
 	*/
-	CRenderManager();
+	RenderManager();
 	
 	/**
 		@brief デストラクタ
 	*/
-	virtual ~CRenderManager();
+	virtual ~RenderManager();
 	
 	/**
 		@brief 実行
 	*/
-	virtual void proc(void);
+	virtual void Proc(void);
 
 	/**
 		@brief 追加
-		@param i_pChild [in] 追加するプロセス
-		@param i_pParent [in] 親。nullptrならルートの下
+		@param child [in] 追加するプロセス
+		@param parent [in] 親。nullptrならルートの下
 	*/
-	void addRender(CRender* i_pChild, CRender* i_pParent = nullptr);
+	void AddRender(Render* child, Render* parent = nullptr);
 
 	/**
 		@brief 検索
-		@param i_pIdentifier [in] 識別子
+		@param identifier [in] 識別子
 	*/
-	CRender* findRender(const char* i_pIdentifier);
+	Render* FindRender(const char* identifier);
 	
 private:
 	/**
 		@brief 更新用スレッド
 	*/
-	class CProcThread : public IThreadRequest
+	class ProcThread : public ThreadRequestBase
 	{
 	public:
-		CProcThread(CRender* i_pProcess);
-		CProcThread(const CProcThread& r) : CProcThread(r.m_pProcess){};
-		virtual ~CProcThread();
-		virtual void execute(void);
+		ProcThread(Render* i_pProcess);
+		ProcThread(const ProcThread& r) : ProcThread(r._process){};
+		virtual ~ProcThread();
+		virtual void Execute(void);
 		
 		/**
 			@brief コマンドリスト適用
 		*/
-		void executeCommandList(ID3D11DeviceContext* i_pImmediateContext);
+		void ExecuteCommandList(ID3D11DeviceContext* immediateContext);
 		
 		/**
 			@brief 代入演算子
 		*/
-		CProcThread& operator =(const CProcThread& src);
+		ProcThread& operator =(const ProcThread& src);
 
 	private:
-		ID3D11DeviceContext*	m_pContext;		//!< render用のデファードコンテキスト
-		ID3D11CommandList*		m_pCommand;		//!< render用のコマンドリスト
-		CRender*				m_pProcess;		//!< プロセスポインタ
+		ID3D11DeviceContext*	_context;		//!< RenderAsync用のデファードコンテキスト
+		ID3D11CommandList*		_command;		//!< RenderAsync用のコマンドリスト
+		Render*				_process;		//!< プロセスポインタ
 	};
 
 private:
-	std::vector<CProcThread>	m_aThreadList;		//!< 更新用スレッド配列
-
-	CRender						m_Root;				//!< ルートプロセス
+	std::vector<ProcThread>		_threadList;		//!< 更新用スレッド配列
+	Render						_root;				//!< ルートプロセス
 };
 #endif		//__PROSESS_MANAGER_H__
 

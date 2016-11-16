@@ -21,8 +21,8 @@ namespace
 	{
 		BYTE*					pShader;
 		size_t					nSize;
-		CShader::eTYPE			eType;
-		CShaderManager::eSHADER	eShader;
+		Shader::eTYPE			eType;
+		CShaderManager::SHADER_TYPE	eShader;
 	};
 
 	static const ShaderData sc_pShaderData[] =
@@ -37,103 +37,103 @@ namespace
 		wchar_t*				pFileName;
 		char*					pShaderProfile;
 		char*					pFunctionName;
-		CShader::eTYPE			eType;
-		ShaderManager::eSHADER	eShader;
+		Shader::eTYPE			eType;
+		ShaderManager::SHADER_TYPE	eShader;
 	};
 
 	static const ShaderData sc_pShaderData[] =
 	{
-		{ L"../Project/Application/Application/shader/grid_vs.fx"	, "vs_5_0"	, "main"	, CShader::eTYPE::VS	, ShaderManager::eSHADER::GRID },
-		{ L"../Project/Application/Application/shader/grid_ps.fx"	, "ps_5_0"	, "main"	, CShader::eTYPE::PS	, ShaderManager::eSHADER::GRID },
+		{ L"../Project/Application/Application/shader/grid_vs.fx"	, "vs_5_0"	, "main"	, Shader::eTYPE::VS	, ShaderManager::SHADER_TYPE::GRID },
+		{ L"../Project/Application/Application/shader/grid_ps.fx"	, "ps_5_0"	, "main"	, Shader::eTYPE::PS	, ShaderManager::SHADER_TYPE::GRID },
 	};
 #endif
 }
 
 //---------------------------------------------------------------------
-const ShaderManager::RegistDelegateFunc	ShaderManager::m_pRegistDelegate[] =
+const std::function<void(Shader*)>	ShaderManager::_registDelegate[] =
 {
-	&ShaderManager::_registDelegate_Grid
+	ShaderManager::RegistDelegate_Grid
 	/*
-	, &CShader::_addFunc_Bump
-	, &CShader::_addFunc_Fur
-	, &CShader::_addFunc_2D
-	, &CShader::_addFunc_WATER
-	, &CShader::_addFunc_GAUSSIAN
-	, &CShader::_addFunc_BRIGHTNESS
-	, &CShader::_addFunc_DOF
+	, &Shader::_addFunc_Bump
+	, &Shader::_addFunc_Fur
+	, &Shader::_addFunc_2D
+	, &Shader::_addFunc_WATER
+	, &Shader::_addFunc_GAUSSIAN
+	, &Shader::_addFunc_BRIGHTNESS
+	, &Shader::_addFunc_DOF
 	*/
 };
 
 //---------------------------------------------------------------------
 ShaderManager::ShaderManager()
 {
-	m_apShader.fill(nullptr);
+	_shader.fill(nullptr);
 }
 
 //---------------------------------------------------------------------
 ShaderManager::~ShaderManager()
 {
-	destroy();
+	Destroy();
 }
 
 //---------------------------------------------------------------------
-void ShaderManager::init()
+void ShaderManager::Init()
 {	
-	shaderReLoadReq();
+	ShaderReLoadReq();
 }
 
 //---------------------------------------------------------------------
-void ShaderManager::destroy()
+void ShaderManager::Destroy()
 {
-	for (size_t i = 0; i<m_apShader.size(); ++i)
-		SAFE_DELETE(m_apShader[i]);
+	for (size_t i = 0; i<_shader.size(); ++i)
+		SAFE_DELETE(_shader[i]);
 }
 
 //---------------------------------------------------------------------
-void ShaderManager::shaderReLoadReq()
+void ShaderManager::ShaderReLoadReq()
 {
-	destroy();
+	Destroy();
 
 	// シェーダロード、コンパイル
-	for (size_t i = 0; i<m_apShader.size(); ++i)
+	for (size_t i = 0; i<_shader.size(); ++i)
 	{
 		_PRINT("create shader : [%d]\n", i);
 		
-		auto shader = createShader((eSHADER)i);
+		auto shader = CreateShader((SHADER_TYPE)i);
 		if (shader == nullptr) continue;
 
-		m_apShader[i] = shader;
+		_shader[i] = shader;
 	}
 }
 
 //---------------------------------------------------------------------
-CShader* ShaderManager::getShader(eSHADER i_eShader)
+Shader* ShaderManager::GetShader(SHADER_TYPE shader)
 {
-	_ASSERT(i_eShader<eSHADER::MAX);
-	return m_apShader[(int)i_eShader];
+	_ASSERT(shader<SHADER_TYPE::MAX);
+	return _shader[(int)shader];
 }
 
 //---------------------------------------------------------------------
-CShader* ShaderManager::createShader(eSHADER i_eShader)
+Shader* ShaderManager::CreateShader(SHADER_TYPE shader)
 {
 	// 条件に合うものを探す
-	std::array<const ShaderData*, (int)CShader::eTYPE::MAX> apList = {nullptr,};
+	std::array<const ShaderData*, (int)Shader::eTYPE::MAX> list = {nullptr,};
 	for (int i = 0; i < NUM_OF(sc_pShaderData); ++i)
 	{
-		if (sc_pShaderData[i].eShader != i_eShader)
+		if (sc_pShaderData[i].eShader != shader)
 			continue;
 
-		apList[(int)sc_pShaderData[i].eType] = &sc_pShaderData[i];
+		list[(int)sc_pShaderData[i].eType] = &sc_pShaderData[i];
 	}
 	
-	// 条件のCShaderを作って初期化
-	CShader* pShader = new CShader();
-	for (size_t i = 0; i<apList.size(); ++i)
+	// 条件のShaderを作って初期化
+	Shader* pShader = new Shader();
+	for (size_t i = 0; i<list.size(); ++i)
 	{
 #if _PRECOMPILE_SHADER_USE
-		bool b = pShader->InitShader(apList[i]->pShader, apList[i]->nSize, apList[i]->eType);
+		bool b = pShader->InitShader(list[i]->pShader, list[i]->nSize, list[i]->eType);
 #else
-		bool b = pShader->CompileInitShader(apList[i]->pFileName, apList[i]->pShaderProfile, apList[i]->pFunctionName, apList[i]->eType);
+		bool b = pShader->CompileInitShader(list[i]->pFileName, list[i]->pShaderProfile, list[i]->pFunctionName, list[i]->eType);
 #endif
 		_ASSERT(b);
 	}
@@ -142,15 +142,15 @@ CShader* ShaderManager::createShader(eSHADER i_eShader)
 }
 
 //---------------------------------------------------------------------
-void ShaderManager::_registDelegate_Grid(CShader* i_pShader)
+void ShaderManager::RegistDelegate_Grid(Shader* shader)
 {
-//	i_pShader->registDelegate(new CShaderValue_Semantic());
-//	i_pShader->registDelegate(new CShaderValue_DiffuseTexture());
+//	shader->registDelegate(new CShaderValue_Semantic());
+//	shader->registDelegate(new CShaderValue_DiffuseTexture());
 }
 
 /*
 //---------------------------------------------------------------------
-void CShader::_addFunc_Bump()
+void Shader::_addFunc_Bump()
 {
 	m_apDelegate.push_back(new CShaderValue_Semantic());
 	m_apDelegate.push_back(new CShaderValue_DiffuseTexture());
@@ -158,7 +158,7 @@ void CShader::_addFunc_Bump()
 }
 
 //---------------------------------------------------------------------
-void CShader::_addFunc_Fur()
+void Shader::_addFunc_Fur()
 {
 	m_apDelegate.push_back(new CShaderValue_Semantic());
 	m_apDelegate.push_back(new CShaderValue_DiffuseTexture());
@@ -166,28 +166,28 @@ void CShader::_addFunc_Fur()
 }
 
 //---------------------------------------------------------------------
-void CShader::_addFunc_2D()
+void Shader::_addFunc_2D()
 {
 	m_apDelegate.push_back(new CShaderValue_Semantic());
 	m_apDelegate.push_back(new CShaderValue_FrameBufferTexture());
 }
 
 //---------------------------------------------------------------------
-void CShader::_addFunc_WATER()
+void Shader::_addFunc_WATER()
 {
 	m_apDelegate.push_back(new CShaderValue_Semantic());
 	m_apDelegate.push_back(new CShaderValue_WaterParam());
 }
 
 //---------------------------------------------------------------------
-void CShader::_addFunc_GAUSSIAN()
+void Shader::_addFunc_GAUSSIAN()
 {
 	m_apDelegate.push_back(new CShaderValue_Semantic());
 	m_apDelegate.push_back(new CShaderValue_Gaussian());
 }
 
 //---------------------------------------------------------------------
-void CShader::_addFunc_BRIGHTNESS()
+void Shader::_addFunc_BRIGHTNESS()
 {
 	m_apDelegate.push_back(new CShaderValue_Semantic());
 	m_apDelegate.push_back(new CShaderValue_Brightness());
@@ -195,7 +195,7 @@ void CShader::_addFunc_BRIGHTNESS()
 }
 
 //---------------------------------------------------------------------
-void CShader::_addFunc_DOF()
+void Shader::_addFunc_DOF()
 {
 	m_apDelegate.push_back(new CShaderValue_Semantic());
 	m_apDelegate.push_back(new CShaderValue_FrameBufferTexture());

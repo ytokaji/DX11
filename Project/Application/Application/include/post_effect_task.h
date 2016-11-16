@@ -24,7 +24,7 @@ public:
 	/**
 		@brief 登録されているタスクの更新処理を実行する
 	*/
-	virtual void run(void)
+	virtual void Run(void)
 	{
 		unsigned int n=getSubTask();
 		_ASSERT( n<STATE_MAX );

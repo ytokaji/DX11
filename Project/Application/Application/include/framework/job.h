@@ -9,10 +9,10 @@
 #include "framework/process.h"
 
 /**
-	@class CJob
+	@class Job
 	@brief 処理実行
 */
-class CJob : public CProcess < CJob, JOB_PRIORITY >
+class Job : public Process < Job, JOB_PRIORITY >
 {
 public:
 	/**
@@ -20,45 +20,44 @@ public:
 		@param pszid [in] 識別子
 		@param i_fPre [in] 事前処理ファンクタ
 		@param i_fMain [in] 処理ファンクタ
-		@param i_fPost [in] 事後処理ファンクタ
+		@param post [in] 事後処理ファンクタ
 		@param nPriority [in] プライオリティー
 	*/
-	CJob(const char* i_pszid, JOB_PRIORITY i_ePriority = JOB_PRIORITY::DEFAULT)
-		: CJob(i_pszid, []{}, []{}, i_ePriority)
+	Job(const char* id, JOB_PRIORITY priority = JOB_PRIORITY::DEFAULT)
+		: Job(id, []{}, []{}, priority)
 	{
 	}
-	CJob(const char* i_pszid,
-			std::function<void()> i_fUpdate, std::function<void()> i_fUpdateASync
-			, JOB_PRIORITY i_ePriority = JOB_PRIORITY::DEFAULT)
-		: CProcess<CJob, JOB_PRIORITY>(i_pszid, i_ePriority)
-		, m_fUpdate(i_fUpdate)
-		, m_fUpdateASync(i_fUpdateASync)
+	Job(const char* id
+			, std::function<void()> update
+			, std::function<void()> updateASync
+			, JOB_PRIORITY priority = JOB_PRIORITY::DEFAULT)
+		: Process<Job, JOB_PRIORITY>(id, priority)
+		, update(update)
+		, updateASync(updateASync)
 	{
 	}
 
 	/**
 		@brief デストラクター
 		*/
-	virtual ~CJob()
-	{
-	}
+	virtual ~Job(){}
 	
 	/**
 		@brief	更新処理
 		@note	親子階層とプライオリティを考慮した同期で実行
 	*/
-	virtual void update(void)	{m_fUpdate();}
+	virtual void Update(void)	{ update(); }
 
 	/**
 		@brief	非同期更新処理
 		@note	順不同、非同期で実行
-				CJob全てのupdate開始から終了までの間に実行されるのでスレッドセーフにする必要がある
+				Job全てのUpdate開始から終了までの間に実行されるのでスレッドセーフにする必要がある
 	*/
-	virtual void updateASync(void)	{ m_fUpdateASync(); }
+	virtual void UpdateASync(void)	{ updateASync(); }
 
 private:
-	const std::function<void()>		m_fUpdate;				//!< 更新処理
-	const std::function<void()>		m_fUpdateASync;			//!< 非同期更新処理
+	const std::function<void()>		update;				//!< 更新処理
+	const std::function<void()>		updateASync;			//!< 非同期更新処理
 };
 
 #endif		//__JOB_H__

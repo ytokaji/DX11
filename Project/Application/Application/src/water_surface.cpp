@@ -85,7 +85,7 @@ void CWaterSurFace::update(float i_fElapsd)
 }
 
 //---------------------------------------------------------------------
-void CWaterSurFace::draw( D3DXMATRIX* i_pMat )
+void CWaterSurFace::draw( D3DXMATRIX* mat )
 {
 	IDirect3DDevice9* pDevice = AppContext::GetInstance()->getD3D9Device();
 	const CShaderTask* pShaderTask = (CShaderTask*)CTaskMan::getInstance()->findTask("CShaderTask");
@@ -94,7 +94,7 @@ void CWaterSurFace::draw( D3DXMATRIX* i_pMat )
 	ID3DXEffect* pEffect = pDele->getEffect();
 	HRESULT hr = S_OK;
 
-	pDele->preRenderSetParam(i_pMat);
+	pDele->preRenderSetParam(mat);
 	_RET_CHECK( pEffect->SetTexture( "reflectTex", m_pReflectBuffer ) );
 	_RET_CHECK( pEffect->SetTexture( "normalMap", m_pWave ) );
 	_RET_CHECK( pEffect->SetTexture( "frameBuffer", AppContext::GetInstance()->getFrameBuffer() ) );

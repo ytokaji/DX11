@@ -24,7 +24,7 @@
 #define SAFE_DELETE(p)			if( (p) != nullptr) { delete (p); (p) = nullptr; }
 #define SAFE_DELETE_ARRAY(p)	if( (p) != nullptr) { delete [] (p); (p) = nullptr; }
 #define SAFE_RELEASE(p)      { if (p) { (p)->Release(); (p)=nullptr; } }
-#define SAFE_TERMINATE(p)      { if (p) { (p)->terminate(); (p)=nullptr; } }
+#define SAFE_TERMINATE(p)      { if (p) { (p)->Terminate(); (p)=nullptr; } }
 
 
 /// ”z—ñ”‚ÌŒvZ

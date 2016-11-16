@@ -7,26 +7,26 @@
 #include "framework/thread.h"
 
 //---------------------------------------------------------------------
-CThreadChannel::CWorkerThread::CWorkerThread(CThreadChannel* i_pChannel)
-	: m_pChannel(i_pChannel)
-	, m_bEndFlg(false)
+ThreadChannel::WorkerThread::WorkerThread(ThreadChannel* channel)
+	: _channel(channel)
+	, _endFlg(false)
 {
-	m_Thread = std::thread([this]{ this->run(); });
+	_thread = std::thread([this]{ this->Run(); });
 }
 
 //---------------------------------------------------------------------
-CThreadChannel::CWorkerThread::~CWorkerThread()
+ThreadChannel::WorkerThread::~WorkerThread()
 {
-	m_bEndFlg = true;
-	m_Thread.join();
+	_endFlg = true;
+	_thread.join();
 }
 
 //---------------------------------------------------------------------
-void CThreadChannel::CWorkerThread::run()
+void ThreadChannel::WorkerThread::Run()
 {
-	while (m_bEndFlg == false)
+	while (_endFlg == false)
 	{
-		IThreadRequest* pReq = m_pChannel->popRequest();
+		ThreadRequestBase* pReq = _channel->PopRequest();
 		
 		if (pReq == nullptr)
 		{
@@ -34,50 +34,50 @@ void CThreadChannel::CWorkerThread::run()
 			continue;
 		}
 
-		pReq->execute();
-		pReq->m_bIsEnd = true;
+		pReq->Execute();
+		pReq->_isEnd = true;
 	}
 }
 
 //---------------------------------------------------------------------
-CThreadChannel::CThreadChannel(unsigned int i_nThreadNum)
+ThreadChannel::ThreadChannel(unsigned int threadNum)
 {
-	m_apWorkerThread.reserve(i_nThreadNum);
-	for (unsigned int i = 0; i < i_nThreadNum; ++i )
+	_workerThread.reserve(threadNum);
+	for (unsigned int i = 0; i < threadNum; ++i )
 	{
-		m_apWorkerThread.push_back(new CWorkerThread(this));
+		_workerThread.push_back(new WorkerThread(this));
 	}
 }
 
 //---------------------------------------------------------------------
-CThreadChannel::~CThreadChannel()
+ThreadChannel::~ThreadChannel()
 {
-	util::for_each(m_apWorkerThread, [](CWorkerThread* p){SAFE_DELETE(p); });
+	util::for_each(_workerThread, [](WorkerThread* p){SAFE_DELETE(p); });
 }
 
 //---------------------------------------------------------------------
-void CThreadChannel::pushRequest(IThreadRequest* i_pThread)
+void ThreadChannel::PushRequest(ThreadRequestBase* thread)
 {
-	std::lock_guard<std::mutex> lock(m_Mutex);
-	i_pThread->m_bIsEnd = false;
-	m_Queue.push(i_pThread);
+	std::lock_guard<std::mutex> lock(_mutex);
+	thread->_isEnd = false;
+	_queue.push(thread);
 }
 
 //---------------------------------------------------------------------
-IThreadRequest* CThreadChannel::popRequest()
+ThreadRequestBase* ThreadChannel::PopRequest()
 {
-	std::lock_guard<std::mutex> lock(m_Mutex);
-	if (m_Queue.empty() ) return nullptr;
+	std::lock_guard<std::mutex> lock(_mutex);
+	if (_queue.empty() ) return nullptr;
 
-	IThreadRequest* p = m_Queue.front();
-	m_Queue.pop();
+	ThreadRequestBase* p = _queue.front();
+	_queue.pop();
 	return p;
 }
 
 //---------------------------------------------------------------------
-void IThreadRequest::wait()
+void ThreadRequestBase::Wait()
 {
-	while (m_bIsEnd == false)
+	while (_isEnd == false)
 	{
 		std::this_thread::sleep_for(std::chrono::microseconds(0));
 	}

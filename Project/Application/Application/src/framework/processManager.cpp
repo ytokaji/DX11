@@ -9,43 +9,43 @@
 
 //---------------------------------------------------------------------
 template<class TClass>
-void IProcessManager::addProcess(TClass* i_pChild, TClass* i_pParent) const
+void ProcessManagerBase::AddProcess(TClass* child, TClass* parent) const
 {
-	_ASSERT(i_pChild && i_pParent);
-	_ASSERT(i_pParent->m_apChild.capacity() > i_pParent->m_apChild.size() + 1);
+	_ASSERT(child && parent);
+	_ASSERT(parent->_child.capacity() > parent->_child.size() + 1);
 
-	i_pChild->m_pParent = i_pParent;
-	i_pParent->m_apChild.push_back(i_pChild);
+	child->_parent = parent;
+	parent->_child.push_back(child);
 
-	std::sort(i_pParent->m_apChild.begin(), i_pParent->m_apChild.end(), [](TClass* a, TClass* b){ return a->m_ePriority < b->m_ePriority; });
+	std::sort(parent->_child.begin(), parent->_child.end(), [](TClass* a, TClass* b){ return a->_priority < b->_priority; });
 }
 
 //---------------------------------------------------------------------
 template<class TClass>
-TClass* IProcessManager::findProcess(TClass* i_pProcess, const char* i_pIdentifier) const
+TClass* ProcessManagerBase::FindProcess(TClass* process, const char* identifier) const
 { 
-	return i_pProcess->findChild(i_pIdentifier);
+	return process->FindChild(identifier);
 }
 
 //---------------------------------------------------------------------
 template<class TClass>
-bool IProcessManager::erase(TClass* i_pProcess) const
+bool ProcessManagerBase::Erase(TClass* process) const
 {
-	auto begin = i_pProcess->m_apChild.begin();
-	auto end = i_pProcess->m_apChild.cend();
+	auto begin = process->_child.begin();
+	auto end = process->_child.cend();
 	bool bRetVal = false;
 
 	while (begin != end)
 	{
-		if ((*begin)->isErase())
+		if ((*begin)->IsErase())
 		{
 			SAFE_DELETE(*begin);
-			begin = i_pProcess->m_apChild.erase(begin);
+			begin = process->_child.erase(begin);
 			bRetVal = true;
 			continue;
 		}
 
-		bRetVal |= erase(*begin);
+		bRetVal |= Erase(*begin);
 		++begin;
 	}
 
@@ -53,161 +53,161 @@ bool IProcessManager::erase(TClass* i_pProcess) const
 }
 
 //---------------------------------------------------------------------
-template<class TArrayClass, class TClass> void IProcessManager::updateProcessList(std::vector<TArrayClass>& i_apList, TClass* i_pRoot) const
+template<class TArrayClass, class TClass> void ProcessManagerBase::UpdateProcessList(std::vector<TArrayClass>& list, TClass* root) const
 {
-	i_apList = std::vector<TArrayClass>();
-	i_apList.reserve(PROCESS_ARRAY_MAX);
-	i_pRoot->process([&](TClass* p)
+	list = std::vector<TArrayClass>();
+	list.reserve(PROCESS_ARRAY_MAX);
+	root->ProcessImpl([&](TClass* p)
 	{
-		_ASSERT(i_apList.capacity() > i_apList.size() + 1);
-		i_apList.push_back(TArrayClass(p));
+		_ASSERT(list.capacity() > list.size() + 1);
+		list.push_back(TArrayClass(p));
 	});
 }
 
 //---------------------------------------------------------------------
-CJobManager::CJobManager()
-	: IProcessManager()
-	, m_Root("root job")
+JobManager::JobManager()
+	: ProcessManagerBase()
+	, _root("root job")
 {
 }
 
 //---------------------------------------------------------------------
-CJobManager::~CJobManager()
+JobManager::~JobManager()
 {
 }
 
 //---------------------------------------------------------------------
-void CJobManager::proc(void)
+void JobManager::Proc(void)
 {
 	// 削除フラグ立ってるものを削除
-	const bool bRet = erase(&m_Root);
-	if (bRet) updateProcessList(m_aThreadList, &m_Root);
+	const bool bRet = Erase(&_root);
+	if (bRet) UpdateProcessList(_threadList, &_root);
 	
 	// スレッドへの登録
-	for (unsigned int i = 0; i < m_aThreadList.size(); ++i)
-		AppContext::GetInstance()->GetThreadChannel()->pushRequest(&m_aThreadList[i]);
+	for (unsigned int i = 0; i < _threadList.size(); ++i)
+		AppContext::GetInstance()->GetThreadChannel()->PushRequest(&_threadList[i]);
 		
 	// 更新処理
-	m_Root.process([](CJob* p){ p->update(); });
+	_root.ProcessImpl([](Job* p){ p->Update(); });
 	
 	// スレッドの同期
-	for (unsigned int i = 0; i < m_aThreadList.size(); ++i)
-		m_aThreadList[i].wait();
+	for (unsigned int i = 0; i < _threadList.size(); ++i)
+		_threadList[i].Wait();
 }
 
 //---------------------------------------------------------------------
-void CJobManager::addJob(CJob* i_pChild, CJob* i_pParent)
+void JobManager::AddJob(Job* child, Job* parent)
 {
-	addProcess(i_pChild, i_pParent == nullptr ? &m_Root : i_pParent);
-	updateProcessList(m_aThreadList, &m_Root);
+	AddProcess(child, parent == nullptr ? &_root : parent);
+	UpdateProcessList(_threadList, &_root);
 }
 
 //---------------------------------------------------------------------
-CJob* CJobManager::findJob(const char* i_pIdentifier)
+Job* JobManager::FindJob(const char* identifier)
 {
-	return findProcess(&m_Root, i_pIdentifier);
+	return FindProcess(&_root, identifier);
 }
 
 //---------------------------------------------------------------------
-CRenderManager::CProcThread::CProcThread(CRender* i_pProcess)
-	: IThreadRequest()
-	, m_pContext(nullptr)
-	, m_pCommand(nullptr)
-	, m_pProcess(i_pProcess)
+RenderManager::ProcThread::ProcThread(Render* process)
+	: ThreadRequestBase()
+	, _context(nullptr)
+	, _command(nullptr)
+	, _process(process)
 {
 	ID3D11Device* pDevice = AppContext::GetInstance()->GetD3D11Device();
-	HRESULT hr = pDevice->CreateDeferredContext(0, &m_pContext);
+	HRESULT hr = pDevice->CreateDeferredContext(0, &_context);
 	_ASSERT(SUCCEEDED(hr));
 }
 
 //---------------------------------------------------------------------
-CRenderManager::CProcThread::~CProcThread()
+RenderManager::ProcThread::~ProcThread()
 {
-	SAFE_RELEASE(m_pContext);
-	SAFE_RELEASE(m_pCommand);
+	SAFE_RELEASE(_context);
+	SAFE_RELEASE(_command);
 }
 
 //---------------------------------------------------------------------
-void CRenderManager::CProcThread::execute(void)
+void RenderManager::ProcThread::Execute(void)
 {
-	_ASSERT(m_pCommand == nullptr);
+	_ASSERT(_command == nullptr);
 
-	HRESULT hr = DXUTSetupD3D11Views(m_pContext);
+	HRESULT hr = DXUTSetupD3D11Views(_context);
 	_ASSERT(SUCCEEDED(hr));
 
-	m_pProcess->setActiveDeviceContext(m_pContext);
-	m_pProcess->render();
-	m_pProcess->setActiveDeviceContext(nullptr);
+	_process->SetActiveDeviceContext(_context);
+	_process->RenderAsync();
+	_process->SetActiveDeviceContext(nullptr);
 
-	m_pContext->FinishCommandList(false, &m_pCommand);
+	_context->FinishCommandList(false, &_command);
 }
 
 //---------------------------------------------------------------------
-void CRenderManager::CProcThread::executeCommandList(ID3D11DeviceContext* i_pImmediateContext)
+void RenderManager::ProcThread::ExecuteCommandList(ID3D11DeviceContext* immediateContext)
 {
-	i_pImmediateContext->ExecuteCommandList(m_pCommand, false);
-	SAFE_RELEASE(m_pCommand);
+	immediateContext->ExecuteCommandList(_command, false);
+	SAFE_RELEASE(_command);
 }
 
 //---------------------------------------------------------------------
-CRenderManager::CProcThread& CRenderManager::CProcThread::operator =(const CRenderManager::CProcThread& src)
+RenderManager::ProcThread& RenderManager::ProcThread::operator =(const RenderManager::ProcThread& src)
 {
-	this->m_pProcess = src.m_pProcess;
-	this->m_pCommand = nullptr;
+	this->_process = src._process;
+	this->_command = nullptr;
 	ID3D11Device* pDevice = AppContext::GetInstance()->GetD3D11Device();
-	HRESULT hr = pDevice->CreateDeferredContext(0, &this->m_pContext);
+	HRESULT hr = pDevice->CreateDeferredContext(0, &this->_context);
 	_ASSERT(SUCCEEDED(hr));
 
 	return *this;
 }
 
 //---------------------------------------------------------------------
-CRenderManager::CRenderManager()
-	:	IProcessManager			()
-	,	m_Root					("root render")
+RenderManager::RenderManager()
+	:	ProcessManagerBase			()
+	,	_root					("root render")
 {
-	updateProcessList(m_aThreadList, &m_Root);
+	UpdateProcessList(_threadList, &_root);
 }
 
 //---------------------------------------------------------------------
-CRenderManager::~CRenderManager()
+RenderManager::~RenderManager()
 {
 }
 
 //---------------------------------------------------------------------
-void CRenderManager::proc(void)
+void RenderManager::Proc(void)
 {
 	// 削除フラグ立ってるものを削除
-	const bool bRet = erase(&m_Root);
-	if (bRet) updateProcessList(m_aThreadList, &m_Root);
+	const bool bRet = Erase(&_root);
+	if (bRet) UpdateProcessList(_threadList, &_root);
 
 	// 事前処理
-	m_Root.process([this](CRender* p) { p->pre(); });
+	_root.ProcessImpl([this](Render* p) { p->Pre(); });
 
 	// スレッドへの登録と同期
-	CThreadChannel* pChannel = AppContext::GetInstance()->GetThreadChannel();
-	util::for_each(m_aThreadList, [&](CProcThread& r){ pChannel->pushRequest(&r); });
-	util::for_each(m_aThreadList, [](CProcThread& r){ r.wait(); });
+	ThreadChannel* pChannel = AppContext::GetInstance()->GetThreadChannel();
+	util::for_each(_threadList, [&](ProcThread& r){ pChannel->PushRequest(&r); });
+	util::for_each(_threadList, [](ProcThread& r){ r.Wait(); });
 
 	// 事後処理
-	m_Root.process([this](CRender* p) { p->post(); });
+	_root.ProcessImpl([this](Render* p) { p->Post(); });
 
 	// デファードコンテキストを結合
 	ID3D11DeviceContext* pContext = AppContext::GetInstance()->GetImmediateContext();
-	util::for_each(m_aThreadList, [&](CProcThread& r){ r.executeCommandList(pContext); });
+	util::for_each(_threadList, [&](ProcThread& r){ r.ExecuteCommandList(pContext); });
 }
 
 //---------------------------------------------------------------------
-void CRenderManager::addRender(CRender* i_pChild, CRender* i_pParent)
+void RenderManager::AddRender(Render* child, Render* parent)
 {
-	addProcess(i_pChild, i_pParent == nullptr ? &m_Root : i_pParent);
-	updateProcessList(m_aThreadList, &m_Root);
+	AddProcess(child, parent == nullptr ? &_root : parent);
+	UpdateProcessList(_threadList, &_root);
 }
 
 //---------------------------------------------------------------------
-CRender* CRenderManager::findRender(const char* i_pIdentifier)
+Render* RenderManager::FindRender(const char* identifier)
 {
-	return findProcess(&m_Root, i_pIdentifier);
+	return FindProcess(&_root, identifier);
 }
 
 
