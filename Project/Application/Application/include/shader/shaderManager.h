@@ -62,18 +62,6 @@ private:
 	Shader* CreateShader(SHADER_TYPE shader);
 
 private:
-	/// ÉfÉäÉQÅ[Égìoò^ä÷êî
-	static void RegistDelegate_Grid(Shader* shader);
-	/*
-	void RegistDelegate_Bump();
-	void RegistDelegate_Fur();
-	void RegistDelegate_2D();
-	void RegistDelegate_WATER();
-	void RegistDelegate_GAUSSIAN();
-	void RegistDelegate_BRIGHTNESS();
-	void RegistDelegate_DOF();
-	*/
-private:
 	static const std::function<void(Shader*)>		_registDelegate[];			//!< ÉfÉäÉQÅ[Égìoò^ä÷êîÉ|ÉCÉìÉ^îzóÒ
 	std::array<Shader*, (uint8_t)SHADER_TYPE::MAX>	_shader;
 };

@@ -57,7 +57,7 @@ public:
 
 private:
 	const std::function<void()>		update;				//!< 更新処理
-	const std::function<void()>		updateASync;			//!< 非同期更新処理
+	const std::function<void()>		updateASync;		//!< 非同期更新処理
 };
 
 #endif		//__JOB_H__

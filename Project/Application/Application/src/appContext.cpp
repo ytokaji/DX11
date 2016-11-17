@@ -167,60 +167,10 @@ void AppContext::Update(float elapsd)
 //---------------------------------------------------------------------
 void AppContext::Render()
 {
-#if 0
-	HRESULT hr = S_OK;
-	IDirect3DSurface9*		pOldFrameBuffrerSurf( nullptr );
-	IDirect3DSurface9*		pOldDepthBufferSurf( nullptr );
-
-	//フレームバッファ入れ替え
-    m_pd3dDevice->GetRenderTarget( 0, &pOldFrameBuffrerSurf );
-    m_pd3dDevice->GetDepthStencilSurface( &pOldDepthBufferSurf );
-	_RET_CHECK(m_pd3dDevice->SetRenderTarget( 0, m_pFrameBuffrerSurf ) );
-	_RET_CHECK(m_pd3dDevice->SetRenderTarget( 1, m_pDepthBufferSurf ) );
-	m_pd3dDevice->Clear( 0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0x00808080, 1.0f, 0 );
-	m_pd3dDevice->Clear( 1, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0x00000000, 1.0f, 0 );
-
-	CTaskMan::getInstance()->draw();
-	
-	//フレームバッファ戻す
-	m_pd3dDevice->SetRenderTarget( 0, pOldFrameBuffrerSurf );
-    m_pd3dDevice->SetDepthStencilSurface( pOldDepthBufferSurf );
-	m_pd3dDevice->Clear( 0L, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0x00808080, 1.0f, 0L );
-
-	//最終描画
-	const CShaderTask* pShaderTask = (CShaderTask*)CTaskMan::getInstance()->findTask("CShaderTask");
-	_ASSERT( pShaderTask );
-	CShaderSetValueDelegate* pDele = pShaderTask->getShaderDelegate(CShaderTask::S_I_2D);
-	ID3DXEffect* pEffect = pDele->getEffect();
-
-	UINT uiPass, uiNumPasses;
-	_RET_CHECK( pEffect->SetTechnique( "normal" ) );
-	_RET_CHECK( pEffect->SetTexture( "tex", getFrameBuffer() ) );
-
-	m_pd3dDevice->SetStreamSource( 0, m_pVB, 0, sizeof( VERTEX_2D ) );
-	m_pd3dDevice->SetVertexDeclaration( m_pVertexDecl );
-	
-	pDele->preRenderSetParam(nullptr);
-
-	_RET_CHECK( pEffect->Begin( &uiNumPasses, 0 ) );
-	for( uiPass = 0; uiPass < uiNumPasses; uiPass++ )
-	{
-			pDele->passRenderSetParam(nullptr);
-		_RET_CHECK( pEffect->BeginPass( uiPass ) );
-	 	m_pd3dDevice->DrawPrimitive( D3DPT_TRIANGLESTRIP, 0, 2 );
-		_RET_CHECK( pEffect->EndPass() );
-	}
-
-	_RET_CHECK( pEffect->End() );
-
-    SAFE_RELEASE( pOldFrameBuffrerSurf );
-    SAFE_RELEASE( pOldDepthBufferSurf );
-#endif
+	// バッファのクリア
     float ClearColor[4] = { 0.5f, 0.5f, 0.5f, 0.0f };
     ID3D11RenderTargetView* pRTV = DXUTGetD3D11RenderTargetView();
 	_immediateContext->ClearRenderTargetView(pRTV, ClearColor);
-
-    // Clear the depth stencil
     ID3D11DepthStencilView* pDSV = DXUTGetD3D11DepthStencilView();
 	_immediateContext->ClearDepthStencilView(pDSV, D3D11_CLEAR_DEPTH, 1.0, 0);
 

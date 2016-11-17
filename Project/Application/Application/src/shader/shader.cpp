@@ -56,8 +56,6 @@ bool Shader::CompileInitShader(wchar_t* fileName, char* shaderProfile, char* fun
 	SAFE_RELEASE(pEffectBlob);
 
 	return bRet;
-//	IShaderValue::SArgParam param(nullptr, m_pEffect, nullptr);
-//	util::for_each(m_apDelegate, std::bind2nd(std::mem_fun(&IShaderValue::attachParam), &param));
 }
 #endif
 
@@ -98,7 +96,7 @@ bool Shader::InitShaderVertex(const void* buff, size_t size)
 	HRESULT hr;
 
 	// シェーダ作成
-	_RET_CHECK_ASSERT(pDevice->CreateVertexShader(buff, size, NULL, &_shadarData[(uint8_t)eTYPE::VS].shader._vertex));
+	_RET_CHECK_ASSERT(pDevice->CreateVertexShader(buff, size, NULL, &_shadarData[(uint8_t)eTYPE::VS]._shader._vertex));
 	if (FAILED(hr)) return false;
 	/*
 	// InputLayoutの作成
@@ -123,7 +121,7 @@ bool Shader::InitShaderPixel(const void* buff, size_t size)
 	HRESULT hr;
 
 	// シェーダ作成
-	_RET_CHECK_ASSERT(pApp->GetD3D11Device()->CreatePixelShader(buff, size, NULL, &_shadarData[(uint8_t)eTYPE::PS].shader._pixel));
+	_RET_CHECK_ASSERT(pApp->GetD3D11Device()->CreatePixelShader(buff, size, NULL, &_shadarData[(uint8_t)eTYPE::PS]._shader._pixel));
 	if (FAILED(hr)) return false;
 
 	return true;
@@ -146,19 +144,20 @@ void Shader::renderSetParam(CMaterialData* mate)
 //-------------------------------------------------------------------------
 void Shader::setupParameter(eTYPE type)
 {
-	AppContext* pApp = AppContext::GetInstance();
-	ShaderData* pShaderData = &_shadarData[(uint8_t)type];
+	AppContext* app = AppContext::GetInstance();
+	ShaderData* shaderData = &_shadarData[(uint8_t)type];
 
 	HRESULT hr;
 
 	D3D11_SHADER_DESC desc;
-	pShaderData->_reflection->GetDesc(&desc);
+	shaderData->_reflection->GetDesc(&desc);
 
+	// 数を調べる
 	// 定数バッファ
 	if (desc.ConstantBuffers > 0)
 	{
 		D3D11_SHADER_BUFFER_DESC buffDesc;
-		ID3D11ShaderReflectionConstantBuffer* refConstant = pShaderData->_reflection->GetConstantBufferByIndex(0);	// とりあえず0しか見ない
+		ID3D11ShaderReflectionConstantBuffer* refConstant = shaderData->_reflection->GetConstantBufferByIndex(0);	// とりあえず0しか見ない
 		refConstant->GetDesc(&buffDesc);
 
 		// バッファ作成
@@ -168,11 +167,11 @@ void Shader::setupParameter(eTYPE type)
 		bd.ByteWidth = buffDesc.Size;
 		bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 		bd.CPUAccessFlags = 0;
-		_RET_CHECK_ASSERT(pApp->GetD3D11Device()->CreateBuffer(&bd, NULL, &pShaderData->_d3dBuffer));
+		_RET_CHECK_ASSERT(app->GetD3D11Device()->CreateBuffer(&bd, NULL, &shaderData->_d3dBuffer));
 
-		pShaderData->_buffer = new char[buffDesc.Size];
-		pShaderData->_bufferSize = buffDesc.Size;
-		pShaderData->_variableParam.resize(buffDesc.Variables);
+		shaderData->_buffer = new char[buffDesc.Size];
+		shaderData->_bufferSize = buffDesc.Size;
+		shaderData->_constantValue.resize(buffDesc.Variables);
 
 		// 変数
 		for (unsigned int i = 0; i < buffDesc.Variables; i++)
@@ -180,22 +179,20 @@ void Shader::setupParameter(eTYPE type)
 			ID3D11ShaderReflectionVariable* variable = refConstant->GetVariableByIndex(i);
 			D3D11_SHADER_VARIABLE_DESC varDecsc;
 			variable->GetDesc(&varDecsc);
-			pShaderData->_variableParam[i]._str = varDecsc.Name;
-			pShaderData->_variableParam[i]._buff = pShaderData->_buffer + varDecsc.StartOffset;
+			shaderData->_constantValue[i].Create(this, varDecsc.Name, shaderData->_buffer + varDecsc.StartOffset);
 		}
 	}
 
 	// リソースパラメータ
 	if (desc.BoundResources > 0)
 	{
-		pShaderData->_resourceParam.resize(desc.BoundResources);
+		shaderData->_resourcesValue.resize(desc.BoundResources);
 		for (unsigned int i = 0; i < desc.BoundResources; i++)
 		{
 			D3D11_SHADER_INPUT_BIND_DESC bindDesc;
-			pShaderData->_reflection->GetResourceBindingDesc(i, &bindDesc);
+			shaderData->_reflection->GetResourceBindingDesc(i, &bindDesc);
 			if (bindDesc.Type == D3D_SIT_TEXTURE) {
-				pShaderData->_resourceParam[i]._str = bindDesc.Name;
-				pShaderData->_resourceParam[i]._bindPoint = bindDesc.BindPoint;
+				shaderData->_resourcesValue[i].Create(this, bindDesc.Name, bindDesc.BindPoint);
 			}
 		}
 	}

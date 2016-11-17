@@ -79,7 +79,7 @@ void CHud::destroy()
 void CHud::RenderAsync()
 {
 	m_pTxtHelper->Begin();
-	m_pTxtHelper->SetInsertionPos( 5, 5 );
+	m_pTxtHelper->SetInsertionPos( 205, 205 );
 	m_pTxtHelper->SetForegroundColor( DirectX::SimpleMath::Color( 1.0f, 1.0f, 0.0f, 1.0f ) );
 	m_pTxtHelper->DrawTextLine( DXUTGetFrameStats( DXUTIsVsyncEnabled() ) );
 	m_pTxtHelper->DrawTextLine( DXUTGetDeviceStats() );

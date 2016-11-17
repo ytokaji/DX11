@@ -8,8 +8,6 @@
 
 #include "shader/shaderValue.h"
 
-class CMaterial;
-
 /**
 	@brief シェーダ
 */
@@ -64,11 +62,6 @@ public:
 		@brief シェーダ全体で共通のパラメータセット
 	*/
 	void PreRenderSetParam(DirectX::SimpleMath::Matrix* mat);
-	
-	/**
-		@brief マテリアルごとに設定するパラメータ
-	*/
-	void RenderSetParam(CMaterial* mate);
 
 protected:	
 	/**
@@ -101,37 +94,17 @@ protected:
 			ID3D11DomainShader*		_domain;
 			ID3D11GeometryShader*	_geometry;
 			ID3D11ComputeShader*	_compute;
-		}	shader;
-		
-		/**
-			@brief 変数パラメータ
-		*/
-		struct VariableParam
-		{
-			std::string				_str;				//!< 名前
-			std::function<void()>	_func;				//!< 適用関数
-			char*					_buff;				//!< 書き換え先
-		};
+		}	_shader;
 
-		/**
-			@brief リソースパラメータ
-		*/
-		struct ResourceParam
-		{
-			std::string				_str;				//!< 名前
-			std::function<void()>	_func;				//!< 適用関数
-			unsigned int			_bindPoint;			//!< バインドポイント
-		};
-
-		std::vector<VariableParam>	_variableParam;		//!< 変数パラメータ配列
-		std::vector<ResourceParam>	_resourceParam;		//!< リソースパラメータ配列
-		ID3D11ShaderReflection*		_reflection;		//!< リフレクション
-		ID3D11Buffer*				_d3dBuffer;			//!< 定数バッファ
-		char*						_buffer;			//!< バッファ
-		unsigned int				_bufferSize;		//!< バッファサイズ
+		std::vector<ShaderValueConstantBuffer>	_constantValue;		//!< コンスタントバッファのシェーダパラメータクラス
+		std::vector<ShaderValueResources>		_resourcesValue;	//!< リソースのシェーダパラメータクラス
+		ID3D11ShaderReflection*					_reflection;		//!< リフレクション
+		ID3D11Buffer*							_d3dBuffer;			//!< 定数バッファ
+		char*									_buffer;			//!< バッファ
+		unsigned int							_bufferSize;		//!< バッファサイズ
 
 		ShaderData()
-			: shader()
+			: _shader()
 			, _reflection(nullptr)
 			, _d3dBuffer(nullptr)
 			, _buffer(nullptr)
@@ -140,7 +113,7 @@ protected:
 		}
 		~ShaderData()
 		{
-			SAFE_RELEASE(shader._vertex);
+			SAFE_RELEASE(_shader._vertex);
 			SAFE_RELEASE(_reflection);
 			SAFE_RELEASE(_d3dBuffer);
 			SAFE_DELETE_ARRAY(_buffer);
@@ -148,10 +121,8 @@ protected:
 	};
 
 private:
-	std::vector<std::unique_ptr<ShaderValue>>	_shaderValue;		//!< シェーダーパラメータ適用郡
 	ShaderData					_shadarData[(int)eTYPE::MAX];		//!< シェーダーデータ
 	ID3D11InputLayout*          _layout;							//!< インプットレイアウト
-
 };
 
 

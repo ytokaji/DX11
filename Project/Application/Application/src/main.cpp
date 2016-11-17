@@ -192,7 +192,7 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
     DXUTInit( true, true, nullptr );
 	DXUTSetMultimonSettings(false);
     DXUTSetCursorSettings( true, true );
-    DXUTCreateWindow( L"application" );
+    DXUTCreateWindow( L"Application" );
 	DXUTCreateDevice( D3D_FEATURE_LEVEL_11_0, true, WINDOW_W, WINDOW_H );
 
 	// ÉÅÉCÉìÉãÅ[Év

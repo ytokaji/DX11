@@ -52,21 +52,6 @@ namespace
 }
 
 //---------------------------------------------------------------------
-const std::function<void(Shader*)>	ShaderManager::_registDelegate[] =
-{
-	ShaderManager::RegistDelegate_Grid
-	/*
-	, &Shader::_addFunc_Bump
-	, &Shader::_addFunc_Fur
-	, &Shader::_addFunc_2D
-	, &Shader::_addFunc_WATER
-	, &Shader::_addFunc_GAUSSIAN
-	, &Shader::_addFunc_BRIGHTNESS
-	, &Shader::_addFunc_DOF
-	*/
-};
-
-//---------------------------------------------------------------------
 ShaderManager::ShaderManager()
 {
 	_shader.fill(nullptr);
@@ -87,8 +72,7 @@ void ShaderManager::Init()
 //---------------------------------------------------------------------
 void ShaderManager::Destroy()
 {
-	for (size_t i = 0; i<_shader.size(); ++i)
-		SAFE_DELETE(_shader[i]);
+	from(_shader) >> for_each([](Shader* x){ SAFE_DELETE(x); });
 }
 
 //---------------------------------------------------------------------
@@ -130,67 +114,4 @@ Shader* ShaderManager::CreateShader(SHADER_TYPE shader)
 
 	return pShader;
 }
-
-//---------------------------------------------------------------------
-void ShaderManager::RegistDelegate_Grid(Shader* shader)
-{
-//	shader->registDelegate(new CShaderValue_Semantic());
-//	shader->registDelegate(new CShaderValue_DiffuseTexture());
-}
-
-/*
-//---------------------------------------------------------------------
-void Shader::_addFunc_Bump()
-{
-	m_apDelegate.push_back(new CShaderValue_Semantic());
-	m_apDelegate.push_back(new CShaderValue_DiffuseTexture());
-	m_apDelegate.push_back(new CShaderValue_Bump());
-}
-
-//---------------------------------------------------------------------
-void Shader::_addFunc_Fur()
-{
-	m_apDelegate.push_back(new CShaderValue_Semantic());
-	m_apDelegate.push_back(new CShaderValue_DiffuseTexture());
-	m_apDelegate.push_back(new CShaderValue_Fur());
-}
-
-//---------------------------------------------------------------------
-void Shader::_addFunc_2D()
-{
-	m_apDelegate.push_back(new CShaderValue_Semantic());
-	m_apDelegate.push_back(new CShaderValue_FrameBufferTexture());
-}
-
-//---------------------------------------------------------------------
-void Shader::_addFunc_WATER()
-{
-	m_apDelegate.push_back(new CShaderValue_Semantic());
-	m_apDelegate.push_back(new CShaderValue_WaterParam());
-}
-
-//---------------------------------------------------------------------
-void Shader::_addFunc_GAUSSIAN()
-{
-	m_apDelegate.push_back(new CShaderValue_Semantic());
-	m_apDelegate.push_back(new CShaderValue_Gaussian());
-}
-
-//---------------------------------------------------------------------
-void Shader::_addFunc_BRIGHTNESS()
-{
-	m_apDelegate.push_back(new CShaderValue_Semantic());
-	m_apDelegate.push_back(new CShaderValue_Brightness());
-	m_apDelegate.push_back(new CShaderValue_FrameBufferTexture());
-}
-
-//---------------------------------------------------------------------
-void Shader::_addFunc_DOF()
-{
-	m_apDelegate.push_back(new CShaderValue_Semantic());
-	m_apDelegate.push_back(new CShaderValue_FrameBufferTexture());
-	m_apDelegate.push_back(new CShaderValue_Dof());
-}
-*/
-
 

@@ -9,6 +9,7 @@
 #include "appContext.h"
 
 using namespace std;
+using namespace cpplinq;
 
 namespace
 {
@@ -16,61 +17,62 @@ namespace
 	static const unsigned int s_nGaussianSamplingPoint = 4;
 
 	/// セマンティックリスト
-	tuple<string, function<void(ShaderValue*)>> applyFunc[] =
+	static const tuple<string, function<void(ShaderValueConstantBuffer*)>> APPLY_FUNC[] =
 	{
-		std::make_tuple("Projection", ShaderValue::Projection),
-		std::make_tuple("World", ShaderValue::World),
+		std::make_tuple("Projection", ShaderValueConstantBuffer::Projection),
+		std::make_tuple("World", ShaderValueConstantBuffer::World),
 	};
 }
 
 //---------------------------------------------------------------------
-ShaderValue::ShaderValue()
+ShaderValueConstantBuffer::ShaderValueConstantBuffer()
 	: _shader(nullptr)
-	, _offset(0)
-	, _textureSlot(0)
+	, _buffer(nullptr)
 {
 }
 
 //---------------------------------------------------------------------
-size_t ShaderValue::Create(Shader* shader, ID3D11ShaderReflectionVariable* variable)
+void ShaderValueConstantBuffer::Create(const Shader* shader, const char* name, char* buff)
 {
-	D3D11_SHADER_VARIABLE_DESC varDesc;
-	D3D11_SHADER_TYPE_DESC typDesc;
-	variable->GetDesc(&varDesc);
-	variable->GetType()->GetDesc(&typDesc);
-
 	_shader = shader;
-	_offset = varDesc.StartOffset;
-
-	for each (auto i in applyFunc)
-	{
-		if (varDesc.Name != std::get<0>(i)) { continue; }
-		_applyFunc = std::get<1>(i);
-	}
-
-	// サイズ
-	return static_cast<size_t>(sizeof(float) * typDesc.Columns * typDesc.Rows * std::max(typDesc.Elements, (UINT)1));
+	_buffer = buff;
+	_applyFunc = from_array(APPLY_FUNC)
+		>> where([&](tuple<string, function<void(ShaderValueConstantBuffer*)>> x){return get<0>(x) == name; })
+		>> select([](tuple<string, function<void(ShaderValueConstantBuffer*)>> x){return get<1>(x); }) >> first_or_default();
 }
 
 //---------------------------------------------------------------------
-void ShaderValue::Apply()
-{
-	_applyFunc(this);
-}
-
-//---------------------------------------------------------------------
-void ShaderValue::Projection(ShaderValue* shader)
+void ShaderValueConstantBuffer::Projection(ShaderValueConstantBuffer* shader)
 {
 }
 
 //---------------------------------------------------------------------
-void ShaderValue::World(ShaderValue* shader)
+void ShaderValueConstantBuffer::World(ShaderValueConstantBuffer* shader)
 {
+}
+
+//---------------------------------------------------------------------
+ShaderValueResources::ShaderValueResources()
+	: _shader(nullptr)
+	, _bindPoint(0)
+{
+}
+
+//---------------------------------------------------------------------
+void ShaderValueResources::Create(const Shader* shader, const char* name, uint32_t bindPoint)
+{
+	_shader = shader;
+	_bindPoint = bindPoint;
+	/*
+	_applyFunc = from_array(APPLY_FUNC)
+		>> where([&](tuple<string, function<void(ShaderValueConstantBuffer*)>> x){return get<0>(x) == name; })
+		>> select([](tuple<string, function<void(ShaderValueConstantBuffer*)>> x){return get<1>(x); });
+		*/
 }
 
 #if 0
 //---------------------------------------------------------------------
-CShaderValue_Semantic::CShaderValue_Semantic()
+ShaderValueSemantic::ShaderValueSemantic()
 	:	IShaderValue			()
 	,	m_hPorj					( nullptr )
 	,	m_hWorld				( nullptr )
@@ -86,12 +88,12 @@ CShaderValue_Semantic::CShaderValue_Semantic()
 }
 
 //---------------------------------------------------------------------
-CShaderValue_Semantic::~CShaderValue_Semantic()
+ShaderValueSemantic::~ShaderValueSemantic()
 {
 }
 
 //---------------------------------------------------------------------
-void CShaderValue_Semantic::SetValue(DirectX::SimpleMath::Matrix& i_rMat)
+void ShaderValueSemantic::SetValue(DirectX::SimpleMath::Matrix& i_rMat)
 {
 //	D3DXMatrixIdentity( &m_mWorld );
 
@@ -150,7 +152,7 @@ void CShaderValue_Semantic::SetValue(DirectX::SimpleMath::Matrix& i_rMat)
 }
 
 //---------------------------------------------------------------------
-void CShaderValue_Semantic::renderSetParam(CMaterial* mate)
+void ShaderValueSemantic::renderSetParam(CMaterial* mate)
 {
 	HRESULT hr = S_OK;
 	if( m_hAmbient )
@@ -170,7 +172,7 @@ void CShaderValue_Semantic::renderSetParam(CMaterial* mate)
 }
 
 //---------------------------------------------------------------------
-void CShaderValue_Semantic::attach(Shader* i_pParam)
+void ShaderValueSemantic::attach(Shader* i_pParam)
 {
 	m_pShader = i_pParam;
 	m_hPorj = i_pParam->pEffect->GetParameterBySemantic( 0, "Projection" );
