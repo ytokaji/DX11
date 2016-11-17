@@ -11,6 +11,8 @@
 #include "framework/thread.h"
 #include "startJob.h"
 
+using namespace cpplinq;
+
 namespace
 {
 	// í∏ì_ê›íË
@@ -199,29 +201,23 @@ void AppContext::SetShaderParam( const SShaderParam* param )
 //---------------------------------------------------------------------
 void AppContext::OnResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapChain* pSwapChain, const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc )
 {
-	util::for_each(_resizedSwapChain, [&](ResizedSwapChainArg& f)
-	{
-		f(pd3dDevice, pSwapChain, pBackBufferSurfaceDesc);
-	});
+	for (const auto& i : _resizedSwapChain) { i(pd3dDevice, pSwapChain, pBackBufferSurfaceDesc); }
 }
 
 //---------------------------------------------------------------------
 void AppContext::OnReleasingSwapChain()
 {
-	util::for_each(_releasingSwapChain, [](ReleasingSwapChainArg& f)
-	{
-		f();
-	});
+	for (const auto& i : _releasingSwapChain) { i(); }
 }
 
 //---------------------------------------------------------------------
 void AppContext::OnMsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bool* pbNoFurtherProcessing )
 {
-	util::for_each(_msgProc, [&](MsgProcChainArg& f)
+	for each (auto& i in _msgProc)
 	{
-		if( *pbNoFurtherProcessing ) return;
-		f(hWnd, uMsg, wParam, lParam, pbNoFurtherProcessing);
-	});
+		if (*pbNoFurtherProcessing) return;
+		i(hWnd, uMsg, wParam, lParam, pbNoFurtherProcessing);
+	}
 }
 
 //---------------------------------------------------------------------

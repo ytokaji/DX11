@@ -47,4 +47,3 @@
 // other
 #include "property.h"
 #include "define_type.h"
-#include "util.h"

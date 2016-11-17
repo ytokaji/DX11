@@ -83,12 +83,12 @@ public:
 	/**
 		@brief I—¹‚·‚é‚Ü‚Å‘Ò‹@
 	*/
-	void Wait();
+	void Wait() const;
 
 	/**
 		@brief I—¹‚µ‚½‚©
 	*/
-	bool IsEnd() { return _isEnd; }
+	bool IsEnd() const { return _isEnd; }
 
 	virtual ThreadRequestBase& operator =(const ThreadRequestBase& r) { this->_isEnd = r._isEnd; return *this; }
 

@@ -95,9 +95,6 @@
     <ClInclude Include="..\include\stdafx.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\util.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\water_surface.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>

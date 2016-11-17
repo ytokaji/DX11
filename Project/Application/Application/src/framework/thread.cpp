@@ -6,6 +6,8 @@
 #include "stdafx.h"
 #include "framework/thread.h"
 
+using namespace cpplinq;
+
 //---------------------------------------------------------------------
 ThreadChannel::WorkerThread::WorkerThread(ThreadChannel* channel)
 	: _channel(channel)
@@ -52,7 +54,7 @@ ThreadChannel::ThreadChannel(unsigned int threadNum)
 //---------------------------------------------------------------------
 ThreadChannel::~ThreadChannel()
 {
-	util::for_each(_workerThread, [](WorkerThread* p){SAFE_DELETE(p); });
+	for(auto i : _workerThread){ SAFE_DELETE(i); }
 }
 
 //---------------------------------------------------------------------
@@ -75,7 +77,7 @@ ThreadRequestBase* ThreadChannel::PopRequest()
 }
 
 //---------------------------------------------------------------------
-void ThreadRequestBase::Wait()
+void ThreadRequestBase::Wait() const
 {
 	while (_isEnd == false)
 	{

@@ -7,6 +7,7 @@
 #include "framework/processManager.h"
 #include "appContext.h"
 
+using namespace cpplinq;
 //---------------------------------------------------------------------
 template<class TClass>
 void ProcessManagerBase::AddProcess(TClass* child, TClass* parent) const
@@ -185,16 +186,14 @@ void RenderManager::Proc(void)
 	_root.ProcessImpl([this](Render* p) { p->Pre(); });
 
 	// スレッドへの登録と同期
-	ThreadChannel* pChannel = AppContext::GetInstance()->GetThreadChannel();
-	util::for_each(_threadList, [&](ProcThread& r){ pChannel->PushRequest(&r); });
-	util::for_each(_threadList, [](ProcThread& r){ r.Wait(); });
+	for (auto&& i : _threadList) { AppContext::GetInstance()->GetThreadChannel()->PushRequest(&i); }
+	for (const auto& i : _threadList) { i.Wait(); }
 
 	// 事後処理
 	_root.ProcessImpl([this](Render* p) { p->Post(); });
 
 	// デファードコンテキストを結合
-	ID3D11DeviceContext* pContext = AppContext::GetInstance()->GetImmediateContext();
-	util::for_each(_threadList, [&](ProcThread& r){ r.ExecuteCommandList(pContext); });
+	for (auto&& i : _threadList) { i.ExecuteCommandList(AppContext::GetInstance()->GetImmediateContext()); }
 }
 
 //---------------------------------------------------------------------

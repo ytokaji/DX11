@@ -110,7 +110,7 @@ private:
 
 private:
 	std::vector<ProcThread>		_threadList;	//!< 更新用スレッド配列
-	Job						_root;			//!< ルートプロセス
+	Job							_root;			//!< ルートプロセス
 };
 
 /**

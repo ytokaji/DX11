@@ -72,7 +72,7 @@ void ShaderManager::Init()
 //---------------------------------------------------------------------
 void ShaderManager::Destroy()
 {
-	from(_shader) >> for_each([](Shader* x){ SAFE_DELETE(x); });
+	for( auto&& i : _shader) { SAFE_DELETE(i); }
 }
 
 //---------------------------------------------------------------------
@@ -101,8 +101,8 @@ Shader* ShaderManager::CreateShader(SHADER_TYPE shader)
 	// ðŒ‚ÌShader‚ðì‚Á‚Ä‰Šú‰»
 	Shader* pShader = new Shader();
 	from_array(SHADER_DATA)
-		>> where([&](ShaderData x){return x.eShader == shader; })
-		>> for_each([&](ShaderData x)
+		>> where([&](const ShaderData& x){return x.eShader == shader; })
+		>> for_each([&](const ShaderData& x)
 	{
 #if _PRECOMPILE_SHADER_USE
 		bool b = pShader->InitShader(x.pShader, x.nSize, x.eType);

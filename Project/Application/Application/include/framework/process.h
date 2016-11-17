@@ -126,7 +126,7 @@ template<class TClass, class PRIORITY_TYPE>
 Process<TClass, PRIORITY_TYPE>::~Process()
 {
 	_PRINT("dtor Process[%s]\n", _identifierString.c_str());
-	util::for_each( _child, [](Process* p){ SAFE_DELETE( p ); } );
+	for (auto&& i : _child) { SAFE_DELETE(i); }
 	_child.clear();
 }
 
@@ -136,7 +136,7 @@ void Process<TClass, PRIORITY_TYPE>::ProcessImpl(std::function<void(TClass*)> fu
 {
 	func(reinterpret_cast<TClass*>(this));
 
-	util::for_each( _child, [&](Process* p){ p->ProcessImpl(func); } );
+	for (auto&& i : _child) { i->ProcessImpl(func); }
 }
 
 //---------------------------------------------------------------------

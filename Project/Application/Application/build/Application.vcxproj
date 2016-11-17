@@ -160,7 +160,6 @@
     <ClInclude Include="..\include\shader_param.h" />
     <ClInclude Include="..\include\startJob.h" />
     <ClInclude Include="..\include\stdafx.h" />
-    <ClInclude Include="..\include\util.h" />
     <ClInclude Include="..\include\water_surface.h" />
   </ItemGroup>
   <ItemGroup>
