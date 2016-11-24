@@ -34,8 +34,8 @@ enum class RENDER_PRIORITY
 /**
 	@brief ウィンドウのサイズ
 */
-static const int	WINDOW_W = 640;
-static const int	WINDOW_H = 480;
+static const int	WINDOW_W = 1280;
+static const int	WINDOW_H = 768;
 
 /**
 	@brief IProcessManagerで管理できる総数

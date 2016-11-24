@@ -138,20 +138,20 @@ public:
 	/**
 		@brief リサイズ時に呼ばれるCB登録
 	*/
-	size_t AddResizedSwapChainCB(ResizedSwapChainArg);
-	void DeleteResizedSwapChainCB(size_t handle);
+	uintptr_t AddResizedSwapChainCB(ResizedSwapChainArg);
+	void DeleteResizedSwapChainCB(uintptr_t handle);
 	
 	/**
 		@brief リリース時に呼ばれるCB登録
 	*/
-	size_t AddReleasingSwapChainCB(ReleasingSwapChainArg);
-	void DeleteReleasingSwapChainCB(size_t handle);
+	uintptr_t AddReleasingSwapChainCB(ReleasingSwapChainArg);
+	void DeleteReleasingSwapChainCB(uintptr_t handle);
 	
 	/**
 		@brief メッセージ処理時に呼ばれるCB登録
 	*/
-	size_t AddMsgProcCB(MsgProcChainArg);
-	void DeleteMsgProcCB(size_t handle);
+	uintptr_t AddMsgProcCB(MsgProcChainArg);
+	void DeleteMsgProcCB(uintptr_t handle);
 	
 	/**
 		@brief cpu数の取得

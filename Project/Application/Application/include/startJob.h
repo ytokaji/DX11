@@ -9,7 +9,7 @@
 
 #include "framework/job.h"
 
-class CHud;
+class hud;
 
 /**
 	@brief 開始時の初期ジョブ
@@ -34,7 +34,6 @@ private:
 	};
 
 private:
-	CHud*		_hub;
 	STATE		_state;
 };
 

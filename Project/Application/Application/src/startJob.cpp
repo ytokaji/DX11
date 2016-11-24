@@ -9,12 +9,13 @@
 #include "appContext.h"
 #include "hud.h"
 #include "framework/processManager.h"
+#include "framework/renderManager.h"
+#include "framework/jobManager.h"
 
 
 //---------------------------------------------------------------------
 StartJob::StartJob()
 	:	Job				("StartJob")
-	,	_hub			( nullptr )
 	,	_state			(STATE::INIT)
 {
 }
@@ -22,7 +23,6 @@ StartJob::StartJob()
 //---------------------------------------------------------------------
 StartJob::~StartJob()
 {
-	SAFE_TERMINATE(_hub);
 }
 
 //---------------------------------------------------------------------
@@ -31,7 +31,7 @@ void StartJob::Update()
 	switch( _state )
 	{
 	case STATE::INIT:
-		AppContext::GetInstance()->GetRenderManager()->AddRender(_hub = new CHud());
+		AppContext::GetInstance()->GetRenderManager()->AddRender(new hud());
 		_state = STATE::RUN;
 		break;
 

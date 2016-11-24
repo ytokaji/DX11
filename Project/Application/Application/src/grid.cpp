@@ -32,8 +32,8 @@ CGrid::~CGrid()
 //---------------------------------------------------------------------
 void CGrid::Init()
 {
-	AppContext* pApp = AppContext::GetInstance();
-	ID3D11Device* pDevice = pApp->GetD3D11Device();
+	AppContext* app = AppContext::GetInstance();
+	ID3D11Device* device = app->GetD3D11Device();
 	HRESULT hr = E_FAIL;
 
 	// メモリの確保
@@ -43,7 +43,7 @@ void CGrid::Init()
 	bd.ByteWidth = (((SPLIT_X_NUM + 1) << 1) + ((SPLIT_Z_NUM + 1) << 1)) * sizeof(SVertexData);
 	bd.Usage = D3D11_USAGE_DYNAMIC;
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	_RET_CHECK_ASSERT(pDevice->CreateBuffer(&bd, NULL, &m_pD3DBuffer));
+	_RET_CHECK_ASSERT(device->CreateBuffer(&bd, NULL, &m_pD3DBuffer));
 
 	// 入力レイアウトの定義
 	D3D11_INPUT_ELEMENT_DESC layout[] = {

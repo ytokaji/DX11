@@ -5,10 +5,11 @@
 
 #include "stdafx.h"
 #include "appContext.h"
-//#include "shader_task.h"
-//#include "shader_set_value.h"
 #include "framework/processManager.h"
+#include "framework/renderManager.h"
+#include "framework/jobManager.h"
 #include "framework/thread.h"
+#include "framework/render.h"
 #include "startJob.h"
 
 using namespace cpplinq;
@@ -221,51 +222,51 @@ void AppContext::OnMsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, 
 }
 
 //---------------------------------------------------------------------
-size_t AppContext::AddResizedSwapChainCB(ResizedSwapChainArg f)
+uintptr_t AppContext::AddResizedSwapChainCB(ResizedSwapChainArg f)
 {
 	_resizedSwapChain.push_back( f );
-	return (size_t)(&_resizedSwapChain.back());
+	return (uintptr_t)(&_resizedSwapChain.back());
 }
 
 //---------------------------------------------------------------------
-void AppContext::DeleteResizedSwapChainCB(size_t handle)
+void AppContext::DeleteResizedSwapChainCB(uintptr_t handle)
 {
 	auto val = std::find_if(_resizedSwapChain.begin(), _resizedSwapChain.end(), 
-		[&](ResizedSwapChainArg& f){ return ((size_t)&f == handle); } );
+		[&](ResizedSwapChainArg& f){ return ((uintptr_t)&f == handle); });
 	if( val == _resizedSwapChain.end() ) return;
 
 	_resizedSwapChain.erase(val);
 }
 	
 //---------------------------------------------------------------------
-size_t AppContext::AddReleasingSwapChainCB(ReleasingSwapChainArg f)
+uintptr_t AppContext::AddReleasingSwapChainCB(ReleasingSwapChainArg f)
 {
 	_releasingSwapChain.push_back( f );
-	return (size_t)(&_releasingSwapChain.back());
+	return (uintptr_t)(&_releasingSwapChain.back());
 }
 
 //---------------------------------------------------------------------
-void AppContext::DeleteReleasingSwapChainCB(size_t handle)
+void AppContext::DeleteReleasingSwapChainCB(uintptr_t handle)
 {
 	auto val = std::find_if(_releasingSwapChain.begin(), _releasingSwapChain.end(), 
-		[&](ReleasingSwapChainArg& f){ return  (size_t)(&f) == handle; } );
+		[&](ReleasingSwapChainArg& f){ return  (uintptr_t)(&f) == handle; });
 	if( val == _releasingSwapChain.end() ) return;
 
 	_releasingSwapChain.erase(val);
 }
 
 //---------------------------------------------------------------------
-size_t AppContext::AddMsgProcCB(MsgProcChainArg f)
+uintptr_t AppContext::AddMsgProcCB(MsgProcChainArg f)
 {
 	_msgProc.push_back( f );
-	return (size_t)(&_msgProc.back());
+	return (uintptr_t)(&_msgProc.back());
 }
 
 //---------------------------------------------------------------------
-void AppContext::DeleteMsgProcCB(size_t handle)
+void AppContext::DeleteMsgProcCB(uintptr_t handle)
 {
 	auto val = std::find_if(_msgProc.begin(), _msgProc.end(), 
-		[&](MsgProcChainArg& f){ return  (size_t)(&f) == handle; } );
+		[&](MsgProcChainArg& f){ return  (uintptr_t)(&f) == handle; });
 	if( val == _msgProc.end() ) return;
 
 	_msgProc.erase(val);

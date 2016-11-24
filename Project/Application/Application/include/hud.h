@@ -16,30 +16,34 @@ class CDXUTTextHelper;
 	@brief hudの管理、表示
 	@note パフォーマンス表示等
 */
-class CHud	: public Render
+class hud
 {
 public:
-	CHud();
-	~CHud();
+	hud();
+	~hud();
 	
-	/// 処理関数
-	virtual void RenderAsync(void);
-
-private:
-	/// 初期化
+	/**
+		@brief	初期化
+		@note	device contextが出来た後に呼ばれる
+	*/
 	void Init();
-	
+
+protected:
+	/// 処理関数
+	void RenderAsync();
+
 	/// 終了処理
-	void destroy();
+	void OnDestroy();
 
 private:	
-	CDXUTDialogResourceManager*		m_pDialogResourceManager;	 //!< ダイアログマネージャ
-	CDXUTTextHelper*				m_pTxtHelper;
+	CDXUTDialogResourceManager*		_dialogResourceManager;	 //!< ダイアログマネージャ
+	CDXUTTextHelper*				_txtHelper;
+	Render							_render;
 
 	// コールバックのハンドル
-	size_t							m_nResizeHandle;
-	size_t							m_nReleaseHandle;
-	size_t							m_nMsgProcHandle;
+	uintptr_t						_resizeHandle;
+	uintptr_t						_releaseHandle;
+	uintptr_t						_msgProcHandle;
 };
 
 

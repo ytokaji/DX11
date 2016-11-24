@@ -12,7 +12,7 @@
 //---------------------------------------------------------------------
 // メッセージ処理
 LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bool* pbNoFurtherProcessing,
-                          void* pUserContext )
+                          void* /*pUserContext*/ )
 {
     UNREFERENCED_PARAMETER( pbNoFurtherProcessing );
 	
@@ -27,9 +27,10 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 	switch(uMsg) {  
 		case WM_COPYDATA:
 		{
+#if 0
 			const COPYDATASTRUCT * const pData = reinterpret_cast<COPYDATASTRUCT *>(lParam);
 			const char* pParam = reinterpret_cast<const char*>(pData->lpData);
-#if 0
+
 			// パラメータツールからの情報
 			if(	pParam[0] == SHADER_PARAM_ID[0] && pParam[1] == SHADER_PARAM_ID[1] &&
 				pParam[2] == SHADER_PARAM_ID[2] && pParam[3] == SHADER_PARAM_ID[3]  )
@@ -56,7 +57,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
 //---------------------------------------------------------------------
 // キーボード入力処理
-void CALLBACK OnKeyboard( UINT nChar, bool bKeyDown, bool bAltDown, void* pUserContext )
+void CALLBACK OnKeyboard( UINT nChar, bool bKeyDown, bool bAltDown, void* /*pUserContext*/ )
 {
     UNREFERENCED_PARAMETER( bAltDown );
 
@@ -77,7 +78,7 @@ void CALLBACK OnKeyboard( UINT nChar, bool bKeyDown, bool bAltDown, void* pUserC
 
 //---------------------------------------------------------------------
 // フレーム毎のアップデート
-void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext )
+void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* /*pUserContext*/ )
 {
 	UNREFERENCED_PARAMETER( fTime );
 
@@ -88,7 +89,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 
 //--------------------------------------------------------------------------------------
 // デバイス設定
-bool CALLBACK ModifyDeviceSettings( DXUTDeviceSettings* pDeviceSettings, void* pUserContext )
+bool CALLBACK ModifyDeviceSettings( DXUTDeviceSettings* pDeviceSettings, void* /*pUserContext*/ )
 {
 	// DX11以外は未対応
 	assert(D3D_FEATURE_LEVEL_11_0 == pDeviceSettings->MinimumFeatureLevel ||
@@ -109,15 +110,15 @@ bool CALLBACK ModifyDeviceSettings( DXUTDeviceSettings* pDeviceSettings, void* p
 
 //--------------------------------------------------------------------------------------
 // デバイスチェック
-bool CALLBACK IsDeviceAcceptable( const CD3D11EnumAdapterInfo *AdapterInfo, UINT Output, const CD3D11EnumDeviceInfo *DeviceInfo,
-                                       DXGI_FORMAT BackBufferFormat, bool bWindowed, void* pUserContext )
+bool CALLBACK IsDeviceAcceptable( const CD3D11EnumAdapterInfo* /*AdapterInfo*/, UINT /*Output*/, const CD3D11EnumDeviceInfo* /*DeviceInfo*/,
+                                       DXGI_FORMAT /*BackBufferFormat*/, bool /*bWindowed*/, void* /*pUserContext*/ )
 {
     return true;
 }
 
 //--------------------------------------------------------------------------------------
 // デバイス作成時処理
-HRESULT CALLBACK OnCreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc, void* pUserContext )
+HRESULT CALLBACK OnCreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFACE_DESC* /*pBackBufferSurfaceDesc*/, void* /*pUserContext*/ )
 {
 	AppContext* pApp = AppContext::GetInstance();
 	_ASSERT(pApp);
@@ -129,7 +130,7 @@ HRESULT CALLBACK OnCreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFACE_DE
 //--------------------------------------------------------------------------------------
 // リサイズされたときの処理
 HRESULT CALLBACK OnD3D11ResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapChain* pSwapChain,
-                                         const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc, void* pUserContext )
+                                         const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc, void* /*pUserContext*/ )
 {
 	AppContext* pApp = AppContext::GetInstance();
 	if (pApp == nullptr) return S_OK;
@@ -140,7 +141,7 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapCha
 
 //--------------------------------------------------------------------------------------
 // 開放されたときの処理
-void CALLBACK OnD3D11ReleasingSwapChain( void* pUserContext )
+void CALLBACK OnD3D11ReleasingSwapChain( void* /*pUserContext*/ )
 {
 	AppContext* pApp = AppContext::GetInstance();
 	if (pApp == nullptr) return;
@@ -149,14 +150,14 @@ void CALLBACK OnD3D11ReleasingSwapChain( void* pUserContext )
 
 //--------------------------------------------------------------------------------------
 // 終了時
-void CALLBACK OnDestroyDevice( void* pUserContext )
+void CALLBACK OnDestroyDevice( void* /*pUserContext*/ )
 {
 }
 
 //---------------------------------------------------------------------
 // フレーム毎の描画
-void CALLBACK OnFrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext* pd3dImmediateContext, double fTime,
-                                 float fElapsedTime, void* pUserContext )
+void CALLBACK OnFrameRender( ID3D11Device* /*pd3dDevice*/, ID3D11DeviceContext* /*pd3dImmediateContext*/, double /*fTime*/,
+                                 float fElapsedTime, void* /*pUserContext*/ )
 {
 	UNREFERENCED_PARAMETER(fElapsedTime);
 	AppContext* pApp = AppContext::GetInstance();

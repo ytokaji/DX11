@@ -11,79 +11,80 @@
 #include "framework/render.h"
 
 //---------------------------------------------------------------------
-CHud::CHud()
-	:	Render						("CHud", RENDER_PRIORITY::HUD)
-	,	m_pDialogResourceManager	( nullptr )
-	,	m_pTxtHelper				( nullptr )
-	,	m_nResizeHandle				( 0 )
-	,	m_nReleaseHandle			( 0 )
-	,	m_nMsgProcHandle			( 0 )
+hud::hud()
+	:	_dialogResourceManager	( nullptr )
+	,	_txtHelper				( nullptr )
+	,	_render					( "hud", RENDER_PRIORITY::HUD, nullptr, std::bind(&hud::RenderAsync,this), nullptr, std::bind(&hud::OnDestroy,this) )
+	,	_resizeHandle			( 0 )
+	,	_releaseHandle			( 0 )
+	,	_msgProcHandle			( 0 )
 {
-	Init();
 }
 
 //---------------------------------------------------------------------
-CHud::~CHud()
+hud::~hud()
 {
-	destroy();
+	OnDestroy();
 }
 
 //---------------------------------------------------------------------
-void CHud::Init()
+void hud::Init()
 {
-	AppContext* pApp = AppContext::GetInstance();
-	m_pDialogResourceManager = new CDXUTDialogResourceManager;
+	AppContext* app = AppContext::GetInstance();
+	_dialogResourceManager = new CDXUTDialogResourceManager;
 	
     HRESULT hr;
 
 	// デバイスの作成
-    ID3D11DeviceContext* pd3dImmediateContext = pApp->GetImmediateContext();
-	_RET_CHECK_ASSERT( m_pDialogResourceManager->OnD3D11CreateDevice( AppContext::GetInstance()->GetD3D11Device(), pd3dImmediateContext ) );
-	m_pDialogResourceManager->OnD3D11ResizedSwapChain(pApp->GetD3D11Device(), DXUTGetDXGIBackBufferSurfaceDesc());
+	ID3D11DeviceContext* activeContext = _render.GetActiveDeviceContext();
+	_RET_CHECK_ASSERT(_dialogResourceManager->OnD3D11CreateDevice(AppContext::GetInstance()->GetD3D11Device(), activeContext));
+	_dialogResourceManager->OnD3D11ResizedSwapChain(app->GetD3D11Device(), DXUTGetDXGIBackBufferSurfaceDesc());
 	
 	// デバイス側コールバックの登録
-	m_nResizeHandle = pApp->AddResizedSwapChainCB([this](ID3D11Device* pd3dDevice, IDXGISwapChain* pSwapChain,const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc)
+	_resizeHandle = app->AddResizedSwapChainCB([this](ID3D11Device* pd3dDevice, IDXGISwapChain* /*pSwapChain*/, const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc)
 	{
 		 HRESULT hr;
-		_RET_CHECK_ASSERT( m_pDialogResourceManager->OnD3D11ResizedSwapChain( pd3dDevice, pBackBufferSurfaceDesc ) );
+		_RET_CHECK_ASSERT( _dialogResourceManager->OnD3D11ResizedSwapChain( pd3dDevice, pBackBufferSurfaceDesc ) );
 	});
 
-	m_nReleaseHandle = pApp->AddReleasingSwapChainCB([this]()
+	_releaseHandle = app->AddReleasingSwapChainCB([this]()
 	{
-	   m_pDialogResourceManager->OnD3D11ReleasingSwapChain();
+	   _dialogResourceManager->OnD3D11ReleasingSwapChain();
 	});
 	
-	m_nMsgProcHandle = pApp->AddMsgProcCB([this](HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bool* pbNoFurtherProcessing)
+	_msgProcHandle = app->AddMsgProcCB([this](HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bool* pbNoFurtherProcessing)
 	{
-		*pbNoFurtherProcessing = m_pDialogResourceManager->MsgProc( hWnd, uMsg, wParam, lParam );
+		*pbNoFurtherProcessing = _dialogResourceManager->MsgProc( hWnd, uMsg, wParam, lParam );
 	});
 
 	// テキスト
-	m_pTxtHelper = new CDXUTTextHelper( AppContext::GetInstance()->GetD3D11Device(), pd3dImmediateContext, m_pDialogResourceManager, 15 );
+	_txtHelper = new CDXUTTextHelper(AppContext::GetInstance()->GetD3D11Device(), activeContext, _dialogResourceManager, 15);
 }
 
 //---------------------------------------------------------------------
-void CHud::destroy()
+void hud::OnDestroy()
 {
-	AppContext* pApp = AppContext::GetInstance();
-	pApp->DeleteResizedSwapChainCB( m_nResizeHandle );
-	pApp->DeleteResizedSwapChainCB( m_nReleaseHandle );
-	pApp->DeleteResizedSwapChainCB( m_nMsgProcHandle );
-	
-	if (m_pDialogResourceManager) m_pDialogResourceManager->OnD3D11DestroyDevice();
-	SAFE_DELETE(m_pDialogResourceManager);
-	SAFE_DELETE(m_pTxtHelper);
+	AppContext* app = AppContext::GetInstance();
+	app->DeleteResizedSwapChainCB( _resizeHandle );
+	app->DeleteResizedSwapChainCB( _releaseHandle );
+	app->DeleteResizedSwapChainCB( _msgProcHandle );
+
+	if (_dialogResourceManager){ _dialogResourceManager->OnD3D11DestroyDevice(); }
+	SAFE_DELETE(_dialogResourceManager);
+	SAFE_DELETE(_txtHelper);
+
+	_render.Destroy();
 }
 
 //---------------------------------------------------------------------
-void CHud::RenderAsync()
+void hud::RenderAsync()
 {
-	m_pTxtHelper->Begin();
-	m_pTxtHelper->SetInsertionPos( 205, 205 );
-	m_pTxtHelper->SetForegroundColor( DirectX::SimpleMath::Color( 1.0f, 1.0f, 0.0f, 1.0f ) );
-	m_pTxtHelper->DrawTextLine( DXUTGetFrameStats( DXUTIsVsyncEnabled() ) );
-	m_pTxtHelper->DrawTextLine( DXUTGetDeviceStats() );
-	m_pTxtHelper->End();
+	_txtHelper->Begin();
+	_txtHelper->SetInsertionPos( 20, 20 );
+	_txtHelper->SetForegroundColor( DirectX::SimpleMath::Color( 1.0f, 1.0f, 0.0f, 1.0f ) );
+	_txtHelper->DrawTextLine( DXUTGetFrameStats( DXUTIsVsyncEnabled() ) );
+	_txtHelper->DrawTextLine( DXUTGetDeviceStats() );
+	_txtHelper->End();
 }
 
 

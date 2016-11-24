@@ -51,9 +51,6 @@
     <ClCompile Include="..\src\hud.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\framework\processManager.cpp">
-      <Filter>ソース ファイル\framework</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\appContext.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -74,6 +71,12 @@
     </ClCompile>
     <ClCompile Include="..\src\shader\shaderValue.cpp">
       <Filter>ソース ファイル\shader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\framework\renderManager.cpp">
+      <Filter>ソース ファイル\framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\framework\jobManager.cpp">
+      <Filter>ソース ファイル\framework</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -139,6 +142,12 @@
     </ClInclude>
     <ClInclude Include="..\include\shader\material.h">
       <Filter>ヘッダー ファイル\shader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\framework\jobManager.h">
+      <Filter>ヘッダー ファイル\framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\framework\renderManager.h">
+      <Filter>ヘッダー ファイル\framework</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

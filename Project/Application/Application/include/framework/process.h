@@ -1,88 +1,99 @@
 /**
-	@file Process.h
-	@brief 処理規定クラス
+@file Process.h
+@brief 処理規定クラス
 */
 #pragma once
 #ifndef __PROSESS_H__
 #define __PROSESS_H__
 
 /**
-	@class Process
-	@brief 処理実行
+@class Process
+@brief 処理実行
 */
 template< class TClass, class PRIORITY_TYPE >
 class Process
 {
 public:
 	/**
-		@brief コンストラクター
-		@param pszid [in] 識別子
-		@param nPriority [in] プライオリティー
+	@brief コンストラクター
+	@param pszid [in] 識別子
+	@param nPriority [in] プライオリティー
 	*/
 	Process(const char* id, PRIORITY_TYPE priority);
 
 	/**
-		@brief デストラクター
+	@brief デストラクター
 	*/
 	virtual ~Process();
 
 	/**
-		@brief 終了
+	@brief 終了処理
+	*/
+	void Destroy();
+
+	/**
+	@brief 終了処理
 	*/
 	void Terminate();
-	
+
 	/**
-		@brief 自身と子に処理を行う
+	@brief 自身と子に処理を行う
 	*/
 	void ProcessImpl(std::function<void(TClass*)> func);
 
 	/**
-		@brief 有効化
+	@brief 有効化
 	*/
 	void SetEnable();
-	
+
 	/**
-		@brief 無効化
+	@brief 無効化
 	*/
 	void SetDisable();
 
 	/*
-		@brief 子の検索
-		@param i_pName [in] 識別子
+	@brief 子の検索
+	@param i_pName [in] 識別子
 	*/
 	TClass* FindChild(const char* identifier);
 
 protected:
 	/**
-		@brief 有効化時のコールバック
+	@brief 有効化時のコールバック
 	*/
 	virtual void    OnEnable(){};
 
 	/**
-		@brief無効化時のコールバック
+	@brief無効化時のコールバック
 	*/
 	virtual void    OnDisable(){};
-	
+
 	/**
-		@brief 終了フラグ
+	@brief 終了フラグ
 	*/
 	bool IsErase() { return _flgList[(uint8_t)FLG::ERASE]; }
-	
+
 	/**
-		@brief 有効
+	@brief 有効
 	*/
 	bool IsEnable() { return _flgList[(uint8_t)FLG::ENABLE]; }
 
+	/**
+	@brief	削除処理
+	@note	Destroyから呼ばれる
+	*/
+	virtual void OnDestroy(){};
+
 private:
 	/**
-		@brief operator =
+	@brief operator =
 	*/
-	Process& operator = ( const Process& ){};
+	Process& operator = (const Process&){};
 
 	/*
-		@brief 子の検索
-		@param i_pName [in] 識別子
-		@param i_pName [in] ハッシュ値
+	@brief 子の検索
+	@param i_pName [in] 識別子
+	@param i_pName [in] ハッシュ値
 	*/
 	TClass* FindChild(const char* identifier, std::size_t hash);
 
@@ -110,12 +121,12 @@ private:
 //---------------------------------------------------------------------
 template<class TClass, class PRIORITY_TYPE>
 Process<TClass, PRIORITY_TYPE>::Process(const char* id, PRIORITY_TYPE priority)
-	:	_child			()
-	,	_flgList			(0)
-	,	_identifierString		(id)
-	,	_parent			(nullptr)
-	,	_priority			(priority)
-	,	_identifierHash	(std::hash<std::string>()(id))
+	: _child()
+	, _flgList(0)
+	, _identifierString(id)
+	, _parent(nullptr)
+	, _priority(priority)
+	, _identifierHash(std::hash<std::string>()(id))
 {
 	_PRINT("ctor Process[%s]\n", _identifierString.c_str());
 	_child.reserve(PROCESS_CHILD_MAX);
@@ -126,8 +137,30 @@ template<class TClass, class PRIORITY_TYPE>
 Process<TClass, PRIORITY_TYPE>::~Process()
 {
 	_PRINT("dtor Process[%s]\n", _identifierString.c_str());
-	for (auto&& i : _child) { SAFE_DELETE(i); }
+	Destroy();
+}
+
+//---------------------------------------------------------------------
+template<class TClass, class PRIORITY_TYPE>
+void Process<TClass, PRIORITY_TYPE>::Destroy()
+{
+	OnDestroy();
+	while (_child.empty() == false)
+	{
+		auto& val = _child.front();
+		val->Destroy();
+		SAFE_DELETE(val);
+	}
 	_child.clear();
+
+	if (_parent != nullptr)
+	{
+		auto it = std::find(_parent->_child.begin(), _parent->_child.end(), this);
+		if (it != _parent->_child.end())
+		{
+			_parent->_child.erase(it);
+		}
+	}
 }
 
 //---------------------------------------------------------------------
@@ -166,8 +199,8 @@ TClass* Process<TClass, PRIORITY_TYPE>::FindChild(const char* identifier)
 template<class TClass, class PRIORITY_TYPE>
 TClass* Process<TClass, PRIORITY_TYPE>::FindChild(const char* identifier, std::size_t hash)
 {
-	if( _identifierHash == hash &&
-		_identifierString.compare(identifier) == 0 )
+	if (_identifierHash == hash &&
+		_identifierString.compare(identifier) == 0)
 	{
 		return reinterpret_cast<TClass*>(this);
 	}
@@ -175,7 +208,7 @@ TClass* Process<TClass, PRIORITY_TYPE>::FindChild(const char* identifier, std::s
 	for each (auto var in _child)
 	{
 		Process* p = var->FindChild(identifier, hash);
-		if( p ) return reinterpret_cast<TClass*>(p);
+		if (p) return reinterpret_cast<TClass*>(p);
 	}
 
 	return nullptr;
