@@ -7,28 +7,28 @@
 
 #include "hud.h"
 #include "appContext.h"
-#include "framework/job.h"
-#include "framework/render.h"
+#include "framework/renderManager.h"
 
 //---------------------------------------------------------------------
-hud::hud()
+Hud::Hud()
 	:	_dialogResourceManager	( nullptr )
 	,	_txtHelper				( nullptr )
-	,	_render					( "hud", RENDER_PRIORITY::HUD, nullptr, std::bind(&hud::RenderAsync,this), nullptr, std::bind(&hud::OnDestroy,this) )
+	,	_render					( "Hud", nullptr, std::bind(&Hud::RenderAsync,this), nullptr, RENDER_PRIORITY::HUD )
 	,	_resizeHandle			( 0 )
 	,	_releaseHandle			( 0 )
 	,	_msgProcHandle			( 0 )
 {
+	Init();
 }
 
 //---------------------------------------------------------------------
-hud::~hud()
+Hud::~Hud()
 {
-	OnDestroy();
+	Destroy();
 }
 
 //---------------------------------------------------------------------
-void hud::Init()
+void Hud::Init()
 {
 	AppContext* app = AppContext::GetInstance();
 	_dialogResourceManager = new CDXUTDialogResourceManager;
@@ -36,7 +36,7 @@ void hud::Init()
     HRESULT hr;
 
 	// デバイスの作成
-	ID3D11DeviceContext* activeContext = _render.GetActiveDeviceContext();
+	ID3D11DeviceContext* activeContext = _render.GetDeviceContext();
 	_RET_CHECK_ASSERT(_dialogResourceManager->OnD3D11CreateDevice(AppContext::GetInstance()->GetD3D11Device(), activeContext));
 	_dialogResourceManager->OnD3D11ResizedSwapChain(app->GetD3D11Device(), DXUTGetDXGIBackBufferSurfaceDesc());
 	
@@ -59,10 +59,13 @@ void hud::Init()
 
 	// テキスト
 	_txtHelper = new CDXUTTextHelper(AppContext::GetInstance()->GetD3D11Device(), activeContext, _dialogResourceManager, 15);
+
+	// 登録
+	AppContext::GetInstance()->GetRenderManager()->AddRender(&_render);
 }
 
 //---------------------------------------------------------------------
-void hud::OnDestroy()
+void Hud::Destroy()
 {
 	AppContext* app = AppContext::GetInstance();
 	app->DeleteResizedSwapChainCB( _resizeHandle );
@@ -77,7 +80,7 @@ void hud::OnDestroy()
 }
 
 //---------------------------------------------------------------------
-void hud::RenderAsync()
+void Hud::RenderAsync()
 {
 	_txtHelper->Begin();
 	_txtHelper->SetInsertionPos( 20, 20 );

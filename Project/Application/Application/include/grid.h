@@ -13,14 +13,21 @@
 /**
 	@brief gridの管理、表示
 */
-class CGrid	: public Render
+class Grid
 {
 public:
-	CGrid();
-	~CGrid();
-	
+	Grid();
+	~Grid();
+
+protected:
 	/// 処理関数
-	virtual void RenderAsync(void);
+	void RenderAsync(void);
+
+	/// 初期化
+	void Init();
+
+	/// 終了処理
+	void Destroy();
 
 private:
 	/*
@@ -31,18 +38,13 @@ private:
 		DirectX::SimpleMath::Vector4	pos;
 		DirectX::SimpleMath::Color		color;
 	};
-private:
-	/// 初期化
-	void Init();
-	
-	/// 終了処理
-	void destroy();
 
 private:
 	static const unsigned int SPLIT_X_NUM = 10;
 	static const unsigned int SPLIT_Z_NUM = 10;
 
-	ID3D11Buffer*		m_pD3DBuffer;		// D3D11バッファ
+	Render				_render;
+	ID3D11Buffer*		_d3DBuffer;		// D3D11バッファ
 };
 
 

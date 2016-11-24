@@ -76,11 +76,6 @@ public:
 	virtual ~ThreadRequestBase(){}
 	
 	/**
-		@brief 処理
-	*/
-	virtual void Execute() = 0;
-		
-	/**
 		@brief 終了するまで待機
 	*/
 	void Wait() const;
@@ -91,6 +86,12 @@ public:
 	bool IsEnd() const { return _isEnd; }
 
 	virtual ThreadRequestBase& operator =(const ThreadRequestBase& r) { this->_isEnd = r._isEnd; return *this; }
+
+protected:
+	/**
+	@brief 処理
+	*/
+	virtual void Execute() = 0;
 
 private:
 	bool	_isEnd;		//!< 処理終了したかフラグ

@@ -111,6 +111,7 @@
   <ItemGroup>
     <ClCompile Include="..\src\appContext.cpp" />
     <ClCompile Include="..\src\framework\jobManager.cpp" />
+    <ClCompile Include="..\src\framework\render.cpp" />
     <ClCompile Include="..\src\framework\renderManager.cpp" />
     <ClCompile Include="..\src\framework\thread.cpp" />
     <ClCompile Include="..\src\grid.cpp" />

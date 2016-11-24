@@ -147,19 +147,14 @@ void Process<TClass, PRIORITY_TYPE>::Destroy()
 	OnDestroy();
 	while (_child.empty() == false)
 	{
-		auto& val = _child.front();
-		val->Destroy();
-		SAFE_DELETE(val);
+		_child.front()->Destroy();
 	}
 	_child.clear();
 
 	if (_parent != nullptr)
 	{
 		auto it = std::find(_parent->_child.begin(), _parent->_child.end(), this);
-		if (it != _parent->_child.end())
-		{
-			_parent->_child.erase(it);
-		}
+		if (it != _parent->_child.end()) { _parent->_child.erase(it); }
 	}
 }
 

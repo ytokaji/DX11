@@ -8,29 +8,23 @@
 #include "grid.h"
 #include "appContext.h"
 
-//---------------------------------------------------------------------
-// 入力レイアウトの定義
-D3D11_INPUT_ELEMENT_DESC layout[] = {
-	{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-};
 
 //---------------------------------------------------------------------
-CGrid::CGrid()
-	: Render("CGrid", RENDER_PRIORITY::GRID)
-	, m_pD3DBuffer(nullptr)
+Grid::Grid()
+	: _render("Grid", nullptr, std::bind(&Grid::RenderAsync, this), nullptr, RENDER_PRIORITY::GRID)
+	, _d3DBuffer(nullptr)
 {
 	Init();
 }
 
 //---------------------------------------------------------------------
-CGrid::~CGrid()
+Grid::~Grid()
 {
-	destroy();
+	Destroy();
 }
 
 //---------------------------------------------------------------------
-void CGrid::Init()
+void Grid::Init()
 {
 	AppContext* app = AppContext::GetInstance();
 	ID3D11Device* device = app->GetD3D11Device();
@@ -43,18 +37,12 @@ void CGrid::Init()
 	bd.ByteWidth = (((SPLIT_X_NUM + 1) << 1) + ((SPLIT_Z_NUM + 1) << 1)) * sizeof(SVertexData);
 	bd.Usage = D3D11_USAGE_DYNAMIC;
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	_RET_CHECK_ASSERT(device->CreateBuffer(&bd, NULL, &m_pD3DBuffer));
-
-	// 入力レイアウトの定義
-	D3D11_INPUT_ELEMENT_DESC layout[] = {
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	};
-	UINT numElements = sizeof(layout) / sizeof(layout[0]);
+	_RET_CHECK_ASSERT(device->CreateBuffer(&bd, NULL, &_d3DBuffer));
 	/*
 	// 入力レイアウトを生成
-	hr = gDemoApp.pDevice->CreateInputLayout(
-		layout,
-		numElements,
+	hr = app->GetD3D11Device()->CreateInputLayout(
+		DEFAULT_ELEMENT_LAYOUT,
+		DEFAULT_ELEMENT_LAYOUT_NUM,
 		pVSBlob->GetBufferPointer(),
 		pVSBlob->GetBufferSize(),
 		&gDemoApp.pVertexLayout);
@@ -72,13 +60,13 @@ void CGrid::Init()
 
 
 //---------------------------------------------------------------------
-void CGrid::destroy()
+void Grid::Destroy()
 {
-	SAFE_RELEASE(m_pD3DBuffer);
+	SAFE_RELEASE(_d3DBuffer);
 }
 
 //---------------------------------------------------------------------
-void CGrid::RenderAsync()
+void Grid::RenderAsync()
 {
 }
 

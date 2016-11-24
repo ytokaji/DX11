@@ -8,15 +8,15 @@
 #include "startJob.h"
 #include "appContext.h"
 #include "hud.h"
-#include "framework/processManager.h"
-#include "framework/renderManager.h"
-#include "framework/jobManager.h"
+#include "grid.h"
 
 
 //---------------------------------------------------------------------
 StartJob::StartJob()
 	:	Job				("StartJob")
 	,	_state			(STATE::INIT)
+	,	_hub			(nullptr)
+	,	_grid			(nullptr)
 {
 }
 
@@ -31,7 +31,9 @@ void StartJob::Update()
 	switch( _state )
 	{
 	case STATE::INIT:
-		AppContext::GetInstance()->GetRenderManager()->AddRender(new hud());
+		_hub.reset(new Hud());
+		_grid.reset(new Grid());
+
 		_state = STATE::RUN;
 		break;
 

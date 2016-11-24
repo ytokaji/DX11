@@ -16,7 +16,9 @@ float4x4	g_mWorldViewProjection	: WorldViewProjection;
 struct INPUT
 {
 	float4 pos		: POSITION;
-	float4 color	: TEXCOORD0;
+	float4 nomal	: NORMAL;
+	float4 color	: COLOR;
+	float2 uv		: UV;
 };
 struct OUTPUT
 {

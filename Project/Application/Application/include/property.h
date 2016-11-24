@@ -29,6 +29,7 @@ enum class RENDER_PRIORITY
 	DEFAULT,		//!< デフォルト
 
 	HUD,			//!< UI
+
 };
 
 /**
@@ -46,6 +47,20 @@ static const unsigned int PROCESS_ARRAY_MAX = 512;
 	@brief CProcessの子の数
 */
 static const unsigned int PROCESS_CHILD_MAX = 32;
+
+/**
+@brief デフォルトの入力レイアウトの定義
+*/
+static const D3D11_INPUT_ELEMENT_DESC DEFAULT_ELEMENT_LAYOUT[] = {
+	{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 36, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+};
+/**
+@brief デフォルトの入力レイアウト数の定義
+*/
+static const UINT DEFAULT_ELEMENT_LAYOUT_NUM = sizeof(DEFAULT_ELEMENT_LAYOUT) / sizeof(DEFAULT_ELEMENT_LAYOUT[0]);
 
 
 /**

@@ -92,24 +92,18 @@ bool Shader::InitShader(const void* buff, size_t size, eTYPE type)
 //---------------------------------------------------------------------
 bool Shader::InitShaderVertex(const void* buff, size_t size)
 {
-	ID3D11Device* pDevice = AppContext::GetInstance()->GetD3D11Device();
+	ID3D11Device* device = AppContext::GetInstance()->GetD3D11Device();
 	HRESULT hr;
 
 	// シェーダ作成
-	_RET_CHECK_ASSERT(pDevice->CreateVertexShader(buff, size, NULL, &_shadarData[(uint8_t)eTYPE::VS]._shader._vertex));
+	_RET_CHECK_ASSERT(device->CreateVertexShader(buff, size, NULL, &_shadarData[(uint8_t)eTYPE::VS]._shader._vertex));
 	if (FAILED(hr)) return false;
-	/*
-	// InputLayoutの作成
-	const D3D11_INPUT_ELEMENT_DESC layout[] =
-	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	};
 
-	_RET_CHECK_ASSERT(pDevice->CreateInputLayout(layout, ARRAYSIZE(layout), buff, size, &_layout));
+	// 入力レイアウトを生成.
+	_RET_CHECK_ASSERT(device->CreateInputLayout(DEFAULT_ELEMENT_LAYOUT, DEFAULT_ELEMENT_LAYOUT_NUM, buff, size, &_layout));
 	if (FAILED(hr)) return false;
-	*/
+
+//	device->IASetInputLayout(_layout);
 
 	return true;
 }
@@ -199,3 +193,9 @@ void Shader::setupParameter(eTYPE type)
 
 	return;
 }
+
+//-------------------------------------------------------------------------
+void Shader::Apply(DirectX::SimpleMath::Matrix* mat)
+{
+}
+

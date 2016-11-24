@@ -12,22 +12,14 @@ using namespace cpplinq;
 //---------------------------------------------------------------------
 RenderManager::ProcThread::ProcThread(Render* process)
 	: ThreadRequestBase()
-	, _context(nullptr)
 	, _command(nullptr)
 	, _process(process)
 {
-	ID3D11Device* device = AppContext::GetInstance()->GetD3D11Device();
-	HRESULT hr = device->CreateDeferredContext(0, &_context);
-	_ASSERT(SUCCEEDED(hr));
-
-	process->SetActiveDeviceContext(_context);
-	process->Init();
 }
 
 //---------------------------------------------------------------------
 RenderManager::ProcThread::~ProcThread()
 {
-	SAFE_RELEASE(_context);
 	SAFE_RELEASE(_command);
 }
 
@@ -36,11 +28,12 @@ void RenderManager::ProcThread::Execute(void)
 {
 	_ASSERT(_command == nullptr);
 
-	HRESULT hr = DXUTSetupD3D11Views(_context);
+	HRESULT hr = DXUTSetupD3D11Views(_process->GetDeviceContext());
 	_ASSERT(SUCCEEDED(hr));
 
 	_process->RenderAsync();
-	_context->FinishCommandList(false, &_command);
+
+	_process->GetDeviceContext()->FinishCommandList(false, &_command);
 }
 
 //---------------------------------------------------------------------
@@ -70,7 +63,7 @@ void RenderManager::Proc(void)
 {
 	// 削除フラグ立ってるものを削除
 	const bool bRet = Erase(&_root);
-	if (bRet) UpdateProcessList(_threadList, &_root);
+	if (bRet){ UpdateProcessList(_threadList, &_root); }
 
 	// 事前処理
 	_root.ProcessImpl([this](Render* p) { p->Pre(); });
@@ -79,11 +72,11 @@ void RenderManager::Proc(void)
 	for (auto&& i : _threadList) { AppContext::GetInstance()->GetThreadChannel()->PushRequest(i); }
 	for (const auto& i : _threadList) { i->Wait(); }
 
-	// 事後処理
-	_root.ProcessImpl([this](Render* p) { p->Post(); });
-
 	// デファードコンテキストを結合
 	for (auto&& i : _threadList) { i->ExecuteCommandList(AppContext::GetInstance()->GetImmediateContext()); }
+
+	// 事後処理
+	_root.ProcessImpl([this](Render* p) { p->Post(); });
 }
 
 //---------------------------------------------------------------------

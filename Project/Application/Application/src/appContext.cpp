@@ -67,8 +67,7 @@ AppContext::AppContext()
 //---------------------------------------------------------------------
 AppContext::~AppContext()
 {
-	SAFE_TERMINATE(_startJob);
-	
+	SAFE_DELETE(_startJob);	
 	SAFE_DELETE(_threadChannel);
 	SAFE_DELETE(_job);
 	SAFE_DELETE(_render);

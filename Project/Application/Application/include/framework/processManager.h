@@ -103,8 +103,10 @@ bool ProcessManagerBase::Erase(TClass* process) const
 //---------------------------------------------------------------------
 template<class TArrayClass, class TClass> void ProcessManagerBase::UpdateProcessList(std::vector<TArrayClass*>& list, TClass* root) const
 {
+	for (auto& i : list){ SAFE_DELETE(i); }
 	list = std::vector<TArrayClass*>();
 	list.reserve(PROCESS_ARRAY_MAX);
+
 	root->ProcessImpl([&](TClass* p)
 	{
 		_ASSERT(list.capacity() > list.size() + 1);

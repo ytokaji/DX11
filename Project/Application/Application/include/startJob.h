@@ -9,7 +9,8 @@
 
 #include "framework/job.h"
 
-class hud;
+class Hud;
+class Grid;
 
 /**
 	@brief 開始時の初期ジョブ
@@ -34,7 +35,9 @@ private:
 	};
 
 private:
-	STATE		_state;
+	STATE					_state;
+	std::unique_ptr<Hud>	_hub;
+	std::unique_ptr<Grid>	_grid;
 };
 
 

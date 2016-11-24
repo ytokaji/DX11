@@ -78,6 +78,9 @@
     <ClCompile Include="..\src\framework\jobManager.cpp">
       <Filter>ソース ファイル\framework</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\framework\render.cpp">
+      <Filter>ソース ファイル\framework</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\define_type.h">

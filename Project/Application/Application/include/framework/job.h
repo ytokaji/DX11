@@ -26,13 +26,14 @@ public:
 	@param nPriority [in] プライオリティー
 	*/
 	Job(const char* id, JOB_PRIORITY priority = JOB_PRIORITY::DEFAULT)
-		: Job(id, []{}, []{}, priority)
+		: Job(id, nullptr, nullptr, priority)
 	{
 	}
 	Job(const char* id
 		, std::function<void()> update
 		, std::function<void()> updateASync
-		, JOB_PRIORITY priority = JOB_PRIORITY::DEFAULT)
+		, JOB_PRIORITY priority = JOB_PRIORITY::DEFAULT
+		)
 		: Process<Job, JOB_PRIORITY>(id, priority)
 		, update(update)
 		, updateASync(updateASync)
@@ -48,14 +49,14 @@ public:
 	@brief	更新処理
 	@note	親子階層とプライオリティを考慮した同期で実行
 	*/
-	virtual void Update(void)	{ update(); }
+	virtual void Update(void)	{ if (update){ update(); } }
 
 	/**
 	@brief	非同期更新処理
 	@note	順不同、非同期で実行
 	Job全てのUpdate開始から終了までの間に実行されるのでスレッドセーフにする必要がある
 	*/
-	virtual void UpdateASync(void)	{ updateASync(); }
+	virtual void UpdateASync(void)	{ if (updateASync) { updateASync(); } }
 
 private:
 	const std::function<void()>		update;				//!< 更新処理

@@ -71,7 +71,6 @@ private:
 		ProcThread& operator =(const ProcThread&){};
 
 	private:
-		ID3D11DeviceContext*	_context;		//!< RenderAsync用のデファードコンテキスト
 		ID3D11CommandList*		_command;		//!< RenderAsync用のコマンドリスト
 		Render*					_process;		//!< プロセスポインタ
 	};

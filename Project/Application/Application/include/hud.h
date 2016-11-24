@@ -16,24 +16,23 @@ class CDXUTTextHelper;
 	@brief hudの管理、表示
 	@note パフォーマンス表示等
 */
-class hud
+class Hud
 {
 public:
-	hud();
-	~hud();
-	
+	Hud();
+	~Hud();
+
+protected:
 	/**
 		@brief	初期化
-		@note	device contextが出来た後に呼ばれる
 	*/
 	void Init();
 
-protected:
 	/// 処理関数
 	void RenderAsync();
 
 	/// 終了処理
-	void OnDestroy();
+	void Destroy();
 
 private:	
 	CDXUTDialogResourceManager*		_dialogResourceManager;	 //!< ダイアログマネージャ

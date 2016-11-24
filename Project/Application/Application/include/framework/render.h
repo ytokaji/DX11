@@ -6,7 +6,6 @@
 #ifndef __RENDER_H__
 #define __RENDER_H__
 
-#include "framework/processManager.h"
 #include "framework/process.h"
 #include "framework/thread.h"
 
@@ -26,36 +25,19 @@ public:
 		@param nPriority [in] プライオリティー
 	*/
 	Render(const char* id, RENDER_PRIORITY priority = RENDER_PRIORITY::DEFAULT)
-		: Render(id, priority, nullptr, nullptr, nullptr, nullptr)
+		: Render(id, nullptr, nullptr, nullptr, priority)
 	{
 	}
 	Render(const char* id
-			, RENDER_PRIORITY priority = RENDER_PRIORITY::DEFAULT
-			, std::function<void()> pre = nullptr
-			, std::function<void()> render = nullptr
-			, std::function<void()> post = nullptr
-			, std::function<void()> destory = nullptr)
-		:	Process<Render,RENDER_PRIORITY>	( id, priority )
-		,	_pre			( pre )
-		,	_render			( render )
-		,	_post			( post )
-		,	_destroy		( destory )
-		,	_activeContext	( nullptr )
-	{
-	}
+		, std::function<void()> pre
+		, std::function<void()> render
+		, std::function<void()> post
+		, RENDER_PRIORITY priority = RENDER_PRIORITY::DEFAULT);
 
 	/**
 		@brief デストラクター
 	*/
-	virtual ~Render()
-	{
-	}
-
-	/**
-		@brief	初期化
-		@note	device contextが出来た後に呼ばれる
-	*/
-	virtual void Init() {};
+	virtual ~Render();
 
 	/**
 		@brief	事前処理
@@ -76,29 +58,16 @@ public:
 	virtual void Post()	{ if(_post) { _post(); } }
 	
 	/**
-		@brief	アクティブなコンテキストの設定
+		@brief	コンテキストの取得
 	*/
-	void SetActiveDeviceContext(ID3D11DeviceContext* context) { _activeContext = context; }
-	
-	/**
-		@brief	アクティブなコンテキストの取得
-	*/
-	ID3D11DeviceContext* GetActiveDeviceContext() { return _activeContext; }
-
-protected:
-	/**
-	@brief	削除処理
-	@note	Destroyから呼ばれる
-	*/
-	virtual void OnDestroy(){ _destroy(); };
+	ID3D11DeviceContext* GetDeviceContext() { return _context; }
 
 private:
 	const std::function<void()>		_pre;			//!< 事前処理
 	const std::function<void()>		_render;		//!< 描画処理
 	const std::function<void()>		_post;			//!< 事後処理
-	const std::function<void()>		_destroy;		//!< 終了処理
 
-	ID3D11DeviceContext*			_activeContext;	//!< アクティブなコンテキスト
+	ID3D11DeviceContext*			_context;		//!< RenderAsync用のデファードコンテキスト
 };
 
 

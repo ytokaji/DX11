@@ -59,9 +59,9 @@ public:
 	bool InitShader(const void* buff, size_t size, eTYPE type);
 
 	/**
-		@brief シェーダ全体で共通のパラメータセット
+	@brief シェーダパラメータの適用
 	*/
-	void PreRenderSetParam(DirectX::SimpleMath::Matrix* mat);
+	void Apply(DirectX::SimpleMath::Matrix* mat);
 
 protected:	
 	/**
