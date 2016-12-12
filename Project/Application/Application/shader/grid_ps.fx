@@ -27,7 +27,7 @@ sampler_state
 //--------------------------------------------------------------------------------------
 struct INPUT
 {
-	float4 pos		: SV_Position;
+	float4 pos		: SV_POSITION;
 	float4 color	: TEXCOORD0;
 };
 

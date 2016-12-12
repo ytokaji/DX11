@@ -37,7 +37,7 @@ protected:
 private:	
 	CDXUTDialogResourceManager*		_dialogResourceManager;	 //!< ダイアログマネージャ
 	CDXUTTextHelper*				_txtHelper;
-	Render							_render;
+	RenderProcess							_render;
 
 	// コールバックのハンドル
 	uintptr_t						_resizeHandle;

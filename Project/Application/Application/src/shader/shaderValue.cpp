@@ -17,7 +17,7 @@ namespace
 	static const unsigned int s_nGaussianSamplingPoint = 4;
 
 	/// セマンティックリスト
-	static const tuple<string, function<void(ShaderValueConstantBuffer*)>> APPLY_FUNC[] =
+	static const tuple<string, function<void(const ShaderValueBase*)>> APPLY_FUNC[] =
 	{
 		std::make_tuple("Projection", ShaderValueConstantBuffer::Projection),
 		std::make_tuple("World", ShaderValueConstantBuffer::World),
@@ -25,44 +25,51 @@ namespace
 }
 
 //---------------------------------------------------------------------
-ShaderValueConstantBuffer::ShaderValueConstantBuffer()
-	: _shader(nullptr)
+ShaderValueBase::ShaderValueBase(Shader* shader)
+	: _applyFunc(nullptr)
+	, _shader(shader)
+{
+}
+
+//---------------------------------------------------------------------
+ShaderValueConstantBuffer::ShaderValueConstantBuffer(Shader* shader)
+	: ShaderValueBase(shader)
 	, _buffer(nullptr)
 {
 }
 
 //---------------------------------------------------------------------
-void ShaderValueConstantBuffer::Create(const Shader* shader, const char* name, char* buff)
+void ShaderValueConstantBuffer::Create(const char* name, char* buff)
 {
-	_shader = shader;
 	_buffer = buff;
+	_name = name;
 	_applyFunc = from_array(APPLY_FUNC)
-		>> where([&](tuple<string, function<void(ShaderValueConstantBuffer*)>> x){return get<0>(x) == name; })
-		>> select([](tuple<string, function<void(ShaderValueConstantBuffer*)>> x){return get<1>(x); }) >> first_or_default();
+		>> where([&](tuple<string, function<void(const ShaderValueBase*)>> x){return get<0>(x) == name; })
+		>> select([](tuple<string, function<void(const ShaderValueBase*)>> x){return get<1>(x); }) >> first_or_default();
 }
 
 //---------------------------------------------------------------------
-void ShaderValueConstantBuffer::Projection(ShaderValueConstantBuffer* shader)
+void ShaderValueConstantBuffer::Projection(const ShaderValueBase*)
 {
 }
 
 //---------------------------------------------------------------------
-void ShaderValueConstantBuffer::World(ShaderValueConstantBuffer* shader)
+void ShaderValueConstantBuffer::World(const ShaderValueBase*)
 {
 }
 
 //---------------------------------------------------------------------
-ShaderValueResources::ShaderValueResources()
-	: _shader(nullptr)
+ShaderValueResources::ShaderValueResources(Shader* shader)
+	: ShaderValueBase(shader)
 	, _bindPoint(0)
 {
 }
 
 //---------------------------------------------------------------------
-void ShaderValueResources::Create(const Shader* shader, const char* name, uint32_t bindPoint)
+void ShaderValueResources::Create(const char* name, uint32_t bindPoint)
 {
-	_shader = shader;
 	_bindPoint = bindPoint;
+	_name = name;
 	/*
 	_applyFunc = from_array(APPLY_FUNC)
 		>> where([&](tuple<string, function<void(ShaderValueConstantBuffer*)>> x){return get<0>(x) == name; })

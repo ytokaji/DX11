@@ -52,16 +52,29 @@ static const unsigned int PROCESS_CHILD_MAX = 32;
 @brief デフォルトの入力レイアウトの定義
 */
 static const D3D11_INPUT_ELEMENT_DESC DEFAULT_ELEMENT_LAYOUT[] = {
-	{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 36, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+//	{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 16, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+//	{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 32, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+//	{ "UV", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 44, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 };
 /**
 @brief デフォルトの入力レイアウト数の定義
 */
 static const UINT DEFAULT_ELEMENT_LAYOUT_NUM = sizeof(DEFAULT_ELEMENT_LAYOUT) / sizeof(DEFAULT_ELEMENT_LAYOUT[0]);
 
+/*
+@brief 1頂点の情報
+*/
+struct DefaultVertexData
+{
+	DirectX::SimpleMath::Vector4	pos;
+/*	DirectX::SimpleMath::Color		color;
+	DirectX::SimpleMath::Vector3	normal;
+	DirectX::SimpleMath::Vector2	uv;
+	uint8_t							pad[3*4];
+*/
+};
+static_assert(sizeof(DefaultVertexData) % 16 == 0, "");
 
 /**
 	@brief 挙動の設定

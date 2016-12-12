@@ -29,22 +29,17 @@ protected:
 	/// 終了処理
 	void Destroy();
 
-private:
-	/*
-		@brief 1頂点の情報
-	*/
-	struct SVertexData
-	{
-		DirectX::SimpleMath::Vector4	pos;
-		DirectX::SimpleMath::Color		color;
-	};
+	/// バッファ作成
+	void CreateBuffer(ID3D11Buffer** pBuffer, void* pData, size_t size, D3D11_BIND_FLAG BindFlag);
 
 private:
-	static const unsigned int SPLIT_X_NUM = 10;
-	static const unsigned int SPLIT_Z_NUM = 10;
+	static const uint32_t SPLIT_NUM = 10;
+	static const uint32_t GRID_SIZE = 1;
 
-	Render				_render;
-	ID3D11Buffer*		_d3DBuffer;		// D3D11バッファ
+	RenderProcess					_render;
+	ID3D11Buffer*					_d3DVertexBuffer;		// D3D11バッファ
+	ID3D11Buffer*					_d3DIndexBuffer;		// D3D11バッファ
+//	std::vector<DefaultVertexData>	_vertexBuffer;			// 頂点情報
 };
 
 

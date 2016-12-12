@@ -70,13 +70,10 @@ public:
 	/**
 		@brief カメラのマトリックス操作
 	*/
-	const DirectX::SimpleMath::Matrix*  GetWorldMatrix() const { return &_worldMatrix; }
-    const DirectX::SimpleMath::Matrix*  GetViewMatrix() const { return &_viewMatrix; }
-    const DirectX::SimpleMath::Matrix*  GetProjMatrix() const { return &_projMatrix; }
-	void SetWorldMatrix(const DirectX::SimpleMath::Matrix& mat) { _worldMatrix = mat; }
-	void SetViewMatrix(const DirectX::SimpleMath::Matrix& mat) { _viewMatrix = mat; }
-	void SetProjMatrix(const DirectX::SimpleMath::Matrix& mat) { _projMatrix = mat; }
-	
+	inline const DirectX::SimpleMath::Matrix  GetCameraWorldMatrix() const { return _camera.GetWorldMatrix(); }
+	inline const DirectX::SimpleMath::Matrix  GetViewMatrix() const { return _camera.GetViewMatrix(); }
+	inline const DirectX::SimpleMath::Matrix  GetProjMatrix() const { return _camera.GetProjMatrix(); }
+
 	/**
 		@brief ディレクショナルライトの方向の操作
 	*/
@@ -105,6 +102,12 @@ public:
 	*/
 	void SetShaderParam( const SShaderParam* param );
 	
+	/**
+	@brief シェーダーマネージャの取得
+	*/
+	const ShaderManager* GetShaderManager() const { return &_shaderManager; }
+	ShaderManager* GetShaderManager() { return &_shaderManager; }
+
 	/**
 		@brief ジョブ管理クラスの取得
 	*/
@@ -186,9 +189,6 @@ private:
 	ShaderManager						_shaderManager;			//!< シェーダーマネージャ
 	SShaderParam						_shaderParam;			//!< シェーダーパラメータ
 	CModelViewerCamera					_camera;				//!< カメラ
-	DirectX::SimpleMath::Matrix			_worldMatrix;			//!< ワールドマトリックス
-	DirectX::SimpleMath::Matrix			_viewMatrix;			//!< ビューマトリックス
-	DirectX::SimpleMath::Matrix			_projMatrix;			//!< プロジェクションマトリックス
 	DirectX::SimpleMath::Vector3		_directionalLightDir;	//!< ディレクショナルライト方向
 
 	ThreadChannel*						_threadChannel;			//!< スレッドの中継管理

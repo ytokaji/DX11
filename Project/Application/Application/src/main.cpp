@@ -21,9 +21,6 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
 	pApp->OnMsgProc(hWnd, uMsg, wParam, lParam, pbNoFurtherProcessing);
 
-    // ƒJƒƒ‰‚É‚à“Š‚°‚é
-	pApp->GetCamera()->HandleMessages( hWnd, uMsg, wParam, lParam );
-
 	switch(uMsg) {  
 		case WM_COPYDATA:
 		{

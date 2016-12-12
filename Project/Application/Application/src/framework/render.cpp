@@ -10,13 +10,13 @@
 using namespace cpplinq;
 
 //---------------------------------------------------------------------
-Render::Render(const char* id
+RenderProcess::RenderProcess(const char* id
 	, std::function<void()> pre
 	, std::function<void()> render
 	, std::function<void()> post
 	, RENDER_PRIORITY priority
 	)
-	: Process<Render, RENDER_PRIORITY>(id, priority)
+	: Process<RenderProcess, RENDER_PRIORITY>(id, priority)
 	, _pre(pre)
 	, _render(render)
 	, _post(post)
@@ -28,7 +28,7 @@ Render::Render(const char* id
 }
 
 //---------------------------------------------------------------------
-Render::~Render()
+RenderProcess::~RenderProcess()
 {
 	SAFE_RELEASE(_context);
 }

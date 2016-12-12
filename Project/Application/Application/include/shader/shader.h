@@ -59,27 +59,16 @@ public:
 	bool InitShader(const void* buff, size_t size, eTYPE type);
 
 	/**
+	@brief シェーダパラメータ設定関数
+	*/
+	void RegistShaderParamSetFunc(const char* name, std::function<void(ShaderValueBase*)> func);
+
+	/**
 	@brief シェーダパラメータの適用
 	*/
-	void Apply(DirectX::SimpleMath::Matrix* mat);
+	void Apply(ID3D11DeviceContext* context);
 
-protected:	
-	/**
-		@brief シェーダの作成
-	*/
-	bool InitShaderVertex(const void* buff, size_t size);
-	bool InitShaderPixel(const void* buff, size_t size);
-	bool InitShaderHull(const void*, size_t){ return false; };
-	bool InitShaderDomain(const void*, size_t){ return false; };
-	bool InitShaderGeometry(const void*, size_t){ return false; };
-	bool InitShaderCompute(const void*, size_t){ return false; };
-
-	/**
-		@brief シェーダーパラメータの設定
-	*/
-	void setupParameter(eTYPE type);
-
-protected:
+public:
 	/**
 		@brief シェーダのデータ
 	*/
@@ -102,6 +91,7 @@ protected:
 		ID3D11Buffer*							_d3dBuffer;			//!< 定数バッファ
 		char*									_buffer;			//!< バッファ
 		unsigned int							_bufferSize;		//!< バッファサイズ
+		eTYPE									_type;				//!< タイプ
 
 		ShaderData()
 			: _shader()
@@ -109,6 +99,7 @@ protected:
 			, _d3dBuffer(nullptr)
 			, _buffer(nullptr)
 			, _bufferSize(0)
+			, _type(eTYPE::VS)
 		{
 		}
 		~ShaderData()
@@ -120,9 +111,25 @@ protected:
 		}
 	};
 
+protected:
+	/**
+	@brief シェーダの作成
+	*/
+	bool InitShaderVertex(ShaderData* shader, const void* buff, size_t size);
+	bool InitShaderPixel(ShaderData* shader, const void* buff, size_t size);
+	bool InitShaderHull(ShaderData*, const void*, size_t){ return false; };
+	bool InitShaderDomain(ShaderData*, const void*, size_t){ return false; };
+	bool InitShaderGeometry(ShaderData*, const void*, size_t){ return false; };
+	bool InitShaderCompute(ShaderData*, const void*, size_t){ return false; };
+
+	/**
+	@brief シェーダーパラメータの設定
+	*/
+	void setupParameter(ShaderData* shaderData);
+
 private:
-	ShaderData					_shadarData[(int)eTYPE::MAX];		//!< シェーダーデータ
-	ID3D11InputLayout*          _layout;							//!< インプットレイアウト
+	std::vector<std::unique_ptr<ShaderData>>	_shadarData;	//!< シェーダーデータ
+	ID3D11InputLayout*							_layout;		//!< インプットレイアウト
 };
 
 

@@ -44,7 +44,7 @@ public:
 	/**
 		@brief シェーダの取得
 	*/
-	Shader* GetShader(SHADER_TYPE shader);
+	Shader* GetShader(SHADER_TYPE shader) const;
 
 	/**
 		@brief シェーダーリロード要求

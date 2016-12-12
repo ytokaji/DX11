@@ -125,8 +125,8 @@
     <ClCompile Include="..\src\post_effect_task.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\src\scene_task.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    <ClCompile Include="..\src\scene.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\src\shader\shader.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
@@ -156,7 +156,7 @@
     <ClInclude Include="..\include\object.h" />
     <ClInclude Include="..\include\post_effect_task.h" />
     <ClInclude Include="..\include\property.h" />
-    <ClInclude Include="..\include\scene_task.h" />
+    <ClInclude Include="..\include\scene.h" />
     <ClInclude Include="..\include\shader\material.h" />
     <ClInclude Include="..\include\shader\shader.h" />
     <ClInclude Include="..\include\shader\shaderManager.h" />

@@ -43,6 +43,7 @@
 #include "DXUT11/Optional/DXUTsettingsdlg.h"
 #include "DXUT11/Optional/SDKmisc.h"
 #include "DirectXTK/Inc/SimpleMath.h"
+#include "DirectXTK/Inc/GeometricPrimitive.h"
 
 // other
 #include "property.h"
@@ -53,3 +54,5 @@
 #include <crtdbg.h>
 #define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
 #endif
+
+#define TEST

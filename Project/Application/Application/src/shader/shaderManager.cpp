@@ -89,7 +89,7 @@ void ShaderManager::ShaderReLoadReq()
 }
 
 //---------------------------------------------------------------------
-Shader* ShaderManager::GetShader(SHADER_TYPE shader)
+Shader* ShaderManager::GetShader(SHADER_TYPE shader) const
 {
 	_ASSERT(shader<SHADER_TYPE::MAX);
 	return _shader[(int)shader];

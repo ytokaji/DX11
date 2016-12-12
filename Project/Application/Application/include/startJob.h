@@ -11,6 +11,7 @@
 
 class Hud;
 class Grid;
+class Scene;
 
 /**
 	@brief 開始時の初期ジョブ
@@ -38,6 +39,7 @@ private:
 	STATE					_state;
 	std::unique_ptr<Hud>	_hub;
 	std::unique_ptr<Grid>	_grid;
+	std::unique_ptr<Scene>	_scene;
 };
 
 

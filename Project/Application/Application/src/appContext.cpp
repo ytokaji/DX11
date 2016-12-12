@@ -15,30 +15,7 @@
 using namespace cpplinq;
 
 namespace
-{
-	// 頂点設定
-	struct VERTEX_2D
-	{
-		VERTEX_2D(DirectX::SimpleMath::Vector4 pos, DirectX::SimpleMath::Vector3 tex)
-			:	_pos	(pos)
-			,	_tex	(tex)
-		{
-		};
-
-		DirectX::SimpleMath::Vector4 _pos;
-		DirectX::SimpleMath::Vector3 _tex;
-	};
-
-	//２D板頂点
-	static const VERTEX_2D VERTEX_LIST[] =
-	{
-		VERTEX_2D( DirectX::SimpleMath::Vector4( 1.0f, 1.0f, 1.0f, 1.0f ),	DirectX::SimpleMath::Vector3( 1.0f, 0.0f, 1.0f ) ),
-		VERTEX_2D( DirectX::SimpleMath::Vector4( 1.0f, -1.0f, 1.0f, 1.0f ),	DirectX::SimpleMath::Vector3( 1.0f, 1.0f, 1.0f ) ),
-		VERTEX_2D( DirectX::SimpleMath::Vector4( -1.0f, 1.0f, 1.0f, 1.0f ),	DirectX::SimpleMath::Vector3( 0.0f, 0.0f, 1.0f ) ),
-		VERTEX_2D( DirectX::SimpleMath::Vector4( -1.0f, -1.0f, 1.0f, 1.0f ),	DirectX::SimpleMath::Vector3( 0.0f, 1.0f, 1.0f ) ),
-	};
-	static const int VERTEX_LIST_NUM = NUM_OF(VERTEX_LIST);
-	
+{	
 	static const char* SHADER_PARA_FILE_NAME = "param.sdpt";
 }
 
@@ -50,9 +27,6 @@ AppContext::AppContext()
 	,	_render					( nullptr )
 	,	_device					( nullptr )
 	,	_immediateContext		( nullptr )
-	,	_worldMatrix			( DirectX::SimpleMath::Matrix::Identity )
-	,	_viewMatrix				( DirectX::SimpleMath::Matrix::Identity )
-	,	_projMatrix				( DirectX::SimpleMath::Matrix::Identity )
 	,	_directionalLightDir	(0.5f, 0.5f, 0.5f)
 	,	_threadChannel			( nullptr )
 	,	_startJob				( nullptr )
@@ -114,13 +88,16 @@ void AppContext::Init(ID3D11Device* device)
 	_cpuCoreNum = SysInfo.dwNumberOfProcessors;
 
 	// カメラ
-	_camera.SetButtonMasks(0, MOUSE_WHEEL, MOUSE_LEFT_BUTTON);
-	DirectX::SimpleMath::Vector3 vEye(-5.f,3.f,-5.f), vAt(0.f,0.f,0.f);
-	_camera.SetViewParams( vEye, vAt );
- 
-	// 頂点情報の設定
-//	_RET_CHECK( m_pd3dDevice->CreateVertexDeclaration( g_aDecl, &m_pVertexDecl ) );
-	
+	AddResizedSwapChainCB([&](ID3D11Device*, IDXGISwapChain*, const DXGI_SURFACE_DESC*)
+	{
+		DirectX::SimpleMath::Vector3 vEye(-5.f, 3.f, 10.f), vAt(0.f, 0.f, 0.f);
+		_camera.SetViewParams(vEye, vAt);
+		_camera.SetProjParams(DirectX::XMConvertToRadians(45.f), static_cast<float>(WINDOW_W) / static_cast<float>(WINDOW_H), 0.1f, 1000.f);
+		_camera.SetButtonMasks(MOUSE_MIDDLE_BUTTON, MOUSE_WHEEL, MOUSE_LEFT_BUTTON);
+		_camera.SetWindow(WINDOW_W, WINDOW_H);
+	});
+	AddMsgProcCB([&](HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bool*){_camera.HandleMessages(hWnd, uMsg, wParam, lParam); });
+
 	// パラメータファイルのロード
 	FILE *fp;
 	fopen_s(&fp, SHADER_PARA_FILE_NAME, "rb");
@@ -156,13 +133,7 @@ void AppContext::Init(ID3D11Device* device)
 void AppContext::Update(float elapsd)
 {
 	_elapsd = elapsd;
-
-	// カメラ
-	_camera.FrameMove( elapsd );
-	SetWorldMatrix( _camera.GetWorldMatrix() );
-	SetViewMatrix( _camera.GetViewMatrix() );
-	SetProjMatrix( _camera.GetProjMatrix() );
-
+	_camera.FrameMove(elapsd);
 	_job->Proc();
 }
 

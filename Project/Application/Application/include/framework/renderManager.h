@@ -11,7 +11,7 @@
 #include "framework/process.h"
 #include "framework/thread.h"
 
-class Render;
+class RenderProcess;
 
 /**
 @brief	レンダー管理
@@ -39,13 +39,13 @@ public:
 	@param child [in] 追加するプロセス
 	@param parent [in] 親。nullptrならルートの下
 	*/
-	void AddRender(Render* child, Render* parent = nullptr);
+	void AddRender(RenderProcess* child, RenderProcess* parent = nullptr);
 
 	/**
 	@brief 検索
 	@param identifier [in] 識別子
 	*/
-	Render* FindRender(const char* identifier);
+	RenderProcess* FindRender(const char* identifier);
 
 private:
 	/**
@@ -54,7 +54,7 @@ private:
 	class ProcThread : public ThreadRequestBase
 	{
 	public:
-		ProcThread(Render* i_pProcess);
+		ProcThread(RenderProcess* i_pProcess);
 		ProcThread(const ProcThread& r) : ProcThread(r._process){};
 		virtual ~ProcThread();
 		virtual void Execute(void);
@@ -72,12 +72,12 @@ private:
 
 	private:
 		ID3D11CommandList*		_command;		//!< RenderAsync用のコマンドリスト
-		Render*					_process;		//!< プロセスポインタ
+		RenderProcess*					_process;		//!< プロセスポインタ
 	};
 
 private:
 	std::vector<ProcThread*>	_threadList;		//!< 更新用スレッド配列
-	Render						_root;				//!< ルートプロセス
+	RenderProcess						_root;				//!< ルートプロセス
 };
 
 

@@ -10,7 +10,7 @@
 using namespace cpplinq;
 
 //---------------------------------------------------------------------
-RenderManager::ProcThread::ProcThread(Render* process)
+RenderManager::ProcThread::ProcThread(RenderProcess* process)
 	: ThreadRequestBase()
 	, _command(nullptr)
 	, _process(process)
@@ -66,7 +66,7 @@ void RenderManager::Proc(void)
 	if (bRet){ UpdateProcessList(_threadList, &_root); }
 
 	// Ž–‘Oˆ—
-	_root.ProcessImpl([this](Render* p) { p->Pre(); });
+	_root.ProcessImpl([this](RenderProcess* p) { p->Pre(); });
 
 	// ƒXƒŒƒbƒh‚Ö‚Ì“o˜^‚Æ“¯Šú
 	for (auto&& i : _threadList) { AppContext::GetInstance()->GetThreadChannel()->PushRequest(i); }
@@ -76,18 +76,18 @@ void RenderManager::Proc(void)
 	for (auto&& i : _threadList) { i->ExecuteCommandList(AppContext::GetInstance()->GetImmediateContext()); }
 
 	// Ž–Œãˆ—
-	_root.ProcessImpl([this](Render* p) { p->Post(); });
+	_root.ProcessImpl([this](RenderProcess* p) { p->Post(); });
 }
 
 //---------------------------------------------------------------------
-void RenderManager::AddRender(Render* child, Render* parent)
+void RenderManager::AddRender(RenderProcess* child, RenderProcess* parent)
 {
 	AddProcess(child, parent == nullptr ? &_root : parent);
 	UpdateProcessList(_threadList, &_root);
 }
 
 //---------------------------------------------------------------------
-Render* RenderManager::FindRender(const char* identifier)
+RenderProcess* RenderManager::FindRender(const char* identifier)
 {
 	return FindProcess(&_root, identifier);
 }

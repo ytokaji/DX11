@@ -9,12 +9,42 @@
 class Shader;
 
 /**
-	@brief コンスタントバッファのシェーダパラメータクラス
+@brief シェーダパラメータクラス
 */
-class ShaderValueConstantBuffer
+class ShaderValueBase
 {
 public:
-	ShaderValueConstantBuffer();
+	ShaderValueBase(Shader* shader);
+	virtual ~ShaderValueBase(){};
+
+	/**
+	@brief シェーダパラメータの適用
+	*/
+	inline void Apply(){ if (_applyFunc) { _applyFunc(this); } }
+
+	/**
+	@brief 名前の取得
+	*/
+	inline const std::string& GetName() const { return _name; }
+
+	/**
+	@brief 適用関数の設定
+	*/
+	inline void SetApplyFunc(std::function<void(ShaderValueBase*)>& func) { _applyFunc = func; }
+
+protected:
+	std::function<void(ShaderValueBase*)>	_applyFunc;		//!< 適用関数
+	std::string								_name;			//!< 名前
+	Shader*									_shader;		//!< シェーダー
+};
+
+/**
+	@brief コンスタントバッファのシェーダパラメータクラス
+*/
+class ShaderValueConstantBuffer : public ShaderValueBase
+{
+public:
+	ShaderValueConstantBuffer(Shader* shader);
 	virtual ~ShaderValueConstantBuffer(){};
 
 	/**
@@ -23,32 +53,30 @@ public:
 		@param name [in] セマンティック名
 		@param buff [in] パラメータ適用先バッファ
 	*/
-	void Create(const Shader* shader, const char* name, char* buff);
+	void Create(const char* name, char* buff);
 
 	/**
-		@brief シェーダパラメータの適用
+	@brief バッファへの適用
 	*/
-	inline void Apply(){ _applyFunc(this); }
+	template<class T>
+	inline void SetBuffer(T& val){ memcpy_s(_buffer, sizeof(T), &val, sizeof(T)); }
 
 public:
 	// セマンティックごとの処理
-	static void Projection(ShaderValueConstantBuffer* val);
-	static void World(ShaderValueConstantBuffer* val);
+	static void Projection(const ShaderValueBase* val);
+	static void World(const ShaderValueBase* val);
 
 protected:
-	std::function<void(ShaderValueConstantBuffer*)>	_applyFunc;		//!< 適用関数
-	std::string										_str;			//!< 名前
-	const Shader*									_shader;		//!< シェーダ
-	char*											_buffer;		//!< バッファ
+	char*			_buffer;		//!< バッファ
 };
 
 /**
 	@brief リソースのシェーダパラメータクラス
 */
-class ShaderValueResources
+class ShaderValueResources : public ShaderValueBase
 {
 public:
-	ShaderValueResources();
+	ShaderValueResources(Shader* shader);
 	virtual ~ShaderValueResources(){};
 
 	/**
@@ -57,21 +85,13 @@ public:
 		@param name [in] セマンティック名
 		@param bindPoint [in] バインドポイント
 	*/
-	void Create(const Shader* shader, const char* name, uint32_t bindPoint);
-
-	/**
-		@brief シェーダパラメータの適用
-	*/
-	inline void Apply() { _applyFunc(this); }
+	void Create(const char* name, uint32_t bindPoint);
 
 public:
 	// セマンティックごとの処理
 
 protected:
-	std::function<void(ShaderValueResources*)>	_applyFunc;		//!< 適用関数
-	std::string									_str;			//!< 名前
-	const Shader*								_shader;		//!< シェーダ
-	uint32_t									_bindPoint;		//!< バインドポイント
+	uint32_t							_bindPoint;		//!< バインドポイント
 };
 
 #endif		// _SHADER_VALUE_H_

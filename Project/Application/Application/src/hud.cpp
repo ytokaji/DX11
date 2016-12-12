@@ -83,10 +83,20 @@ void Hud::Destroy()
 void Hud::RenderAsync()
 {
 	_txtHelper->Begin();
-	_txtHelper->SetInsertionPos( 20, 20 );
+	_txtHelper->SetInsertionPos( 2, 0 );
 	_txtHelper->SetForegroundColor( DirectX::SimpleMath::Color( 1.0f, 1.0f, 0.0f, 1.0f ) );
 	_txtHelper->DrawTextLine( DXUTGetFrameStats( DXUTIsVsyncEnabled() ) );
 	_txtHelper->DrawTextLine( DXUTGetDeviceStats() );
+
+	_txtHelper->SetInsertionPos(2, 40);
+	_txtHelper->SetForegroundColor(DirectX::SimpleMath::Color(1.0f, 0.75f, 0.0f, 1.0f));
+	_txtHelper->DrawTextLine(L"Controls:");
+	_txtHelper->SetInsertionPos(20, 60);
+	_txtHelper->DrawTextLine(L"Rotate model: Left mouse button\n"
+		L"Rotate light: Right mouse button\n"
+		L"Rotate camera: Middle mouse button\n"
+		L"Zoom camera: Mouse wheel scroll\n");
+
 	_txtHelper->End();
 }
 

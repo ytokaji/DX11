@@ -10,10 +10,10 @@
 #include "framework/thread.h"
 
 /**
-	@class Render
+	@class RenderProcess
 	@brief 処理実行
 */
-class Render : public Process<Render, RENDER_PRIORITY>
+class RenderProcess : public Process<RenderProcess, RENDER_PRIORITY>
 {
 public:
 	/**
@@ -24,11 +24,11 @@ public:
 		@param post [in] 事後処理ファンクタ
 		@param nPriority [in] プライオリティー
 	*/
-	Render(const char* id, RENDER_PRIORITY priority = RENDER_PRIORITY::DEFAULT)
-		: Render(id, nullptr, nullptr, nullptr, priority)
+	RenderProcess(const char* id, RENDER_PRIORITY priority = RENDER_PRIORITY::DEFAULT)
+		: RenderProcess(id, nullptr, nullptr, nullptr, priority)
 	{
 	}
-	Render(const char* id
+	RenderProcess(const char* id
 		, std::function<void()> pre
 		, std::function<void()> render
 		, std::function<void()> post
@@ -37,7 +37,7 @@ public:
 	/**
 		@brief デストラクター
 	*/
-	virtual ~Render();
+	virtual ~RenderProcess();
 
 	/**
 		@brief	事前処理
