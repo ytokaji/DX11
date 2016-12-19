@@ -16,16 +16,7 @@
 #include "DemandCreate.h"
 
 using namespace DirectX;
-using Microsoft::WRL::ComPtr;
-
-
-// IEffectMatrices default method
-void XM_CALLCONV IEffectMatrices::SetMatrices(FXMMATRIX world, CXMMATRIX view, CXMMATRIX projection)
-{
-    SetWorld(world);
-    SetView(view);
-    SetProjection(projection);
-}
+using namespace Microsoft::WRL;
 
 
 // Constructor initializes default matrix values.
@@ -54,11 +45,11 @@ _Use_decl_annotations_ void EffectMatrices::SetConstants(int& dirtyFlags, XMMATR
 
 
 // Constructor initializes default fog settings.
-EffectFog::EffectFog() :
-    enabled(false),
-    start(0),
-    end(1.f)
+EffectFog::EffectFog()
 {
+    enabled = false;
+    start = 0;
+    end = 1;
 }
 
 
@@ -113,10 +104,10 @@ void XM_CALLCONV EffectFog::SetConstants(int& dirtyFlags, FXMMATRIX worldView, X
 
 
 // Constructor initializes default material color settings.
-EffectColor::EffectColor() :
-    alpha(1.f)
+EffectColor::EffectColor()
 {
     diffuseColor = g_XMOne;
+    alpha = 1;
 }
 
 
@@ -155,7 +146,7 @@ EffectLights::EffectLights()
 #pragma prefast(disable:22103, "PREFAST doesn't understand buffer is bounded by a static const value even with SAL" )
 
 // Initializes constant buffer fields to match the current lighting state.
-_Use_decl_annotations_ void EffectLights::InitializeConstants(XMVECTOR& specularColorAndPowerConstant, XMVECTOR* lightDirectionConstant, XMVECTOR* lightDiffuseConstant, XMVECTOR* lightSpecularConstant) const
+_Use_decl_annotations_ void EffectLights::InitializeConstants(XMVECTOR& specularColorAndPowerConstant, XMVECTOR* lightDirectionConstant, XMVECTOR* lightDiffuseConstant, XMVECTOR* lightSpecularConstant)
 {
     static const XMVECTORF32 defaultSpecular = { 1, 1, 1, 16 };
     static const XMVECTORF32 defaultLightDirection = { 0, -1, 0, 0 };
@@ -414,28 +405,32 @@ ID3D11ShaderResourceView* EffectDeviceResources::GetDefaultTexture()
                 
         D3D11_SUBRESOURCE_DATA initData = { &s_pixel, sizeof(uint32_t), 0 };
 
-        D3D11_TEXTURE2D_DESC desc = {};
+        D3D11_TEXTURE2D_DESC desc;
+        memset( &desc, 0, sizeof(desc) );
         desc.Width = desc.Height = desc.MipLevels = desc.ArraySize = 1;
         desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
         desc.SampleDesc.Count = 1;
         desc.Usage = D3D11_USAGE_IMMUTABLE;
         desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 
-        ComPtr<ID3D11Texture2D> tex;
-        HRESULT hr = mDevice->CreateTexture2D( &desc, &initData, tex.GetAddressOf() );
+        ID3D11Texture2D* tex = nullptr;
+        HRESULT hr = mDevice->CreateTexture2D( &desc, &initData, &tex );
 
         if (SUCCEEDED(hr))
         {
-            SetDebugObjectName(tex.Get(), "DirectXTK:Effect");
+            SetDebugObjectName(tex, "DirectXTK:Effect");
 
-            D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
+            D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc;
+            memset( &SRVDesc, 0, sizeof( SRVDesc ) );
             SRVDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
             SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
             SRVDesc.Texture2D.MipLevels = 1;
 
-            hr = mDevice->CreateShaderResourceView( tex.Get(), &SRVDesc, pResult );
+            hr = mDevice->CreateShaderResourceView( tex, &SRVDesc, pResult );
             if (SUCCEEDED(hr))
                 SetDebugObjectName(*pResult, "DirectXTK:Effect");
+
+            tex->Release();
         }
 
         return hr;

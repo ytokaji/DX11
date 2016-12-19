@@ -101,7 +101,7 @@ namespace DirectX
 
 
         // Methods.
-        void InitializeConstants(_Out_ XMVECTOR& specularColorAndPowerConstant, _Out_writes_all_(MaxDirectionalLights) XMVECTOR* lightDirectionConstant, _Out_writes_all_(MaxDirectionalLights) XMVECTOR* lightDiffuseConstant, _Out_writes_all_(MaxDirectionalLights) XMVECTOR* lightSpecularConstant) const;
+        void InitializeConstants(_Out_ XMVECTOR& specularColorAndPowerConstant, _Out_writes_all_(MaxDirectionalLights) XMVECTOR* lightDirectionConstant, _Out_writes_all_(MaxDirectionalLights) XMVECTOR* lightDiffuseConstant, _Out_writes_all_(MaxDirectionalLights) XMVECTOR* lightSpecularConstant);
         void SetConstants(_Inout_ int& dirtyFlags, _In_ EffectMatrices const& matrices, _Inout_ XMMATRIX& worldConstant, _Inout_updates_(3) XMVECTOR worldInverseTransposeConstant[3], _Inout_ XMVECTOR& eyePositionConstant, _Inout_ XMVECTOR& diffuseColorConstant, _Inout_ XMVECTOR& emissiveColorConstant, bool lightingEnabled);
 
         int SetLightEnabled(int whichLight, bool value, _Inout_updates_(MaxDirectionalLights) XMVECTOR* lightDiffuseConstant, _Inout_updates_(MaxDirectionalLights) XMVECTOR* lightSpecularConstant);
@@ -151,9 +151,9 @@ namespace DirectX
         EffectBase(_In_ ID3D11Device* device)
           : dirtyFlags(INT_MAX),
             mConstantBuffer(device),
-            mDeviceResources(deviceResourcesPool.DemandCreate(device)),
-            constants{}
+            mDeviceResources(deviceResourcesPool.DemandCreate(device))
         {
+            ZeroMemory(&constants, sizeof(constants));
         }
 
 
@@ -172,11 +172,7 @@ namespace DirectX
         // Client code needs this in order to create matching input layouts.
         void GetVertexShaderBytecode(int permutation, _Out_ void const** pShaderByteCode, _Out_ size_t* pByteCodeLength)
         {
-            assert(permutation >= 0 && permutation < Traits::ShaderPermutationCount);
-            _Analysis_assume_(permutation >= 0 && permutation < Traits::ShaderPermutationCount);
             int shaderIndex = VertexShaderIndices[permutation];
-            assert(shaderIndex >= 0 && shaderIndex < Traits::VertexShaderCount);
-            _Analysis_assume_(shaderIndex >= 0 && shaderIndex < Traits::VertexShaderCount);
 
             ShaderBytecode const& bytecode = VertexShaderBytecode[shaderIndex];
 
@@ -195,18 +191,6 @@ namespace DirectX
             deviceContext->VSSetShader(vertexShader, nullptr, 0);
             deviceContext->PSSetShader(pixelShader, nullptr, 0);
 
-#if defined(_XBOX_ONE) && defined(_TITLE)
-            void *grfxMemory;
-            mConstantBuffer.SetData(deviceContext, constants, &grfxMemory);
-
-            Microsoft::WRL::ComPtr<ID3D11DeviceContextX> deviceContextX;
-            ThrowIfFailed(deviceContext->QueryInterface(IID_GRAPHICS_PPV_ARGS(deviceContextX.GetAddressOf())));
-
-            auto buffer = mConstantBuffer.GetBuffer();
-
-            deviceContextX->VSSetPlacementConstantBuffer(0, buffer, grfxMemory);
-            deviceContextX->PSSetPlacementConstantBuffer(0, buffer, grfxMemory);
-#else
             // Make sure the constant buffer is up to date.
             if (dirtyFlags & EffectDirtyFlags::ConstantBuffer)
             {
@@ -220,7 +204,6 @@ namespace DirectX
 
             deviceContext->VSSetConstantBuffers(0, 1, &buffer);
             deviceContext->PSSetConstantBuffers(0, 1, &buffer);
-#endif
         }
 
 
@@ -252,11 +235,7 @@ namespace DirectX
             // Gets or lazily creates the specified vertex shader permutation.
             ID3D11VertexShader* GetVertexShader(int permutation)
             {
-                assert(permutation >= 0 && permutation < Traits::ShaderPermutationCount);
-                _Analysis_assume_(permutation >= 0 && permutation < Traits::ShaderPermutationCount);
                 int shaderIndex = VertexShaderIndices[permutation];
-                assert(shaderIndex >= 0 && shaderIndex < Traits::VertexShaderCount);
-                _Analysis_assume_(shaderIndex >= 0 && shaderIndex < Traits::VertexShaderCount);
 
                 return DemandCreateVertexShader(mVertexShaders[shaderIndex], VertexShaderBytecode[shaderIndex]);
             }
@@ -265,11 +244,7 @@ namespace DirectX
             // Gets or lazily creates the specified pixel shader permutation.
             ID3D11PixelShader* GetPixelShader(int permutation)
             {
-                assert(permutation >= 0 && permutation < Traits::ShaderPermutationCount);
-                _Analysis_assume_(permutation >= 0 && permutation < Traits::ShaderPermutationCount);
                 int shaderIndex = PixelShaderIndices[permutation];
-                assert(shaderIndex >= 0 && shaderIndex < Traits::PixelShaderCount);
-                _Analysis_assume_(shaderIndex >= 0 && shaderIndex < Traits::PixelShaderCount);
 
                 return DemandCreatePixelShader(mPixelShaders[shaderIndex], PixelShaderBytecode[shaderIndex]);
             }

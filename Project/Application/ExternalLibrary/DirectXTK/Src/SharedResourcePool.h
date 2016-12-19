@@ -25,7 +25,7 @@ namespace DirectX
     // This is used to avoid duplicate resource creation, so that for instance a caller can
     // create any number of SpriteBatch instances, but these can internally share shaders and
     // vertex buffer if more than one SpriteBatch uses the same underlying D3D device.
-    template<typename TKey, typename TData, typename... TConstructorArgs>
+    template<typename TKey, typename TData>
     class SharedResourcePool
     {
     public:
@@ -33,11 +33,9 @@ namespace DirectX
           : mResourceMap(std::make_shared<ResourceMap>())
         { }
 
-        SharedResourcePool(SharedResourcePool const&) = delete;
-        SharedResourcePool& operator= (SharedResourcePool const&) = delete;
 
         // Allocates or looks up the shared TData instance for the specified key.
-        std::shared_ptr<TData> DemandCreate(TKey key, TConstructorArgs... args)
+        std::shared_ptr<TData> DemandCreate(TKey key)
         {
             std::lock_guard<std::mutex> lock(mResourceMap->mutex);
 
@@ -55,7 +53,7 @@ namespace DirectX
             }
             
             // Allocate a new instance.
-            auto newValue = std::make_shared<WrappedData>(key, mResourceMap, args...);
+            auto newValue = std::make_shared<WrappedData>(key, mResourceMap);
 
             mResourceMap->insert(std::make_pair(key, newValue));
 
@@ -77,10 +75,10 @@ namespace DirectX
         // to remove instances from our pool before they are freed.
         struct WrappedData : public TData
         {
-            WrappedData(TKey key, std::shared_ptr<ResourceMap> const& resourceMap, TConstructorArgs... args)
+            WrappedData(TKey key, std::shared_ptr<ResourceMap> const& resourceMap)
               : mKey(key),
                 mResourceMap(resourceMap),
-                TData(key, args...)
+                TData(key)
             { }
 
             ~WrappedData()
@@ -101,5 +99,10 @@ namespace DirectX
             TKey mKey;
             std::shared_ptr<ResourceMap> mResourceMap;
         };
+
+
+        // Prevent copying.
+        SharedResourcePool(SharedResourcePool const&);
+        SharedResourcePool& operator= (SharedResourcePool const&);
     };
 }

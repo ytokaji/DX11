@@ -30,10 +30,6 @@ namespace DirectX
         explicit CommonStates(_In_ ID3D11Device* device);
         CommonStates(CommonStates&& moveFrom);
         CommonStates& operator= (CommonStates&& moveFrom);
-
-        CommonStates(CommonStates const&) = delete;
-        CommonStates& operator= (CommonStates const&) = delete;
-
         virtual ~CommonStates();
 
         // Blend states.
@@ -66,5 +62,9 @@ namespace DirectX
         class Impl;
 
         std::shared_ptr<Impl> pImpl;
+
+        // Prevent copying.
+        CommonStates(CommonStates const&);
+        CommonStates& operator= (CommonStates const&);
     };
 }

@@ -15,22 +15,21 @@
 
 #if defined(_XBOX_ONE) && defined(_TITLE)
 #include <d3d11_x.h>
+#define NO_D3D11_DEBUG_NAME
 #else
 #include <d3d11_1.h>
 #endif
 
 #if !defined(NO_D3D11_DEBUG_NAME) && ( defined(_DEBUG) || defined(PROFILE) )
-#if !defined(_XBOX_ONE) || !defined(_TITLE)
 #pragma comment(lib,"dxguid.lib")
-#endif
-#endif
-
-#ifndef IID_GRAPHICS_PPV_ARGS
-#define IID_GRAPHICS_PPV_ARGS(x) IID_PPV_ARGS(x)
 #endif
 
 #include <exception>
+
+#pragma warning(push)
+#pragma warning(disable : 4005)
 #include <stdint.h>
+#pragma warning(pop)
 
 //
 // The core Direct3D headers provide the following helper C++ classes
@@ -56,7 +55,7 @@
 
 namespace DirectX
 {
-    // simliar to std::lock_guard for exception-safe Direct3D resource locking
+    // simliar to std::lock_guard for exception-safe Direct3D 11 resource locking
     class MapGuard : public D3D11_MAPPED_SUBRESOURCE
     {
     public:
@@ -112,36 +111,7 @@ namespace DirectX
     inline void SetDebugObjectName(_In_ ID3D11DeviceChild* resource, _In_z_ const char (&name)[TNameLength])
     {
         #if !defined(NO_D3D11_DEBUG_NAME) && ( defined(_DEBUG) || defined(PROFILE) )
-            #if defined(_XBOX_ONE) && defined(_TITLE)
-                wchar_t wname[MAX_PATH];
-                int result = MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, name, TNameLength, wname, MAX_PATH );
-                if ( result > 0 )
-                {
-                    resource->SetName( wname );
-                }
-            #else
-                resource->SetPrivateData(WKPDID_D3DDebugObjectName, TNameLength - 1, name);
-            #endif
-        #else
-            UNREFERENCED_PARAMETER(resource);
-            UNREFERENCED_PARAMETER(name);
-        #endif
-    }
-
-    template<UINT TNameLength>
-    inline void SetDebugObjectName(_In_ ID3D11DeviceChild* resource, _In_z_ const wchar_t (&name)[TNameLength])
-    {
-        #if !defined(NO_D3D11_DEBUG_NAME) && ( defined(_DEBUG) || defined(PROFILE) )
-            #if defined(_XBOX_ONE) && defined(_TITLE)
-                resource->SetName( name );
-            #else
-                char aname[MAX_PATH];
-                int result = WideCharToMultiByte( CP_ACP, 0, name, TNameLength, aname, MAX_PATH, nullptr, nullptr );
-                if ( result > 0 )
-                {
-                    resource->SetPrivateData(WKPDID_D3DDebugObjectName, TNameLength - 1, aname);
-                }
-            #endif
+            resource->SetPrivateData(WKPDID_D3DDebugObjectName, TNameLength - 1, name);
         #else
             UNREFERENCED_PARAMETER(resource);
             UNREFERENCED_PARAMETER(name);

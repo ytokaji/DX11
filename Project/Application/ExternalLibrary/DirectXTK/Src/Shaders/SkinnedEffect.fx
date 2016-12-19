@@ -42,7 +42,7 @@ cbuffer Parameters : register(b0)
 #include "Lighting.fxh"
 
 
-float3 Skin(inout VSInputNmTxWeights vin, float3 normal, uniform int boneCount)
+void Skin(inout VSInputNmTxWeights vin, uniform int boneCount)
 {
     float4x3 skinning = 0;
 
@@ -53,7 +53,7 @@ float3 Skin(inout VSInputNmTxWeights vin, float3 normal, uniform int boneCount)
     }
 
     vin.Position.xyz = mul(vin.Position, skinning);
-    return mul(normal, (float3x3)skinning);
+    vin.Normal = mul(vin.Normal, (float3x3)skinning);
 }
 
 
@@ -62,25 +62,9 @@ VSOutputTx VSSkinnedVertexLightingOneBone(VSInputNmTxWeights vin)
 {
     VSOutputTx vout;
 
-    float3 normal = Skin(vin, vin.Normal, 1);
+    Skin(vin, 1);
 
-    CommonVSOutput cout = ComputeCommonVSOutputWithLighting(vin.Position, normal, 3);
-    SetCommonVSOutputParams;
-
-    vout.TexCoord = vin.TexCoord;
-
-    return vout;
-}
-
-VSOutputTx VSSkinnedVertexLightingOneBoneBn(VSInputNmTxWeights vin)
-{
-    VSOutputTx vout;
-
-    float3 normal = BiasX2(vin.Normal);
-
-    normal = Skin(vin, normal, 1);
-
-    CommonVSOutput cout = ComputeCommonVSOutputWithLighting(vin.Position, normal, 3);
+    CommonVSOutput cout = ComputeCommonVSOutputWithLighting(vin.Position, vin.Normal, 3);
     SetCommonVSOutputParams;
 
     vout.TexCoord = vin.TexCoord;
@@ -94,25 +78,9 @@ VSOutputTx VSSkinnedVertexLightingTwoBones(VSInputNmTxWeights vin)
 {
     VSOutputTx vout;
 
-    float3 normal = Skin(vin, vin.Normal, 2);
+    Skin(vin, 2);
 
-    CommonVSOutput cout = ComputeCommonVSOutputWithLighting(vin.Position, normal, 3);
-    SetCommonVSOutputParams;
-
-    vout.TexCoord = vin.TexCoord;
-
-    return vout;
-}
-
-VSOutputTx VSSkinnedVertexLightingTwoBonesBn(VSInputNmTxWeights vin)
-{
-    VSOutputTx vout;
-
-    float3 normal = BiasX2(vin.Normal);
-
-    normal = Skin(vin, normal, 2);
-
-    CommonVSOutput cout = ComputeCommonVSOutputWithLighting(vin.Position, normal, 3);
+    CommonVSOutput cout = ComputeCommonVSOutputWithLighting(vin.Position, vin.Normal, 3);
     SetCommonVSOutputParams;
 
     vout.TexCoord = vin.TexCoord;
@@ -126,25 +94,9 @@ VSOutputTx VSSkinnedVertexLightingFourBones(VSInputNmTxWeights vin)
 {
     VSOutputTx vout;
 
-    float3 normal = Skin(vin, vin.Normal, 4);
+    Skin(vin, 4);
 
-    CommonVSOutput cout = ComputeCommonVSOutputWithLighting(vin.Position, normal, 3);
-    SetCommonVSOutputParams;
-
-    vout.TexCoord = vin.TexCoord;
-
-    return vout;
-}
-
-VSOutputTx VSSkinnedVertexLightingFourBonesBn(VSInputNmTxWeights vin)
-{
-    VSOutputTx vout;
-
-    float3 normal = BiasX2(vin.Normal);
-
-    normal = Skin(vin, normal, 4);
-
-    CommonVSOutput cout = ComputeCommonVSOutputWithLighting(vin.Position, normal, 3);
+    CommonVSOutput cout = ComputeCommonVSOutputWithLighting(vin.Position, vin.Normal, 3);
     SetCommonVSOutputParams;
 
     vout.TexCoord = vin.TexCoord;
@@ -158,25 +110,9 @@ VSOutputTx VSSkinnedOneLightOneBone(VSInputNmTxWeights vin)
 {
     VSOutputTx vout;
 
-    float3 normal = Skin(vin, vin.Normal, 1);
+    Skin(vin, 1);
 
-    CommonVSOutput cout = ComputeCommonVSOutputWithLighting(vin.Position, normal, 1);
-    SetCommonVSOutputParams;
-
-    vout.TexCoord = vin.TexCoord;
-
-    return vout;
-}
-
-VSOutputTx VSSkinnedOneLightOneBoneBn(VSInputNmTxWeights vin)
-{
-    VSOutputTx vout;
-
-    float3 normal = BiasX2(vin.Normal);
-
-    normal = Skin(vin, normal, 1);
-
-    CommonVSOutput cout = ComputeCommonVSOutputWithLighting(vin.Position, normal, 1);
+    CommonVSOutput cout = ComputeCommonVSOutputWithLighting(vin.Position, vin.Normal, 1);
     SetCommonVSOutputParams;
 
     vout.TexCoord = vin.TexCoord;
@@ -190,9 +126,9 @@ VSOutputTx VSSkinnedOneLightTwoBones(VSInputNmTxWeights vin)
 {
     VSOutputTx vout;
 
-    float3 normal = Skin(vin, vin.Normal, 2);
+    Skin(vin, 2);
 
-    CommonVSOutput cout = ComputeCommonVSOutputWithLighting(vin.Position, normal, 1);
+    CommonVSOutput cout = ComputeCommonVSOutputWithLighting(vin.Position, vin.Normal, 1);
     SetCommonVSOutputParams;
 
     vout.TexCoord = vin.TexCoord;
@@ -200,46 +136,15 @@ VSOutputTx VSSkinnedOneLightTwoBones(VSInputNmTxWeights vin)
     return vout;
 }
 
-VSOutputTx VSSkinnedOneLightTwoBonesBn(VSInputNmTxWeights vin)
-{
-    VSOutputTx vout;
-
-    float3 normal = BiasX2(vin.Normal);
-
-    normal = Skin(vin, normal, 2);
-
-    CommonVSOutput cout = ComputeCommonVSOutputWithLighting(vin.Position, normal, 1);
-    SetCommonVSOutputParams;
-
-    vout.TexCoord = vin.TexCoord;
-
-    return vout;
-}
 
 // Vertex shader: one light, four bones.
 VSOutputTx VSSkinnedOneLightFourBones(VSInputNmTxWeights vin)
 {
     VSOutputTx vout;
 
-    float3 normal = Skin(vin, vin.Normal, 4);
+    Skin(vin, 4);
 
-    CommonVSOutput cout = ComputeCommonVSOutputWithLighting(vin.Position, normal, 1);
-    SetCommonVSOutputParams;
-
-    vout.TexCoord = vin.TexCoord;
-
-    return vout;
-}
-
-VSOutputTx VSSkinnedOneLightFourBonesBn(VSInputNmTxWeights vin)
-{
-    VSOutputTx vout;
-
-    float3 normal = BiasX2(vin.Normal);
-
-    normal = Skin(vin, normal, 4);
-
-    CommonVSOutput cout = ComputeCommonVSOutputWithLighting(vin.Position, normal, 1);
+    CommonVSOutput cout = ComputeCommonVSOutputWithLighting(vin.Position, vin.Normal, 1);
     SetCommonVSOutputParams;
 
     vout.TexCoord = vin.TexCoord;
@@ -253,26 +158,9 @@ VSOutputPixelLightingTx VSSkinnedPixelLightingOneBone(VSInputNmTxWeights vin)
 {
     VSOutputPixelLightingTx vout;
 
-    float3 normal = Skin(vin, vin.Normal, 1);
+    Skin(vin, 1);
 
-    CommonVSOutputPixelLighting cout = ComputeCommonVSOutputPixelLighting(vin.Position, normal);
-    SetCommonVSOutputParamsPixelLighting;
-
-    vout.Diffuse = float4(1, 1, 1, DiffuseColor.a);
-    vout.TexCoord = vin.TexCoord;
-
-    return vout;
-}
-
-VSOutputPixelLightingTx VSSkinnedPixelLightingOneBoneBn(VSInputNmTxWeights vin)
-{
-    VSOutputPixelLightingTx vout;
-
-    float3 normal = BiasX2(vin.Normal);
-
-    normal = Skin(vin, normal, 1);
-
-    CommonVSOutputPixelLighting cout = ComputeCommonVSOutputPixelLighting(vin.Position, normal);
+    CommonVSOutputPixelLighting cout = ComputeCommonVSOutputPixelLighting(vin.Position, vin.Normal);
     SetCommonVSOutputParamsPixelLighting;
 
     vout.Diffuse = float4(1, 1, 1, DiffuseColor.a);
@@ -287,26 +175,9 @@ VSOutputPixelLightingTx VSSkinnedPixelLightingTwoBones(VSInputNmTxWeights vin)
 {
     VSOutputPixelLightingTx vout;
 
-    float3 normal = Skin(vin, vin.Normal, 2);
+    Skin(vin, 2);
 
-    CommonVSOutputPixelLighting cout = ComputeCommonVSOutputPixelLighting(vin.Position, normal);
-    SetCommonVSOutputParamsPixelLighting;
-
-    vout.Diffuse = float4(1, 1, 1, DiffuseColor.a);
-    vout.TexCoord = vin.TexCoord;
-
-    return vout;
-}
-
-VSOutputPixelLightingTx VSSkinnedPixelLightingTwoBonesBn(VSInputNmTxWeights vin)
-{
-    VSOutputPixelLightingTx vout;
-
-    float3 normal = BiasX2(vin.Normal);
-
-    normal = Skin(vin, normal, 2);
-
-    CommonVSOutputPixelLighting cout = ComputeCommonVSOutputPixelLighting(vin.Position, normal);
+    CommonVSOutputPixelLighting cout = ComputeCommonVSOutputPixelLighting(vin.Position, vin.Normal);
     SetCommonVSOutputParamsPixelLighting;
 
     vout.Diffuse = float4(1, 1, 1, DiffuseColor.a);
@@ -321,26 +192,9 @@ VSOutputPixelLightingTx VSSkinnedPixelLightingFourBones(VSInputNmTxWeights vin)
 {
     VSOutputPixelLightingTx vout;
 
-    float3 normal = Skin(vin, vin.Normal, 4);
+    Skin(vin, 4);
 
-    CommonVSOutputPixelLighting cout = ComputeCommonVSOutputPixelLighting(vin.Position, normal);
-    SetCommonVSOutputParamsPixelLighting;
-
-    vout.Diffuse = float4(1, 1, 1, DiffuseColor.a);
-    vout.TexCoord = vin.TexCoord;
-
-    return vout;
-}
-
-VSOutputPixelLightingTx VSSkinnedPixelLightingFourBonesBn(VSInputNmTxWeights vin)
-{
-    VSOutputPixelLightingTx vout;
-
-    float3 normal = BiasX2(vin.Normal);
-
-    normal = Skin(vin, normal, 4);
-
-    CommonVSOutputPixelLighting cout = ComputeCommonVSOutputPixelLighting(vin.Position, normal);
+    CommonVSOutputPixelLighting cout = ComputeCommonVSOutputPixelLighting(vin.Position, vin.Normal);
     SetCommonVSOutputParamsPixelLighting;
 
     vout.Diffuse = float4(1, 1, 1, DiffuseColor.a);

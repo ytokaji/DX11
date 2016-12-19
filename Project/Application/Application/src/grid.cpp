@@ -39,11 +39,6 @@ void Grid::Init()
 	std::unique_ptr<DefaultVertexData[]> vertexBuffer(new DefaultVertexData[size]);
 	std::unique_ptr<uint16_t[]> indexBuff(new uint16_t[size]);
 
-#ifdef TEST
-	vertexBuffer[0].pos = DirectX::SimpleMath::Vector4(-1.f, 1.f, 1.f, 1.f);
-	vertexBuffer[1].pos = DirectX::SimpleMath::Vector4(1.f, -1.f, 1.f, 1.f);
-	vertexBuffer[2].pos = DirectX::SimpleMath::Vector4(1.f, 1.f, -1.f, 1.f);
-#else
 	for (uint16_t i = 0; i < size; ++i)
 	{
 		auto x = ((i % 2) == 0 ? -start : start);
@@ -55,8 +50,13 @@ void Grid::Init()
 		if (i < (SPLIT_NUM + 1) * 2) { std::swap(vertexBuffer[i].pos.x, vertexBuffer[i].pos.z); }
 		indexBuff[i] = i;
 	}
-#endif
 
+	for (auto i = 0; i < size; i += 2)
+	{
+		_PRINT("%d:[%f,%f][%f,%f]\n", (i / 2) + 1, vertexBuffer[indexBuff[i]].pos.x, vertexBuffer[indexBuff[i]].pos.z
+			, vertexBuffer[indexBuff[i + 1]].pos.x, vertexBuffer[indexBuff[i + 1]].pos.z);
+	}
+	
 	CreateBuffer(&_d3DVertexBuffer, vertexBuffer.get(), sizeof(DefaultVertexData)*size, D3D11_BIND_VERTEX_BUFFER);
 	CreateBuffer(&_d3DIndexBuffer, indexBuff.get(), sizeof(uint16_t)*size, D3D11_BIND_INDEX_BUFFER);
 
@@ -72,7 +72,7 @@ void Grid::Init()
 	});
 
 	// 登録
-	AppContext::GetInstance()->GetRenderManager()->AddRender(&_render);
+//	AppContext::GetInstance()->GetRenderManager()->AddRender(&_render);
 }
 
 //---------------------------------------------------------------------
@@ -116,33 +116,6 @@ void Grid::RenderAsync()
 	auto shader = app->GetShaderManager()->GetShader(ShaderManager::SHADER_TYPE::GRID);
 	shader->Apply(context);
 
-#ifdef TEST
-	// ラスタライザーステートの設定に必要なパラメータを設定
-	D3D11_RASTERIZER_DESC rastDesc;
-	rastDesc.FillMode = D3D11_FILL_SOLID;
-	rastDesc.FrontCounterClockwise = TRUE;
-	rastDesc.DepthBias = 0;
-	rastDesc.DepthBiasClamp = 0.f;
-	rastDesc.SlopeScaledDepthBias = 0.f;
-	rastDesc.DepthClipEnable = FALSE;
-	rastDesc.ScissorEnable = TRUE;
-	rastDesc.MultisampleEnable = FALSE;
-	rastDesc.AntialiasedLineEnable = FALSE;
-//	rastDesc.CullMode = D3D11_CULL_FRONT;
-	rastDesc.CullMode = D3D11_CULL_NONE;
-
-	ID3D11RasterizerState * pState;
-	app->GetD3D11Device()->CreateRasterizerState(&rastDesc, &pState);
-//	context->RSSetState(pState);
-	pState->Release();
-
-	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	UINT stride = sizeof(DefaultVertexData), offset = 0;
-	context->IASetVertexBuffers(0, 1, &_d3DVertexBuffer, &stride, &offset);
-
-	context->Draw(3, 0);
-#else
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 
 	UINT stride = sizeof(DefaultVertexData), offset = 0;
@@ -150,7 +123,6 @@ void Grid::RenderAsync()
 	context->IASetIndexBuffer(_d3DIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
 
 	context->DrawIndexed((SPLIT_NUM + 1) * 2 * 2, 0, 0);
-#endif
 }
 
 

@@ -28,10 +28,6 @@
 #pragma comment(lib,"PhoneAudioSes.lib")
 #endif
 
-#ifndef XAUDIO2_HELPER_FUNCTIONS
-#define XAUDIO2_HELPER_FUNCTIONS
-#endif
-
 #if (_WIN32_WINNT >= 0x0602 /*_WIN32_WINNT_WIN8*/)
 #if defined(_MSC_VER) && (_MSC_VER < 1700)
 #error DirectX Tool Kit for Audio does not support VS 2010 without the DirectX SDK 
@@ -57,14 +53,37 @@
 
 #include <DirectXMath.h>
 
+#pragma warning(push)
+#pragma warning(disable : 4005)
 #include <stdint.h>
+#pragma warning(pop)
+
 #include <functional>
 #include <memory>
 #include <string>
 #include <vector>
 
+// VS 2010 doesn't support explicit calling convention for std::function
+#ifndef DIRECTX_STD_CALLCONV
+#if defined(_MSC_VER) && (_MSC_VER < 1700)
+#define DIRECTX_STD_CALLCONV
+#else
+#define DIRECTX_STD_CALLCONV __cdecl
+#endif
+#endif
+
+#pragma warning(push)
+#pragma warning(disable : 4481)
+// VS 2010 considers 'override' to be a extension, but it's part of C++11 as of VS 2012
+
 namespace DirectX
 {
+    #if (DIRECTX_MATH_VERSION < 305) && !defined(XM_CALLCONV)
+    #define XM_CALLCONV __fastcall
+    typedef const XMVECTOR& HXMVECTOR;
+    typedef const XMMATRIX& FXMMATRIX;
+    #endif
+
     class SoundEffectInstance;
 
     //----------------------------------------------------------------------------------
@@ -193,10 +212,6 @@ namespace DirectX
 
         AudioEngine(AudioEngine&& moveFrom);
         AudioEngine& operator= (AudioEngine&& moveFrom);
-
-        AudioEngine(AudioEngine const&) = delete;
-        AudioEngine& operator= (AudioEngine const&) = delete;
-
         virtual ~AudioEngine();
 
         bool __cdecl Update();
@@ -210,10 +225,6 @@ namespace DirectX
         void __cdecl Suspend();
         void __cdecl Resume();
             // Suspend/resumes audio processing (i.e. global pause/resume)
-
-        float __cdecl GetMasterVolume() const;
-        void __cdecl SetMasterVolume( float volume );
-            // Master volume property for all sounds
 
         void __cdecl SetReverb( AUDIO_ENGINE_REVERB reverb );
         void __cdecl SetReverb( _In_opt_ const XAUDIO2FX_REVERB_PARAMETERS* native );
@@ -251,7 +262,6 @@ namespace DirectX
         void __cdecl TrimVoicePool();
             // Releases any currently unused voices
 
-        // Internal-use functions
         void __cdecl AllocateVoice( _In_ const WAVEFORMATEX* wfx, SOUND_EFFECT_INSTANCE_FLAGS flags, bool oneshot, _Outptr_result_maybenull_ IXAudio2SourceVoice** voice );
 
         void __cdecl DestroyVoice( _In_ IXAudio2SourceVoice* voice );
@@ -266,7 +276,6 @@ namespace DirectX
         IXAudio2SubmixVoice* __cdecl GetReverbVoice() const;
         X3DAUDIO_HANDLE& __cdecl Get3DHandle() const;
 
-        // Static functions
         struct RendererDetail
         {
             std::wstring deviceId;
@@ -280,6 +289,10 @@ namespace DirectX
         // Private implementation.
         class Impl;
         std::unique_ptr<Impl> pImpl;
+
+        // Prevent copying.
+        AudioEngine(AudioEngine const&);
+        AudioEngine& operator= (AudioEngine const&);
     };
 
 
@@ -291,17 +304,10 @@ namespace DirectX
 
         WaveBank(WaveBank&& moveFrom);
         WaveBank& operator= (WaveBank&& moveFrom);
-
-        WaveBank(WaveBank const&) = delete;
-        WaveBank& operator= (WaveBank const&) = delete;
-
         virtual ~WaveBank();
 
         void __cdecl Play( int index );
-        void __cdecl Play( int index, float volume, float pitch, float pan );
-
         void __cdecl Play( _In_z_ const char* name );
-        void __cdecl Play( _In_z_ const char* name, float volume, float pitch, float pan );
 
         std::unique_ptr<SoundEffectInstance> __cdecl CreateInstance( int index, SOUND_EFFECT_INSTANCE_FLAGS flags = SoundEffectInstance_Default );
         std::unique_ptr<SoundEffectInstance> __cdecl CreateInstance( _In_z_ const char* name, SOUND_EFFECT_INSTANCE_FLAGS flags = SoundEffectInstance_Default );
@@ -323,7 +329,7 @@ namespace DirectX
 
         int __cdecl Find( _In_z_ const char* name ) const;
 
-#if defined(_XBOX_ONE) || (_WIN32_WINNT < _WIN32_WINNT_WIN8) || (_WIN32_WINNT >= 0x0A00 /*_WIN32_WINNT_WIN10*/ )
+#if defined(_XBOX_ONE) || (_WIN32_WINNT < _WIN32_WINNT_WIN8)
         bool __cdecl FillSubmitBuffer( int index, _Out_ XAUDIO2_BUFFER& buffer, _Out_ XAUDIO2_BUFFER_WMA& wmaBuffer ) const;
 #else
         void __cdecl FillSubmitBuffer( int index, _Out_ XAUDIO2_BUFFER& buffer ) const;
@@ -334,6 +340,10 @@ namespace DirectX
         class Impl;
 
         std::unique_ptr<Impl> pImpl;
+
+        // Prevent copying.
+        WaveBank(WaveBank const&);
+        WaveBank& operator= (WaveBank const&);
 
         // Private interface
         void __cdecl UnregisterInstance( _In_ SoundEffectInstance* instance );
@@ -355,7 +365,7 @@ namespace DirectX
                      _In_ const WAVEFORMATEX* wfx, _In_reads_bytes_(audioBytes) const uint8_t* startAudio, size_t audioBytes,
                      uint32_t loopStart, uint32_t loopLength );
 
-#if defined(_XBOX_ONE) || (_WIN32_WINNT < _WIN32_WINNT_WIN8) || (_WIN32_WINNT >= 0x0A00 /*_WIN32_WINNT_WIN10*/)
+#if defined(_XBOX_ONE) || (_WIN32_WINNT < _WIN32_WINNT_WIN8)
 
         SoundEffect( _In_ AudioEngine* engine, _Inout_ std::unique_ptr<uint8_t[]>& wavData,
                      _In_ const WAVEFORMATEX* wfx, _In_reads_bytes_(audioBytes) const uint8_t* startAudio, size_t audioBytes,
@@ -365,14 +375,9 @@ namespace DirectX
 
         SoundEffect(SoundEffect&& moveFrom);
         SoundEffect& operator= (SoundEffect&& moveFrom);
-
-        SoundEffect(SoundEffect const&) = delete;
-        SoundEffect& operator= (SoundEffect const&) = delete;
-
         virtual ~SoundEffect();
 
         void __cdecl Play();
-        void __cdecl Play(float volume, float pitch, float pan);
 
         std::unique_ptr<SoundEffectInstance> __cdecl CreateInstance( SOUND_EFFECT_INSTANCE_FLAGS flags = SoundEffectInstance_Default );
 
@@ -389,7 +394,7 @@ namespace DirectX
 
         const WAVEFORMATEX* __cdecl GetFormat() const;
 
-#if defined(_XBOX_ONE) || (_WIN32_WINNT < _WIN32_WINNT_WIN8) || (_WIN32_WINNT >= 0x0A00 /*_WIN32_WINNT_WIN10*/)
+#if defined(_XBOX_ONE) || (_WIN32_WINNT < _WIN32_WINNT_WIN8)
         bool __cdecl FillSubmitBuffer( _Out_ XAUDIO2_BUFFER& buffer, _Out_ XAUDIO2_BUFFER_WMA& wmaBuffer ) const;
 #else
         void __cdecl FillSubmitBuffer( _Out_ XAUDIO2_BUFFER& buffer ) const;
@@ -400,6 +405,10 @@ namespace DirectX
         class Impl;
 
         std::unique_ptr<Impl> pImpl;
+
+        // Prevent copying.
+        SoundEffect(SoundEffect const&);
+        SoundEffect& operator= (SoundEffect const&);
 
         // Private interface
         void __cdecl UnregisterInstance( _In_ SoundEffectInstance* instance );
@@ -415,8 +424,7 @@ namespace DirectX
         {
             memset( this, 0, sizeof(X3DAUDIO_LISTENER) );
 
-            OrientFront.z = -1.f;
-
+            OrientFront.z =
             OrientTop.y = 1.f;
         }
 
@@ -500,8 +508,7 @@ namespace DirectX
             memset( this, 0, sizeof(X3DAUDIO_EMITTER) );
             memset( EmitterAzimuths, 0, sizeof(EmitterAzimuths) );
 
-            OrientFront.z = -1.f;
-
+            OrientFront.z =
             OrientTop.y =
             ChannelRadius = 
             CurveDistanceScaler =
@@ -589,10 +596,6 @@ namespace DirectX
     public:
         SoundEffectInstance(SoundEffectInstance&& moveFrom);
         SoundEffectInstance& operator= (SoundEffectInstance&& moveFrom);
-
-        SoundEffectInstance(SoundEffectInstance const&) = delete;
-        SoundEffectInstance& operator= (SoundEffectInstance const&) = delete;
-
         virtual ~SoundEffectInstance();
 
         void __cdecl Play( bool loop = false );
@@ -604,7 +607,7 @@ namespace DirectX
         void __cdecl SetPitch( float pitch );
         void __cdecl SetPan( float pan );
 
-        void __cdecl Apply3D( const AudioListener& listener, const AudioEmitter& emitter, bool rhcoords = true );
+        void __cdecl Apply3D( const AudioListener& listener, const AudioEmitter& emitter );
 
         bool __cdecl IsLooped() const;
 
@@ -625,6 +628,10 @@ namespace DirectX
 
         friend std::unique_ptr<SoundEffectInstance> __cdecl SoundEffect::CreateInstance( SOUND_EFFECT_INSTANCE_FLAGS );
         friend std::unique_ptr<SoundEffectInstance> __cdecl WaveBank::CreateInstance( int, SOUND_EFFECT_INSTANCE_FLAGS );
+
+        // Prevent copying.
+        SoundEffectInstance(SoundEffectInstance const&);
+        SoundEffectInstance& operator= (SoundEffectInstance const&);
     };
 
 
@@ -633,15 +640,11 @@ namespace DirectX
     {
     public:
         DynamicSoundEffectInstance( _In_ AudioEngine* engine,
-                                    _In_opt_ std::function<void __cdecl(DynamicSoundEffectInstance*)> bufferNeeded,
+                                    _In_opt_ std::function<void DIRECTX_STD_CALLCONV(DynamicSoundEffectInstance*)> bufferNeeded,
                                     int sampleRate, int channels, int sampleBits = 16,
                                     SOUND_EFFECT_INSTANCE_FLAGS flags = SoundEffectInstance_Default );
         DynamicSoundEffectInstance(DynamicSoundEffectInstance&& moveFrom);
         DynamicSoundEffectInstance& operator= (DynamicSoundEffectInstance&& moveFrom);
-
-        DynamicSoundEffectInstance(DynamicSoundEffectInstance const&) = delete;
-        DynamicSoundEffectInstance& operator= (DynamicSoundEffectInstance const&) = delete;
-
         virtual ~DynamicSoundEffectInstance();
 
         void __cdecl Play();
@@ -653,7 +656,7 @@ namespace DirectX
         void __cdecl SetPitch( float pitch );
         void __cdecl SetPan( float pan );
 
-        void __cdecl Apply3D( const AudioListener& listener, const AudioEmitter& emitter, bool rhcoords = true );
+        void __cdecl Apply3D( const AudioListener& listener, const AudioEmitter& emitter );
 
         void __cdecl SubmitBuffer( _In_reads_bytes_(audioBytes) const uint8_t* pAudioData, size_t audioBytes );
         void __cdecl SubmitBuffer( _In_reads_bytes_(audioBytes) const uint8_t* pAudioData, uint32_t offset, size_t audioBytes );
@@ -678,5 +681,11 @@ namespace DirectX
         class Impl;
 
         std::unique_ptr<Impl> pImpl;
+
+        // Prevent copying.
+        DynamicSoundEffectInstance(DynamicSoundEffectInstance const&);
+        DynamicSoundEffectInstance& operator= (DynamicSoundEffectInstance const&);
     };
 }
+
+#pragma warning(pop)

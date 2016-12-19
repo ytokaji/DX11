@@ -17,8 +17,6 @@
 #include "PlatformHelpers.h"
 
 using namespace DirectX;
-using Microsoft::WRL::ComPtr;
-
 
 namespace
 {
@@ -76,457 +74,61 @@ namespace
 }
 
 
-#if (_WIN32_WINNT >= _WIN32_WINNT_WIN10)
+#ifdef _XBOX_ONE
 
 //======================================================================================
-// Windows::Gaming::Input (Windows 10)
-//======================================================================================
-
-#include <Windows.Gaming.Input.h>
-
-class GamePad::Impl
-{
-public:
-    Impl(GamePad* owner) :
-        mOwner(owner),
-        mCtrlChanged(INVALID_HANDLE_VALUE),
-        mUserChanged(INVALID_HANDLE_VALUE)
-    {
-        using namespace Microsoft::WRL;
-        using namespace Microsoft::WRL::Wrappers;
-        using namespace ABI::Windows::Foundation;
-        
-        mAddedToken.value = 0;
-        mRemovedToken.value = 0;
-
-        memset( &mUserChangeToken, 0, sizeof(mUserChangeToken) );
-
-        if ( s_gamePad )
-        {
-            throw std::exception( "GamePad is a singleton" );
-        }
-
-        s_gamePad = this;
-
-        mChanged.reset( CreateEventEx( nullptr, nullptr, 0, EVENT_MODIFY_STATE | SYNCHRONIZE ) );
-        if ( !mChanged )
-        {
-            throw std::exception( "CreateEventEx" );
-        }
-
-        ThrowIfFailed( GetActivationFactory( HStringReference(RuntimeClass_Windows_Gaming_Input_Gamepad).Get(), mStatics.GetAddressOf() ) );
-
-        typedef __FIEventHandler_1_Windows__CGaming__CInput__CGamepad AddedHandler;
-        ThrowIfFailed( mStatics->add_GamepadAdded(Callback<AddedHandler>(GamepadAdded).Get(), &mAddedToken ) );
-
-        typedef __FIEventHandler_1_Windows__CGaming__CInput__CGamepad RemovedHandler;
-        ThrowIfFailed( mStatics->add_GamepadRemoved(Callback<RemovedHandler>(GamepadRemoved).Get(), &mRemovedToken ) );
-
-        ScanGamePads();
-    }
-
-    ~Impl()
-    {
-        using namespace ABI::Windows::Gaming::Input;
-
-        for (size_t j = 0; j < MAX_PLAYER_COUNT; ++j)
-        {
-            if (mGamePad[j])
-            {
-                ComPtr<IGameController> ctrl;
-                HRESULT hr = mGamePad[j].As(&ctrl);
-                if (SUCCEEDED(hr) && ctrl)
-                {
-                    (void)ctrl->remove_UserChanged( mUserChangeToken[j] );
-                    mUserChangeToken[j].value = 0;
-                }
-
-                mGamePad[j].Reset();
-            }
-        }
-
-        if ( mStatics )
-        {
-            (void)mStatics->remove_GamepadAdded( mAddedToken );
-            mAddedToken.value = 0;
-
-            (void)mStatics->remove_GamepadRemoved( mRemovedToken );
-            mRemovedToken.value = 0;
-
-            mStatics.Reset();
-        }
-
-        s_gamePad = nullptr;
-    }
-
-    void GetState( int player, _Out_ State& state, DeadZone deadZoneMode )
-    {
-        using namespace Microsoft::WRL;
-        using namespace ABI::Windows::Gaming::Input;
-
-        if ( WaitForSingleObjectEx( mChanged.get(), 0, FALSE ) == WAIT_OBJECT_0 )
-        {
-            ScanGamePads();
-        }
-
-        if ( ( player >= 0 ) && ( player < MAX_PLAYER_COUNT ) )
-        {
-            if ( mGamePad[ player ] )
-            {
-                GamepadReading reading;
-                HRESULT hr = mGamePad[ player ]->GetCurrentReading( &reading );
-                if ( SUCCEEDED(hr) )
-                {
-                    state.connected = true;
-                    state.packet = reading.Timestamp;
-
-                    state.buttons.a  = (reading.Buttons & GamepadButtons::GamepadButtons_A) != 0;
-                    state.buttons.b  = (reading.Buttons & GamepadButtons::GamepadButtons_B) != 0;
-                    state.buttons.x  = (reading.Buttons & GamepadButtons::GamepadButtons_X) != 0;
-                    state.buttons.y  = (reading.Buttons & GamepadButtons::GamepadButtons_Y) != 0;
-
-                    state.buttons.leftStick = (reading.Buttons & GamepadButtons::GamepadButtons_LeftThumbstick) != 0;
-                    state.buttons.rightStick = (reading.Buttons & GamepadButtons::GamepadButtons_RightThumbstick) != 0;
-
-                    state.buttons.leftShoulder = (reading.Buttons & GamepadButtons::GamepadButtons_LeftShoulder) != 0;
-                    state.buttons.rightShoulder = (reading.Buttons & GamepadButtons::GamepadButtons_RightShoulder) != 0;
-
-                    state.buttons.back = (reading.Buttons & GamepadButtons::GamepadButtons_View) != 0;
-                    state.buttons.start = (reading.Buttons & GamepadButtons::GamepadButtons_Menu) != 0;
-
-                    state.dpad.up = (reading.Buttons & GamepadButtons::GamepadButtons_DPadUp) != 0;
-                    state.dpad.down = (reading.Buttons & GamepadButtons::GamepadButtons_DPadDown) != 0;
-                    state.dpad.right = (reading.Buttons & GamepadButtons::GamepadButtons_DPadRight) != 0;
-                    state.dpad.left = (reading.Buttons & GamepadButtons::GamepadButtons_DPadLeft) != 0;
-
-                    ApplyStickDeadZone( static_cast<float>(reading.LeftThumbstickX), static_cast<float>(reading.LeftThumbstickY),
-                                        deadZoneMode, 1.f, .24f /* Recommended Xbox One deadzone */,
-                                        static_cast<float>(state.thumbSticks.leftX), static_cast<float>(state.thumbSticks.leftY) );
-
-                    ApplyStickDeadZone( static_cast<float>(reading.RightThumbstickX), static_cast<float>(reading.RightThumbstickY),
-                                        deadZoneMode, 1.f, .24f /* Recommended Xbox One deadzone */,
-                                        static_cast<float>(state.thumbSticks.rightX), static_cast<float>(state.thumbSticks.rightY) );
-
-                    state.triggers.left = static_cast<float>(reading.LeftTrigger);
-                    state.triggers.right = static_cast<float>(reading.RightTrigger);
-                     
-                    return;
-                }
-            }
-        }
-
-        memset( &state, 0, sizeof(State) );
-    }
-
-    void GetCapabilities( int player, Capabilities& caps )
-    {
-        using namespace Microsoft::WRL;
-        using namespace ABI::Windows::System;
-        using namespace ABI::Windows::Gaming::Input;
-
-        if ( WaitForSingleObjectEx( mChanged.get(), 0, FALSE ) == WAIT_OBJECT_0 )
-        {
-            ScanGamePads();
-        }
-
-        if ( ( player >= 0 ) && ( player < MAX_PLAYER_COUNT ) )
-        {
-            if ( mGamePad[ player ] )
-            {
-                caps.connected = true;
-                caps.gamepadType = Capabilities::GAMEPAD;
-                caps.id.clear();
-
-                ComPtr<IGameController> ctrl;
-                HRESULT hr = mGamePad[player].As(&ctrl);
-                if (SUCCEEDED(hr) && ctrl)
-                {
-                    ComPtr<IUser> user;
-                    hr = ctrl->get_User(user.GetAddressOf());
-                    if (SUCCEEDED(hr))
-                    {
-                        Wrappers::HString str;
-                        hr = user->get_NonRoamableId(str.GetAddressOf());
-                        if (SUCCEEDED(hr))
-                        {
-                            caps.id = str.GetRawBuffer(nullptr);
-                        }
-                    }
-                }
-                return;
-            }
-        }
-
-        caps.id.clear();
-        caps = {};
-    }
-
-    bool SetVibration( int player, float leftMotor, float rightMotor, float leftTrigger, float rightTrigger )
-    {
-        using namespace ABI::Windows::Gaming::Input;
-
-        if ( ( player >= 0 ) && ( player < MAX_PLAYER_COUNT ) )
-        {
-            if ( mGamePad[ player ] )
-            {
-                GamepadVibration vib;
-                vib.LeftMotor = leftMotor;
-                vib.RightMotor = rightMotor;
-                vib.LeftTrigger = leftTrigger;
-                vib.RightTrigger = rightTrigger;
-                HRESULT hr = mGamePad[ player ]->put_Vibration(vib);
-
-                if ( SUCCEEDED(hr) )
-                    return true;
-            }
-        }
-
-        return false;
-    }
-
-    void Suspend()
-    {
-        for( size_t j = 0; j < MAX_PLAYER_COUNT; ++j )
-        {
-            mGamePad[ j ].Reset();
-        }
-    }
-
-    void Resume()
-    {
-        // Make sure we rescan gamepads
-        SetEvent( mChanged.get() );
-    }
-
-    GamePad*    mOwner;
-
-    static GamePad::Impl* s_gamePad;
-
-    HANDLE mCtrlChanged;
-    HANDLE mUserChanged;
-
-private:
-    void ScanGamePads()
-    {
-        using namespace Microsoft::WRL;
-        using namespace ABI::Windows::Foundation::Collections;
-        using namespace ABI::Windows::Gaming::Input;
-
-        ComPtr<IVectorView<Gamepad*>> pads;
-        ThrowIfFailed( mStatics->get_Gamepads( pads.GetAddressOf() ) );
-
-        unsigned int count = 0;
-        ThrowIfFailed( pads->get_Size( &count ) );
-
-        // Check for removed gamepads
-        for( size_t j = 0; j < MAX_PLAYER_COUNT; ++j )
-        {
-            if ( mGamePad[ j ] )
-            {
-                unsigned int k = 0;
-                for( ; k < count; ++k )
-                {
-                    ComPtr<IGamepad> pad;
-                    HRESULT hr = pads->GetAt( k, pad.GetAddressOf() );
-                    if ( SUCCEEDED(hr) && ( pad == mGamePad[ j ] ) )
-                    {
-                        break;
-                    }
-                }
-
-                if ( k >= count )
-                {
-                    ComPtr<IGameController> ctrl;
-                    HRESULT hr = mGamePad[ j ].As(&ctrl);
-                    if (SUCCEEDED(hr) && ctrl)
-                    {
-                        (void)ctrl->remove_UserChanged( mUserChangeToken[ j ] );
-                        mUserChangeToken[j].value = 0;
-                    }
-
-                    mGamePad[ j ].Reset();
-                }
-            }
-        }
-
-        // Check for added gamepads
-        for( unsigned int j = 0; j < count; ++j )
-        {
-            ComPtr<IGamepad> pad;
-            HRESULT hr = pads->GetAt( j, pad.GetAddressOf() );
-            if ( SUCCEEDED(hr) )
-            {
-                size_t empty = MAX_PLAYER_COUNT;
-                size_t k = 0;
-                for( ; k < MAX_PLAYER_COUNT; ++k )
-                {
-                    if ( mGamePad[ k ] == pad )
-                    {
-                        break;
-                    }
-                    else if ( !mGamePad[ k ] )
-                    {
-                        if ( empty >= MAX_PLAYER_COUNT )
-                            empty = k;
-                    }
-                }
-
-                if ( k >= MAX_PLAYER_COUNT )
-                {
-                    // Silently ignore "extra" gamepads as there's no hard limit
-                    if ( empty < MAX_PLAYER_COUNT )
-                    {
-                        mGamePad[ empty ] = pad;
-
-                        ComPtr<IGameController> ctrl;
-                        hr = pad.As(&ctrl);
-                        if (SUCCEEDED(hr) && ctrl)
-                        {
-                            typedef __FITypedEventHandler_2_Windows__CGaming__CInput__CIGameController_Windows__CSystem__CUserChangedEventArgs UserHandler;
-                            ThrowIfFailed(ctrl->add_UserChanged(Callback<UserHandler>(UserChanged).Get(), &mUserChangeToken[ empty ]));
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    ComPtr<ABI::Windows::Gaming::Input::IGamepadStatics> mStatics;
-    ComPtr<ABI::Windows::Gaming::Input::IGamepad> mGamePad[ MAX_PLAYER_COUNT ];
-    EventRegistrationToken mUserChangeToken[ MAX_PLAYER_COUNT ];
-
-    EventRegistrationToken mAddedToken;
-    EventRegistrationToken mRemovedToken;
-
-    ScopedHandle mChanged;
-
-    static HRESULT GamepadAdded( IInspectable *, ABI::Windows::Gaming::Input::IGamepad* )
-    {
-        if ( s_gamePad )
-        {
-            SetEvent( s_gamePad->mChanged.get() );
-
-            if (s_gamePad->mCtrlChanged != INVALID_HANDLE_VALUE)
-            {
-                SetEvent( s_gamePad->mCtrlChanged );
-            }
-        }
-        return S_OK;
-    }
-
-    static HRESULT GamepadRemoved( IInspectable *, ABI::Windows::Gaming::Input::IGamepad* )
-    {
-        if ( s_gamePad )
-        {
-            SetEvent( s_gamePad->mChanged.get() );
-
-            if (s_gamePad->mCtrlChanged != INVALID_HANDLE_VALUE)
-            {
-                SetEvent( s_gamePad->mCtrlChanged );
-            }
-        }
-        return S_OK;
-    }
-
-    static HRESULT UserChanged( ABI::Windows::Gaming::Input::IGameController*, ABI::Windows::System::IUserChangedEventArgs* )
-    {
-        if (s_gamePad)
-        {
-            if (s_gamePad->mUserChanged != INVALID_HANDLE_VALUE)
-            {
-                SetEvent( s_gamePad->mUserChanged );
-            }
-        }
-        return S_OK;
-    }
-};
-
-GamePad::Impl* GamePad::Impl::s_gamePad = nullptr;
-
-#elif defined(_XBOX_ONE)
-
-//======================================================================================
-// Windows::Xbox::Input (Xbox One)
+// Windows::Xbox::Input
 //======================================================================================
 
 #include <Windows.Xbox.Input.h>
 
+#ifdef _TITLE
 #include <Windows.Foundation.Collections.h>
+
+namespace
+{
+
+class GamepadAddedListener : public Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
+                                                                 ABI::Windows::Foundation::IEventHandler<ABI::Windows::Xbox::Input::GamepadAddedEventArgs *>,
+                                                                 Microsoft::WRL::FtmBase>
+{
+public:
+    GamepadAddedListener(HANDLE event) : mEvent(event) {}
+
+    STDMETHOD(Invoke)(_In_ IInspectable *, _In_ ABI::Windows::Xbox::Input::IGamepadAddedEventArgs * ) override
+    {
+        SetEvent( mEvent );
+        return S_OK;
+    }
+
+private:
+    HANDLE mEvent;
+};
+
+class GamepadRemovedListener : public Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
+                                                                   ABI::Windows::Foundation::IEventHandler<ABI::Windows::Xbox::Input::GamepadRemovedEventArgs *>,
+                                                                   Microsoft::WRL::FtmBase>
+{
+public:
+    GamepadRemovedListener(HANDLE event) : mEvent(event) {}
+
+    STDMETHOD(Invoke)(_In_ IInspectable *, _In_ ABI::Windows::Xbox::Input::IGamepadRemovedEventArgs * ) override
+    {
+        SetEvent( mEvent );
+        return S_OK;
+    }
+
+private:
+    HANDLE mEvent;
+};
+
+}
+#endif
 
 class GamePad::Impl
 {
 public:
-    class GamepadAddedListener : public Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
-        ABI::Windows::Foundation::IEventHandler<ABI::Windows::Xbox::Input::GamepadAddedEventArgs *>,
-        Microsoft::WRL::FtmBase>
-    {
-    public:
-        GamepadAddedListener(HANDLE event) : mEvent(event) {}
-
-        STDMETHOD(Invoke)(_In_ IInspectable *, _In_ ABI::Windows::Xbox::Input::IGamepadAddedEventArgs *) override
-        {
-            SetEvent(mEvent);
-
-            auto pad = GamePad::Impl::s_gamePad;
-
-            if (pad && pad->mCtrlChanged != INVALID_HANDLE_VALUE)
-            {
-                SetEvent(pad->mCtrlChanged);
-            }
-            return S_OK;
-        }
-
-    private:
-        HANDLE mEvent;
-    };
-
-    class GamepadRemovedListener : public Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
-        ABI::Windows::Foundation::IEventHandler<ABI::Windows::Xbox::Input::GamepadRemovedEventArgs *>,
-        Microsoft::WRL::FtmBase>
-    {
-    public:
-        GamepadRemovedListener(HANDLE event) : mEvent(event) {}
-
-        STDMETHOD(Invoke)(_In_ IInspectable *, _In_ ABI::Windows::Xbox::Input::IGamepadRemovedEventArgs *) override
-        {
-            SetEvent(mEvent);
-
-            auto pad = GamePad::Impl::s_gamePad;
-
-            if (pad && pad->mCtrlChanged != INVALID_HANDLE_VALUE)
-            {
-                SetEvent(pad->mCtrlChanged);
-            }
-            return S_OK;
-        }
-
-    private:
-        HANDLE mEvent;
-    };
-
-    class UserPairingListener : public Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
-        ABI::Windows::Foundation::IEventHandler<ABI::Windows::Xbox::Input::ControllerPairingChangedEventArgs *>,
-        Microsoft::WRL::FtmBase>
-    {
-    public:
-        UserPairingListener() {}
-
-        STDMETHOD(Invoke)(_In_ IInspectable *, _In_ ABI::Windows::Xbox::Input::IControllerPairingChangedEventArgs *) override
-        {
-            auto pad = GamePad::Impl::s_gamePad;
-
-            if (pad && pad->mUserChanged != INVALID_HANDLE_VALUE)
-            {
-                SetEvent(pad->mUserChanged);
-            }
-            return S_OK;
-        }
-    };
-
-    Impl(GamePad *owner) :
-        mOwner(owner),
-        mCtrlChanged(INVALID_HANDLE_VALUE),
-        mUserChanged(INVALID_HANDLE_VALUE)
+    Impl()
     {
         using namespace Microsoft::WRL;
         using namespace Microsoft::WRL::Wrappers;
@@ -534,30 +136,38 @@ public:
         
         mAddedToken.value = 0;
         mRemovedToken.value = 0;
-        mUserParingToken.value = 0;
 
-        if ( s_gamePad )
+        if ( s_changed )
         {
             throw std::exception( "GamePad is a singleton" );
         }
 
-        s_gamePad = this;
-
-        mChanged.reset( CreateEventEx( nullptr, nullptr, 0, EVENT_MODIFY_STATE | SYNCHRONIZE ) );
-        if ( !mChanged )
+        s_changed = CreateEventEx( nullptr, nullptr, 0, EVENT_MODIFY_STATE | SYNCHRONIZE );
+        if ( !s_changed )
         {
             throw std::exception( "CreateEventEx" );
         }
 
-        ThrowIfFailed( GetActivationFactory( HStringReference(RuntimeClass_Windows_Xbox_Input_Gamepad).Get(), mStatics.GetAddressOf() ) );
+        HRESULT hr = GetActivationFactory( HStringReference(RuntimeClass_Windows_Xbox_Input_Gamepad).Get(), mStatics.GetAddressOf() );
+        ThrowIfFailed( hr );
 
-        ThrowIfFailed( GetActivationFactory( HStringReference(RuntimeClass_Windows_Xbox_Input_Controller).Get(), mStaticsCtrl.GetAddressOf() ) );
+#ifdef _TITLE
+        // This is a workaround for some registration issues in the GameOS
 
-        ThrowIfFailed( mStatics->add_GamepadAdded(Make<GamepadAddedListener>(mChanged.get()).Get(), &mAddedToken ) );
+        hr = mStatics->add_GamepadAdded(Make<GamepadAddedListener>(s_changed).Get(), &mAddedToken );
+        ThrowIfFailed( hr );
 
-        ThrowIfFailed( mStatics->add_GamepadRemoved(Make<GamepadRemovedListener>(mChanged.get()).Get(), &mRemovedToken ) );
+        hr = mStatics->add_GamepadRemoved(Make<GamepadRemovedListener>(s_changed).Get(), &mRemovedToken );
+        ThrowIfFailed( hr );
+#else
+        typedef __FIEventHandler_1_Windows__CXbox__CInput__CGamepadAddedEventArgs AddedHandler;
+        hr = mStatics->add_GamepadAdded(Callback<AddedHandler>(GamepadAdded).Get(), &mAddedToken );
+        ThrowIfFailed( hr );
 
-        ThrowIfFailed( mStaticsCtrl->add_ControllerPairingChanged(Make<UserPairingListener>().Get(), &mUserParingToken ) );
+        typedef __FIEventHandler_1_Windows__CXbox__CInput__CGamepadRemovedEventArgs RemovedHandler;
+        hr = mStatics->add_GamepadRemoved(Callback<RemovedHandler>(GamepadRemoved).Get(), &mRemovedToken );
+        ThrowIfFailed( hr );
+#endif
 
         ScanGamePads();
     }
@@ -566,24 +176,17 @@ public:
     {
         if ( mStatics )
         {
-            (void)mStatics->remove_GamepadAdded( mAddedToken );
-            mAddedToken.value = 0;
-
-            (void)mStatics->remove_GamepadRemoved( mRemovedToken );
-            mRemovedToken.value = 0;
+            mStatics->remove_GamepadAdded( mAddedToken );
+            mStatics->remove_GamepadRemoved( mRemovedToken );
 
             mStatics.Reset();
         }
 
-        if (mStaticsCtrl)
+        if ( s_changed )
         {
-            (void)mStaticsCtrl->remove_ControllerPairingChanged( mUserParingToken );
-            mUserParingToken.value = 0;
-
-            mStaticsCtrl.Reset();
+            CloseHandle( s_changed );
+            s_changed = nullptr;
         }
-
-        s_gamePad = nullptr;
     }
 
     void GetState( int player, _Out_ State& state, DeadZone deadZoneMode )
@@ -591,7 +194,7 @@ public:
         using namespace Microsoft::WRL;
         using namespace ABI::Windows::Xbox::Input;
 
-        if ( WaitForSingleObjectEx( mChanged.get(), 0, FALSE ) == WAIT_OBJECT_0 )
+        if ( WaitForSingleObjectEx( s_changed, 0, FALSE ) == WAIT_OBJECT_0 )
         {
             ScanGamePads();
         }
@@ -612,14 +215,14 @@ public:
                     state.buttons.x  = (reading.Buttons & GamepadButtons::GamepadButtons_X) != 0;
                     state.buttons.y  = (reading.Buttons & GamepadButtons::GamepadButtons_Y) != 0;
 
-                    state.buttons.leftStick = (reading.Buttons & GamepadButtons::GamepadButtons_LeftThumbstick) != 0;
-                    state.buttons.rightStick = (reading.Buttons & GamepadButtons::GamepadButtons_RightThumbstick) != 0;
+                    state.buttons.leftStick = (reading.Buttons& GamepadButtons::GamepadButtons_LeftThumbstick) != 0;
+                    state.buttons.rightStick = (reading.Buttons& GamepadButtons::GamepadButtons_RightThumbstick) != 0;
 
-                    state.buttons.leftShoulder = (reading.Buttons & GamepadButtons::GamepadButtons_LeftShoulder) != 0;
-                    state.buttons.rightShoulder = (reading.Buttons & GamepadButtons::GamepadButtons_RightShoulder) != 0;
+                    state.buttons.leftShoulder = (reading.Buttons& GamepadButtons::GamepadButtons_LeftShoulder) != 0;
+                    state.buttons.rightShoulder = (reading.Buttons& GamepadButtons::GamepadButtons_RightShoulder) != 0;
 
-                    state.buttons.back = (reading.Buttons & GamepadButtons::GamepadButtons_View) != 0;
-                    state.buttons.start = (reading.Buttons & GamepadButtons::GamepadButtons_Menu) != 0;
+                    state.buttons.back = (reading.Buttons& GamepadButtons::GamepadButtons_View) != 0;
+                    state.buttons.start = (reading.Buttons& GamepadButtons::GamepadButtons_Menu) != 0;
 
                     state.dpad.up = (reading.Buttons & GamepadButtons::GamepadButtons_DPadUp) != 0;
                     state.dpad.down = (reading.Buttons & GamepadButtons::GamepadButtons_DPadDown) != 0;
@@ -627,11 +230,11 @@ public:
                     state.dpad.left = (reading.Buttons & GamepadButtons::GamepadButtons_DPadLeft) != 0;
 
                     ApplyStickDeadZone( reading.LeftThumbstickX, reading.LeftThumbstickY,
-                                        deadZoneMode, 1.f, .24f /* Recommended Xbox One deadzone */,
+                                        deadZoneMode, 1.f, .24f /* Recommend Xbox One deadzone */,
                                         state.thumbSticks.leftX, state.thumbSticks.leftY );
 
                     ApplyStickDeadZone( reading.RightThumbstickX, reading.RightThumbstickY,
-                                        deadZoneMode, 1.f, .24f /* Recommended Xbox One deadzone */,
+                                        deadZoneMode, 1.f, .24f /* Recommend Xbox One deadzone */,
                                         state.thumbSticks.rightX, state.thumbSticks.rightY );
 
                     state.triggers.left = reading.LeftTrigger;
@@ -647,10 +250,7 @@ public:
 
     void GetCapabilities( int player, _Out_ Capabilities& caps )
     {
-        using namespace Microsoft::WRL;
-        using namespace ABI::Windows::Xbox::Input;
-
-        if ( WaitForSingleObjectEx( mChanged.get(), 0, FALSE ) == WAIT_OBJECT_0 )
+        if ( WaitForSingleObjectEx( s_changed, 0, FALSE ) == WAIT_OBJECT_0 )
         {
             ScanGamePads();
         }
@@ -660,34 +260,15 @@ public:
             if ( mGamePad[ player ] )
             {
                 caps.connected = true;
-                caps.gamepadType = Capabilities::UNKNOWN;
+                caps.gamepadType = Capabilities::GAMEPAD;
 
-                ComPtr<IController> ctrl;
+                Microsoft::WRL::ComPtr<ABI::Windows::Xbox::Input::IController> ctrl;
                 HRESULT hr = mGamePad[ player ].As( &ctrl );
                 if ( SUCCEEDED(hr) && ctrl )
                 {
                     hr = ctrl->get_Id( &caps.id );
                     if ( FAILED(hr) )
                         caps.id = 0;
-
-                    Wrappers::HString str;
-                    hr = ctrl->get_Type(str.GetAddressOf());
-                    if ( SUCCEEDED(hr) )
-                    {
-                        const wchar_t* typeStr = str.GetRawBuffer(nullptr);
-                        if ( _wcsicmp(typeStr, L"Windows.Xbox.Input.Gamepad") == 0 )
-                        {
-                            caps.gamepadType = Capabilities::GAMEPAD;
-                        }
-                        else if ( _wcsicmp(typeStr, L"Microsoft.Xbox.Input.ArcadeStick") == 0 )
-                        {
-                            caps.gamepadType = Capabilities::ARCADE_STICK;
-                        }
-                        else if ( _wcsicmp(typeStr, L"Microsoft.Xbox.Input.Wheel") == 0 )
-                        {
-                            caps.gamepadType = Capabilities::WHEEL;
-                        }
-                    }
                 }
                 else
                     caps.id = 0;
@@ -742,27 +323,23 @@ public:
     void Resume()
     {
         // Make sure we rescan gamepads
-        SetEvent( mChanged.get() );
+        SetEvent( s_changed );
     }
-
-    GamePad*    mOwner;
-
-    static GamePad::Impl* s_gamePad;
-
-    HANDLE mCtrlChanged;
-    HANDLE mUserChanged;
 
 private:
     void ScanGamePads()
     {
+        using namespace Microsoft::WRL;
         using namespace ABI::Windows::Foundation::Collections;
         using namespace ABI::Windows::Xbox::Input;
 
         ComPtr<IVectorView<IGamepad*>> pads;
-        ThrowIfFailed( mStatics->get_Gamepads( pads.GetAddressOf() ) );
+        HRESULT hr = mStatics->get_Gamepads( pads.GetAddressOf() );
+        ThrowIfFailed( hr );
 
         unsigned int count = 0;
-        ThrowIfFailed( pads->get_Size( &count ) );
+        pads->get_Size( &count );
+        ThrowIfFailed( hr );
 
         // Check for removed gamepads
         for( size_t j = 0; j < MAX_PLAYER_COUNT; ++j )
@@ -773,7 +350,7 @@ private:
                 for( ; k < count; ++k )
                 {
                     ComPtr<IGamepad> pad;
-                    HRESULT hr = pads->GetAt( k, pad.GetAddressOf() );
+                    hr = pads->GetAt( k, pad.GetAddressOf() );
                     if ( SUCCEEDED(hr) && ( pad == mGamePad[ j ] ) )
                     {
                         break;
@@ -791,7 +368,7 @@ private:
         for( unsigned int j = 0; j < count; ++j )
         {
             ComPtr<IGamepad> pad;
-            HRESULT hr = pads->GetAt( j, pad.GetAddressOf() );
+            hr = pads->GetAt( j, pad.GetAddressOf() );
             if ( SUCCEEDED(hr) )
             {
                 size_t empty = MAX_PLAYER_COUNT;
@@ -822,18 +399,31 @@ private:
         }
     }
 
-    ComPtr<ABI::Windows::Xbox::Input::IGamepadStatics> mStatics;
-    ComPtr<ABI::Windows::Xbox::Input::IControllerStatics> mStaticsCtrl;
-    ComPtr<ABI::Windows::Xbox::Input::IGamepad> mGamePad[ MAX_PLAYER_COUNT ];
+    Microsoft::WRL::ComPtr<ABI::Windows::Xbox::Input::IGamepadStatics> mStatics;
+    Microsoft::WRL::ComPtr<ABI::Windows::Xbox::Input::IGamepad> mGamePad[ MAX_PLAYER_COUNT ];
 
     EventRegistrationToken mAddedToken;
     EventRegistrationToken mRemovedToken;
-    EventRegistrationToken mUserParingToken;
 
-    ScopedHandle mChanged;
+    static HANDLE s_changed;
+
+#ifndef _TITLE
+    static HRESULT GamepadAdded( IInspectable *, ABI::Windows::Xbox::Input::IGamepadAddedEventArgs * )
+    {
+        SetEvent( s_changed );
+        return S_OK;
+    }
+
+    static HRESULT GamepadRemoved( IInspectable *, ABI::Windows::Xbox::Input::IGamepadRemovedEventArgs* )
+    {
+        SetEvent( s_changed );
+        return S_OK;
+    }
+#endif
 };
 
-GamePad::Impl* GamePad::Impl::s_gamePad = nullptr;
+HANDLE GamePad::Impl::s_changed = nullptr;
+
 
 #elif defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
 
@@ -844,8 +434,7 @@ GamePad::Impl* GamePad::Impl::s_gamePad = nullptr;
 class GamePad::Impl
 {
 public:
-    Impl(GamePad* owner) :
-        mOwner(owner)
+    Impl()
     {
         if ( s_gamePad )
         {
@@ -893,8 +482,7 @@ public:
     {
     }
 
-    GamePad*    mOwner;
-
+private:
     static GamePad::Impl* s_gamePad;
 };
 
@@ -914,17 +502,13 @@ static_assert( GamePad::MAX_PLAYER_COUNT == XUSER_MAX_COUNT, "xinput.h mismatch"
 class GamePad::Impl
 {
 public:
-    Impl(GamePad* owner) :
-        mOwner(owner)
+    Impl()
     {
-        for( int j = 0; j < XUSER_MAX_COUNT; ++j )
+        for( size_t j = 0; j < XUSER_MAX_COUNT; ++j )
         {
-            ClearSlot( j, 0 );
+            mConnected[ j ] = false;
+            mLastReadTime[ j ] = 0;
         }
-
-#if (_WIN32_WINNT < _WIN32_WINNT_WIN8)
-        mSuspended = false;
-#endif
 
         if ( s_gamePad )
         {
@@ -943,20 +527,12 @@ public:
     {
         if ( !ThrottleRetry(player) )
         {
-#if (_WIN32_WINNT < _WIN32_WINNT_WIN8)
-            if ( mSuspended )
-            {
-                memset( &state, 0, sizeof(State) );
-                state.connected = mConnected[ player ];
-                return;
-            }
-#endif
-
             XINPUT_STATE xstate;
             DWORD result = XInputGetState( DWORD(player), &xstate );
             if ( result == ERROR_DEVICE_NOT_CONNECTED )
             {
-                ClearSlot( player, GetTickCount64() );
+                mConnected[ player ] = false;
+                mLastReadTime[ player ] = GetTickCount64();
             }
             else
             {
@@ -1016,7 +592,8 @@ public:
             DWORD result = XInputGetCapabilities( DWORD(player), 0, &xcaps );
             if ( result == ERROR_DEVICE_NOT_CONNECTED )
             {
-                ClearSlot( player, GetTickCount64() );
+                mConnected[ player ] = false;
+                mLastReadTime[ player ] = GetTickCount64();
             }
             else
             {
@@ -1061,21 +638,14 @@ public:
         UNREFERENCED_PARAMETER(leftTrigger);
         UNREFERENCED_PARAMETER(rightTrigger);
 
-#if (_WIN32_WINNT < _WIN32_WINNT_WIN8)
-        mLeftMotor[ player ] = leftMotor;
-        mRightMotor[ player ] = rightMotor;
-
-        if ( mSuspended )
-            return mConnected[ player ];
-#endif
-
         XINPUT_VIBRATION xvibration;
         xvibration.wLeftMotorSpeed = WORD( leftMotor * 0xFFFF );
         xvibration.wRightMotorSpeed = WORD( rightMotor * 0xFFFF );
         DWORD result = XInputSetState( DWORD(player), &xvibration );
         if ( result == ERROR_DEVICE_NOT_CONNECTED )
         {
-            ClearSlot( player, GetTickCount64() );
+            mConnected[ player ] = false;
+            mLastReadTime[ player ] = GetTickCount64();
             return false;
         }
         else
@@ -1089,22 +659,6 @@ public:
     {
 #if (_WIN32_WINNT >= _WIN32_WINNT_WIN8)
         XInputEnable( FALSE );
-#else
-        // For XInput 9.1.0, we have to emulate the behavior of XInputEnable( FALSE )
-        if ( !mSuspended )
-        {
-            for( size_t j = 0; j < XUSER_MAX_COUNT; ++j )
-            {
-                if ( mConnected[ j ] )
-                {
-                    XINPUT_VIBRATION xvibration;
-                    xvibration.wLeftMotorSpeed = xvibration.wRightMotorSpeed = 0;
-                    (void)XInputSetState( DWORD(j), &xvibration );
-                }
-            }
-
-            mSuspended = true;
-        }
 #endif
     }
 
@@ -1112,44 +666,14 @@ public:
     {
 #if (_WIN32_WINNT >= _WIN32_WINNT_WIN8)
         XInputEnable( TRUE );
-#else
-        // For XInput 9.1.0, we have to emulate the behavior of XInputEnable( TRUE )
-        if ( mSuspended )
-        {
-            for( int j = 0; j < XUSER_MAX_COUNT; ++j )
-            {
-                if ( mConnected[ j ] )
-                {
-                    XINPUT_VIBRATION xvibration;
-                    xvibration.wLeftMotorSpeed = WORD( mLeftMotor[ j ] * 0xFFFF );
-                    xvibration.wRightMotorSpeed = WORD( mRightMotor[ j ] * 0xFFFF );
-                    DWORD result = XInputSetState( DWORD(j), &xvibration );
-                    if ( result == ERROR_DEVICE_NOT_CONNECTED )
-                    {
-                        ClearSlot( j, GetTickCount64() );
-                    }
-                }
-            }
-
-            mSuspended = false;
-        }
 #endif
     }
-
-    GamePad*    mOwner;
-
-    static GamePad::Impl* s_gamePad;
 
 private:
     bool        mConnected[ XUSER_MAX_COUNT ];
     ULONGLONG   mLastReadTime[ XUSER_MAX_COUNT ];
 
-#if (_WIN32_WINNT < _WIN32_WINNT_WIN8)
-    // Variables for emulating XInputEnable on XInput 9.1.0
-    float       mLeftMotor[ XUSER_MAX_COUNT ];
-    float       mRightMotor[ XUSER_MAX_COUNT ];
-    bool        mSuspended;
-#endif
+    static GamePad::Impl* s_gamePad;
 
     bool ThrottleRetry( int player )
     {
@@ -1182,26 +706,16 @@ private:
 
         return false;
     }
-
-    void ClearSlot( int player, ULONGLONG time )
-    {
-        mConnected[ player ] = false;
-        mLastReadTime[ player ] = time;
-#if (_WIN32_WINNT < _WIN32_WINNT_WIN8)
-        mLeftMotor[ player ] = mRightMotor[ player ] = 0.f;
-#endif
-    }
 };
 
 GamePad::Impl* GamePad::Impl::s_gamePad = nullptr;
 
 #endif
 
-#pragma warning( disable : 4355 )
 
 // Public constructor.
 GamePad::GamePad()
-    : pImpl( new Impl(this) )
+    : pImpl( new Impl() )
 {
 }
 
@@ -1210,7 +724,6 @@ GamePad::GamePad()
 GamePad::GamePad(GamePad&& moveFrom)
   : pImpl(std::move(moveFrom.pImpl))
 {
-    pImpl->mOwner = this;
 }
 
 
@@ -1218,7 +731,6 @@ GamePad::GamePad(GamePad&& moveFrom)
 GamePad& GamePad::operator= (GamePad&& moveFrom)
 {
     pImpl = std::move(moveFrom.pImpl);
-    pImpl->mOwner = this;
     return *this;
 }
 
@@ -1263,25 +775,6 @@ void GamePad::Resume()
 }
 
 
-#if (_WIN32_WINNT >= 0x0A00 /*_WIN32_WINNT_WIN10*/ ) || defined(_XBOX_ONE)
-void GamePad::RegisterEvents(HANDLE ctrlChanged, HANDLE userChanged)
-{
-    pImpl->mCtrlChanged = (!ctrlChanged) ? INVALID_HANDLE_VALUE : ctrlChanged;
-    pImpl->mUserChanged = (!userChanged) ? INVALID_HANDLE_VALUE : userChanged;
-}
-#endif
-
-
-GamePad& GamePad::Get()
-{
-    if ( !Impl::s_gamePad || !Impl::s_gamePad->mOwner )
-        throw std::exception( "GamePad is a singleton" );
-
-    return *Impl::s_gamePad->mOwner;
-}
-
-
-
 //======================================================================================
 // ButtonStateTracker
 //======================================================================================
@@ -1319,38 +812,6 @@ void GamePad::ButtonStateTracker::Update( const GamePad::State& state )
     assert( ( state.dpad.up && lastState.dpad.up ) == ( dpadUp == HELD ) );
     assert( ( !state.dpad.up && lastState.dpad.up ) == ( dpadUp == RELEASED ) );
     assert( ( state.dpad.up && !lastState.dpad.up ) == ( dpadUp == PRESSED ) );
-
-    // Handle 'threshold' tests which emulate buttons
-
-    bool threshold = state.IsLeftThumbStickUp();
-    leftStickUp = static_cast<ButtonState>( ( !!threshold) | ( ( !!threshold ^ !!lastState.IsLeftThumbStickUp() ) << 1 ) );
-
-    threshold = state.IsLeftThumbStickDown();
-    leftStickDown = static_cast<ButtonState>((!!threshold) | ((!!threshold ^ !!lastState.IsLeftThumbStickDown()) << 1));
-
-    threshold = state.IsLeftThumbStickLeft();
-    leftStickLeft = static_cast<ButtonState>((!!threshold) | ((!!threshold ^ !!lastState.IsLeftThumbStickLeft()) << 1));
-
-    threshold = state.IsLeftThumbStickRight();
-    leftStickRight = static_cast<ButtonState>((!!threshold) | ((!!threshold ^ !!lastState.IsLeftThumbStickRight()) << 1));
-
-    threshold = state.IsRightThumbStickUp();
-    rightStickUp = static_cast<ButtonState>((!!threshold) | ((!!threshold ^ !!lastState.IsRightThumbStickUp()) << 1));
-
-    threshold = state.IsRightThumbStickDown();
-    rightStickDown = static_cast<ButtonState>((!!threshold) | ((!!threshold ^ !!lastState.IsRightThumbStickDown()) << 1));
-
-    threshold = state.IsRightThumbStickLeft();
-    rightStickLeft = static_cast<ButtonState>((!!threshold) | ((!!threshold ^ !!lastState.IsRightThumbStickLeft()) << 1));
-
-    threshold = state.IsRightThumbStickRight();
-    rightStickRight = static_cast<ButtonState>((!!threshold) | ((!!threshold ^ !!lastState.IsRightThumbStickRight()) << 1));
-
-    threshold = state.IsLeftTriggerPressed();
-    leftTrigger = static_cast<ButtonState>((!!threshold) | ((!!threshold ^ !!lastState.IsLeftTriggerPressed()) << 1));
-
-    threshold = state.IsRightTriggerPressed();
-    rightTrigger = static_cast<ButtonState>((!!threshold) | ((!!threshold ^ !!lastState.IsRightTriggerPressed()) << 1));
 
     lastState = state;
 }

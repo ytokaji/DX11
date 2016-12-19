@@ -13,33 +13,20 @@
 
 #pragma once
 
-#pragma warning(push)
-#pragma warning(disable : 4005)
+#if !defined(WIN32_LEAN_AND_MEAN)
 #define WIN32_LEAN_AND_MEAN
+#endif
+
+#if !defined(NOMINMAX)
 #define NOMINMAX
-#define NODRAWTEXT
-#define NOGDI
-#define NOBITMAP
-#define NOMCX
-#define NOSERVICE
-#define NOHELP
-#pragma warning(pop)
-
-#include <windows.h>
-
-#ifndef _WIN32_WINNT_WIN10
-#define _WIN32_WINNT_WIN10 0x0A00
 #endif
 
 #if defined(_XBOX_ONE) && defined(_TITLE)
 #include <d3d11_x.h>
 #define DCOMMON_H_INCLUDED
+#define NO_D3D11_DEBUG_NAME
 #else
 #include <d3d11_1.h>
-#endif
-
-#if defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_APP)
-#include <Windows.UI.Core.h>
 #endif
 
 #include <DirectXMath.h>
@@ -49,20 +36,27 @@
 #include <algorithm>
 #include <array>
 #include <exception>
-#include <list>
 #include <malloc.h>
 #include <map>
 #include <memory>
 #include <set>
 #include <string>
-#include <utility>
 #include <vector>
 
-#include <stdint.h>
-
+// VS 2010's stdint.h conflicts with intsafe.h
 #pragma warning(push)
-#pragma warning(disable : 4467)
-#include <wrl.h>
+#pragma warning(disable : 4005)
+#include <stdint.h>
+#include <intsafe.h>
 #pragma warning(pop)
 
-#include <wincodec.h>
+#include <wrl.h>
+
+namespace DirectX
+{
+    #if (DIRECTX_MATH_VERSION < 305) && !defined(XM_CALLCONV)
+    #define XM_CALLCONV __fastcall
+    typedef const XMVECTOR& HXMVECTOR;
+    typedef const XMMATRIX& FXMMATRIX;
+    #endif
+}

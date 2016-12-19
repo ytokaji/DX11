@@ -24,9 +24,23 @@
 #include <functional>
 #include <memory>
 
+// VS 2010 doesn't support explicit calling convention for std::function
+#ifndef DIRECTX_STD_CALLCONV
+#if defined(_MSC_VER) && (_MSC_VER < 1700)
+#define DIRECTX_STD_CALLCONV
+#else
+#define DIRECTX_STD_CALLCONV __cdecl
+#endif
+#endif
 
 namespace DirectX
 {
+    #if (DIRECTX_MATH_VERSION < 305) && !defined(XM_CALLCONV)
+    #define XM_CALLCONV __fastcall
+    typedef const XMVECTOR& HXMVECTOR;
+    typedef const XMMATRIX& FXMMATRIX;
+    #endif
+
     enum SpriteSortMode
     {
         SpriteSortMode_Deferred,
@@ -52,15 +66,11 @@ namespace DirectX
         explicit SpriteBatch(_In_ ID3D11DeviceContext* deviceContext);
         SpriteBatch(SpriteBatch&& moveFrom);
         SpriteBatch& operator= (SpriteBatch&& moveFrom);
-
-        SpriteBatch(SpriteBatch const&) = delete;
-        SpriteBatch& operator= (SpriteBatch const&) = delete;
-
         virtual ~SpriteBatch();
 
         // Begin/End a batch of sprite drawing operations.
         void XM_CALLCONV Begin(SpriteSortMode sortMode = SpriteSortMode_Deferred, _In_opt_ ID3D11BlendState* blendState = nullptr, _In_opt_ ID3D11SamplerState* samplerState = nullptr, _In_opt_ ID3D11DepthStencilState* depthStencilState = nullptr, _In_opt_ ID3D11RasterizerState* rasterizerState = nullptr,
-                               _In_opt_ std::function<void __cdecl()> setCustomShaders = nullptr, FXMMATRIX transformMatrix = MatrixIdentity);
+                               _In_opt_ std::function<void DIRECTX_STD_CALLCONV()> setCustomShaders = nullptr, FXMMATRIX transformMatrix = MatrixIdentity);
         void __cdecl End();
 
         // Draw overloads specifying position, origin and scale as XMFLOAT2.
@@ -92,5 +102,9 @@ namespace DirectX
 
         static const XMMATRIX MatrixIdentity;
         static const XMFLOAT2 Float2Zero;
+
+        // Prevent copying.
+        SpriteBatch(SpriteBatch const&);
+        SpriteBatch& operator= (SpriteBatch const&);
     };
 }

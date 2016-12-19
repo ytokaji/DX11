@@ -19,16 +19,14 @@ using namespace DirectX;
 
 
 // Constructor reads from the filesystem.
-BinaryReader::BinaryReader(_In_z_ wchar_t const* fileName) :
-    mPos(nullptr),
-    mEnd(nullptr)
+BinaryReader::BinaryReader(_In_z_ wchar_t const* fileName)
 {
     size_t dataSize;
 
     HRESULT hr = ReadEntireFile(fileName, mOwnedData, &dataSize);
     if ( FAILED(hr) )
     {
-        DebugTrace( "BinaryReader failed (%08X) to load '%ls'\n", hr, fileName );
+        DebugTrace( "BinaryReader failed (%08X) to load '%S'\n", hr, fileName );
         throw std::exception( "BinaryReader" );
     }
 
@@ -38,10 +36,10 @@ BinaryReader::BinaryReader(_In_z_ wchar_t const* fileName) :
 
 
 // Constructor reads from an existing memory buffer.
-BinaryReader::BinaryReader(_In_reads_bytes_(dataSize) uint8_t const* dataBlob, size_t dataSize) :
-    mPos(dataBlob),
-    mEnd(dataBlob + dataSize)
+BinaryReader::BinaryReader(_In_reads_bytes_(dataSize) uint8_t const* dataBlob, size_t dataSize)
 {
+    mPos = dataBlob;
+    mEnd = dataBlob + dataSize;
 }
 
 
@@ -59,18 +57,27 @@ HRESULT BinaryReader::ReadEntireFile(_In_z_ wchar_t const* fileName, _Inout_ std
         return HRESULT_FROM_WIN32(GetLastError());
 
     // Get the file size.
+    LARGE_INTEGER fileSize = { 0 };
+
+#if (_WIN32_WINNT >= _WIN32_WINNT_VISTA)
     FILE_STANDARD_INFO fileInfo;
+
     if (!GetFileInformationByHandleEx(hFile.get(), FileStandardInfo, &fileInfo, sizeof(fileInfo)))
     {
         return HRESULT_FROM_WIN32(GetLastError());
     }
 
+    fileSize = fileInfo.EndOfFile;
+#else
+    GetFileSizeEx(hFile.get(), &fileSize);
+#endif
+
     // File is too big for 32-bit allocation, so reject read.
-    if (fileInfo.EndOfFile.HighPart > 0)
+    if (fileSize.HighPart > 0)
         return E_FAIL;
 
     // Create enough space for the file data.
-    data.reset(new uint8_t[fileInfo.EndOfFile.LowPart]);
+    data.reset(new uint8_t[fileSize.LowPart]);
 
     if (!data)
         return E_OUTOFMEMORY;
@@ -78,12 +85,12 @@ HRESULT BinaryReader::ReadEntireFile(_In_z_ wchar_t const* fileName, _Inout_ std
     // Read the data in.
     DWORD bytesRead = 0;
 
-    if (!ReadFile(hFile.get(), data.get(), fileInfo.EndOfFile.LowPart, &bytesRead, nullptr))
+    if (!ReadFile(hFile.get(), data.get(), fileSize.LowPart, &bytesRead, nullptr))
     {
         return HRESULT_FROM_WIN32(GetLastError());
     }
 
-    if (bytesRead < fileInfo.EndOfFile.LowPart)
+    if (bytesRead < fileSize.LowPart)
         return E_FAIL;
 
     *dataSize = bytesRead;

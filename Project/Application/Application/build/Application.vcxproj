@@ -181,7 +181,7 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\ExternalLibrary\DirectXTK\DirectXTK_Desktop_2013.vcxproj">
+    <ProjectReference Include="..\..\ExternalLibrary\DirectXTK\DirectXTK_Desktop.vcxproj">
       <Project>{e0b52ae7-e160-4d32-bf3f-910b785e5a8e}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\ExternalLibrary\DXUT11\Core\DXUT_DirectXTK_2013.vcxproj">

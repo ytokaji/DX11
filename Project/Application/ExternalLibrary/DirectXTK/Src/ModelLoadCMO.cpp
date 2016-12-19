@@ -23,8 +23,7 @@
 #include "BinaryReader.h"
 
 using namespace DirectX;
-using Microsoft::WRL::ComPtr;
-
+using namespace Microsoft::WRL;
 
 //--------------------------------------------------------------------------------------
 // .CMO files are built by Visual Studio 2012 and an example renderer is provided
@@ -207,8 +206,6 @@ static void CreateInputLayout(_In_ ID3D11Device* device, IEffect* effect, _Out_ 
         );
     }
 
-    _Analysis_assume_(*pInputLayout != 0);
-
     SetDebugObjectName(*pInputLayout, "ModelCMO");
 }
 
@@ -232,10 +229,7 @@ static BOOL CALLBACK InitializeDecl( PINIT_ONCE initOnce, PVOID Parameter, PVOID
 }
 
 
-//======================================================================================
-// Model Loader
-//======================================================================================
-
+//--------------------------------------------------------------------------------------
 _Use_decl_annotations_
 std::unique_ptr<Model> DirectX::Model::CreateFromCMO( ID3D11Device* d3dDevice, const uint8_t* meshData, size_t dataSize, IEffectFactory& fxFactory, bool ccw, bool pmalpha )
 {
@@ -409,12 +403,12 @@ std::unique_ptr<Model> DirectX::Model::CreateFromCMO( ID3D11Device* d3dDevice, c
             ib.ptr = indexes;
             ibData.emplace_back( ib );
 
-            D3D11_BUFFER_DESC desc = {};
+            D3D11_BUFFER_DESC desc = {0};
             desc.Usage = D3D11_USAGE_DEFAULT;
             desc.ByteWidth = static_cast<UINT>( ibBytes );
             desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 
-            D3D11_SUBRESOURCE_DATA initData = {};
+            D3D11_SUBRESOURCE_DATA initData = {0};
             initData.pSysMem = indexes;
 
             ThrowIfFailed(
@@ -620,7 +614,7 @@ std::unique_ptr<Model> DirectX::Model::CreateFromCMO( ID3D11Device* d3dDevice, c
 
             size_t bytes = stride * nVerts;
 
-            D3D11_BUFFER_DESC desc = {};
+            D3D11_BUFFER_DESC desc = {0};
             desc.Usage = D3D11_USAGE_DEFAULT;
             desc.ByteWidth = static_cast<UINT>( bytes );
             desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
@@ -628,7 +622,7 @@ std::unique_ptr<Model> DirectX::Model::CreateFromCMO( ID3D11Device* d3dDevice, c
             if ( fxFactoryDGSL && !enableSkinning )
             {
                 // Can use CMO vertex data directly
-                D3D11_SUBRESOURCE_DATA initData = {};
+                D3D11_SUBRESOURCE_DATA initData = {0};
                 initData.pSysMem = vbData[j].ptr;
 
                 ThrowIfFailed(
@@ -721,7 +715,7 @@ std::unique_ptr<Model> DirectX::Model::CreateFromCMO( ID3D11Device* d3dDevice, c
                                      || XMVector4NotEqual( uvTransform.r[2], uv2.r[2] )
                                      || XMVector4NotEqual( uvTransform.r[3], uv2.r[3] ) )
                                 {
-                                    DebugTrace( "WARNING: %ls - mismatched UV transforms for the same vertex; texture coordinates may not be correct\n", mesh->name.c_str() );
+                                    DebugTrace( "WARNING: %S - mismatched UV transforms for the same vertex; texture coordinates may not be correct\n", mesh->name.c_str() );
                                 }
 #endif
                             }
@@ -730,7 +724,7 @@ std::unique_ptr<Model> DirectX::Model::CreateFromCMO( ID3D11Device* d3dDevice, c
                 }
 
                 // Create vertex buffer from temporary buffer
-                D3D11_SUBRESOURCE_DATA initData = {};
+                D3D11_SUBRESOURCE_DATA initData = {0};
                 initData.pSysMem = temp.get();
 
                 ThrowIfFailed(
@@ -760,15 +754,12 @@ std::unique_ptr<Model> DirectX::Model::CreateFromCMO( ID3D11Device* d3dDevice, c
                 info.diffuseColor = XMFLOAT3( m.pMaterial->Diffuse.x, m.pMaterial->Diffuse.y, m.pMaterial->Diffuse.z );
                 info.specularColor = XMFLOAT3( m.pMaterial->Specular.x, m.pMaterial->Specular.y, m.pMaterial->Specular.z );
                 info.emissiveColor = XMFLOAT3( m.pMaterial->Emissive.x, m.pMaterial->Emissive.y, m.pMaterial->Emissive.z );
-                info.diffuseTexture = m.texture[0].empty() ? nullptr : m.texture[0].c_str();
-                info.specularTexture = m.texture[1].empty() ? nullptr : m.texture[1].c_str();
-                info.normalTexture = m.texture[2].empty() ? nullptr : m.texture[2].c_str();
+                info.texture = m.texture[0].c_str();
                 info.pixelShader = m.pixelShader.c_str();
                 
-                const int offset = DGSLEffectFactory::DGSLEffectInfo::BaseTextureOffset;
-                for( int i = 0; i < (DGSLEffect::MaxTextures - offset); ++i )
+                for( int i = 0; i < 7; ++i )
                 {
-                    info.textures[i] = m.texture[ i + offset ].empty() ? nullptr : m.texture[ i + offset ].c_str();
+                    info.textures[i] = m.texture[ i+1 ].empty() ? nullptr : m.texture[ i+1 ].c_str();
                 }
 
                 m.effect = fxFactoryDGSL->CreateDGSLEffect( info, nullptr );
@@ -788,7 +779,7 @@ std::unique_ptr<Model> DirectX::Model::CreateFromCMO( ID3D11Device* d3dDevice, c
                 info.diffuseColor = XMFLOAT3( m.pMaterial->Diffuse.x, m.pMaterial->Diffuse.y, m.pMaterial->Diffuse.z );
                 info.specularColor = XMFLOAT3( m.pMaterial->Specular.x, m.pMaterial->Specular.y, m.pMaterial->Specular.z );
                 info.emissiveColor = XMFLOAT3( m.pMaterial->Emissive.x, m.pMaterial->Emissive.y, m.pMaterial->Emissive.z );
-                info.diffuseTexture = m.texture[0].c_str();
+                info.texture = m.texture[0].c_str();
 
                 m.effect = fxFactory.CreateEffect( info, nullptr );
             }
@@ -841,7 +832,7 @@ std::unique_ptr<Model> DirectX::Model::CreateFromCMO( ID3D11Device* d3dDevice, c
     HRESULT hr = BinaryReader::ReadEntireFile( szFileName, data, &dataSize );
     if ( FAILED(hr) )
     {
-        DebugTrace( "CreateFromCMO failed (%08X) loading '%ls'\n", hr, szFileName );
+        DebugTrace( "CreateFromCMO failed (%08X) loading '%S'\n", hr, szFileName );
         throw std::exception( "CreateFromCMO" );
     }
 

@@ -21,31 +21,50 @@
 #include "PlatformHelpers.h"
 #include "BinaryReader.h"
 
-#include "vbo.h"
-
 using namespace DirectX;
-using Microsoft::WRL::ComPtr;
+using namespace Microsoft::WRL;
 
+//--------------------------------------------------------------------------------------
+// The VBO file format was introduced in the Windows 8.0 ResourceLoading sample. It's
+// a simple binary file containing a 16-bit index buffer and a fixed-format vertex buffer.
+//
+// The meshconvert sample tool for DirectXMesh can produce this file type
+// http://go.microsoft.com/fwlink/?LinkID=324981
+//--------------------------------------------------------------------------------------
+
+namespace VBO
+{
+#pragma pack(push,1)
+
+    struct header_t
+    {
+        uint32_t numVertices;
+        uint32_t numIndices;
+    };
+
+#pragma pack(pop)
+
+}; // namespace
+
+static_assert(sizeof(VBO::header_t) == 8, "VBO header size mismatch");
 static_assert(sizeof(VertexPositionNormalTexture) == 32, "VBO vertex size mismatch");
 
-namespace
+
+//--------------------------------------------------------------------------------------
+// Shared VB input element description
+static INIT_ONCE g_InitOnce = INIT_ONCE_STATIC_INIT;
+static std::shared_ptr<std::vector<D3D11_INPUT_ELEMENT_DESC>> g_vbdecl;
+
+static BOOL CALLBACK InitializeDecl(PINIT_ONCE initOnce, PVOID Parameter, PVOID *lpContext)
 {
-    //--------------------------------------------------------------------------------------
-    // Shared VB input element description
-    INIT_ONCE g_InitOnce = INIT_ONCE_STATIC_INIT;
-    std::shared_ptr<std::vector<D3D11_INPUT_ELEMENT_DESC>> g_vbdecl;
+    UNREFERENCED_PARAMETER(initOnce);
+    UNREFERENCED_PARAMETER(Parameter);
+    UNREFERENCED_PARAMETER(lpContext);
 
-    BOOL CALLBACK InitializeDecl(PINIT_ONCE initOnce, PVOID Parameter, PVOID *lpContext)
-    {
-        UNREFERENCED_PARAMETER(initOnce);
-        UNREFERENCED_PARAMETER(Parameter);
-        UNREFERENCED_PARAMETER(lpContext);
+    g_vbdecl = std::make_shared<std::vector<D3D11_INPUT_ELEMENT_DESC>>(VertexPositionNormalTexture::InputElements,
+                   VertexPositionNormalTexture::InputElements + VertexPositionNormalTexture::InputElementCount);
 
-        g_vbdecl = std::make_shared<std::vector<D3D11_INPUT_ELEMENT_DESC>>(VertexPositionNormalTexture::InputElements,
-            VertexPositionNormalTexture::InputElements + VertexPositionNormalTexture::InputElementCount);
-
-        return TRUE;
-    }
+    return TRUE;
 }
 
 
@@ -83,12 +102,12 @@ std::unique_ptr<Model> DirectX::Model::CreateFromVBO(ID3D11Device* d3dDevice, co
     // Create vertex buffer
     ComPtr<ID3D11Buffer> vb;
     {
-        D3D11_BUFFER_DESC desc = {};
+        D3D11_BUFFER_DESC desc = { 0 };
         desc.Usage = D3D11_USAGE_DEFAULT;
         desc.ByteWidth = static_cast<UINT>(vertSize);
         desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 
-        D3D11_SUBRESOURCE_DATA initData = {};
+        D3D11_SUBRESOURCE_DATA initData = { 0 };
         initData.pSysMem = verts;
 
         ThrowIfFailed(
@@ -101,12 +120,12 @@ std::unique_ptr<Model> DirectX::Model::CreateFromVBO(ID3D11Device* d3dDevice, co
     // Create index buffer
     ComPtr<ID3D11Buffer> ib;
     {
-        D3D11_BUFFER_DESC desc = {};
+        D3D11_BUFFER_DESC desc = { 0 };
         desc.Usage = D3D11_USAGE_DEFAULT;
         desc.ByteWidth = static_cast<UINT>(indexSize);
         desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 
-        D3D11_SUBRESOURCE_DATA initData = {};
+        D3D11_SUBRESOURCE_DATA initData = { 0 };
         initData.pSysMem = indices;
 
         ThrowIfFailed(
@@ -176,7 +195,7 @@ std::unique_ptr<Model> DirectX::Model::CreateFromVBO(ID3D11Device* d3dDevice, co
     HRESULT hr = BinaryReader::ReadEntireFile( szFileName, data, &dataSize );
     if ( FAILED(hr) )
     {
-        DebugTrace( "CreateFromVBO failed (%08X) loading '%ls'\n", hr, szFileName );
+        DebugTrace( "CreateFromVBO failed (%08X) loading '%S'\n", hr, szFileName );
         throw std::exception( "CreateFromVBO" );
     }
 

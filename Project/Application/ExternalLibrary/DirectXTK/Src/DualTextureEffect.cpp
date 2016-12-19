@@ -15,7 +15,7 @@
 #include "EffectCommon.h"
 
 using namespace DirectX;
-using Microsoft::WRL::ComPtr;
+using namespace Microsoft::WRL;
 
 
 // Constant buffer layout. Must match the shader!
@@ -206,7 +206,6 @@ DualTextureEffect::~DualTextureEffect()
 }
 
 
-// IEffect methods.
 void DualTextureEffect::Apply(_In_ ID3D11DeviceContext* deviceContext)
 {
     pImpl->Apply(deviceContext);
@@ -219,7 +218,6 @@ void DualTextureEffect::GetVertexShaderBytecode(_Out_ void const** pShaderByteCo
 }
 
 
-// Camera settings.
 void XM_CALLCONV DualTextureEffect::SetWorld(FXMMATRIX value)
 {
     pImpl->matrices.world = value;
@@ -244,17 +242,6 @@ void XM_CALLCONV DualTextureEffect::SetProjection(FXMMATRIX value)
 }
 
 
-void XM_CALLCONV DualTextureEffect::SetMatrices(FXMMATRIX world, CXMMATRIX view, CXMMATRIX projection)
-{
-    pImpl->matrices.world = world;
-    pImpl->matrices.view = view;
-    pImpl->matrices.projection = projection;
-
-    pImpl->dirtyFlags |= EffectDirtyFlags::WorldViewProj | EffectDirtyFlags::WorldInverseTranspose | EffectDirtyFlags::EyePosition | EffectDirtyFlags::FogVector;
-}
-
-
-// Material settings.
 void XM_CALLCONV DualTextureEffect::SetDiffuseColor(FXMVECTOR value)
 {
     pImpl->color.diffuseColor = value;
@@ -271,16 +258,6 @@ void DualTextureEffect::SetAlpha(float value)
 }
 
 
-void XM_CALLCONV DualTextureEffect::SetColorAndAlpha(FXMVECTOR value)
-{
-    pImpl->color.diffuseColor = value;
-    pImpl->color.alpha = XMVectorGetW(value);
-
-    pImpl->dirtyFlags |= EffectDirtyFlags::MaterialColor;
-}
-
-
-// Fog settings.
 void DualTextureEffect::SetFogEnabled(bool value)
 {
     pImpl->fog.enabled = value;
@@ -313,14 +290,12 @@ void XM_CALLCONV DualTextureEffect::SetFogColor(FXMVECTOR value)
 }
 
 
-// Vertex color setting.
 void DualTextureEffect::SetVertexColorEnabled(bool value)
 {
     pImpl->vertexColorEnabled = value;
 }
 
 
-// Texture settings.
 void DualTextureEffect::SetTexture(_In_opt_ ID3D11ShaderResourceView* value)
 {
     pImpl->texture = value;

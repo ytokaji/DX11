@@ -72,12 +72,12 @@ private:
 
 	private:
 		ID3D11CommandList*		_command;		//!< RenderAsync用のコマンドリスト
-		RenderProcess*					_process;		//!< プロセスポインタ
+		RenderProcess*			_process;		//!< プロセスポインタ
 	};
 
 private:
-	std::vector<ProcThread*>	_threadList;		//!< 更新用スレッド配列
-	RenderProcess						_root;				//!< ルートプロセス
+	std::vector<ProcThread*>	_threadList;	//!< 更新用スレッド配列
+	RenderProcess				_root;			//!< ルートプロセス
 };
 
 

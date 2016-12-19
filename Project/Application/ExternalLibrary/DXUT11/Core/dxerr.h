@@ -13,7 +13,9 @@
 
 // This version only supports UNICODE.
 
+#ifdef _MSC_VER
 #pragma once
+#endif
 
 #include <windows.h>
 #include <sal.h>
